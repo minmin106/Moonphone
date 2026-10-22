@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cyber Phone</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 0px; }
+
+        body {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; background-color: #121212; font-family: -apple-system, sans-serif;
+        }
+
+        /* 📱 手机外壳 */
+        #phone {
+            width: 390px; height: 844px; border-radius: 45px; border: 8px solid #000;
+            position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            background-color: #000;
+        }
+
+        /* --- 顶部状态栏 --- */
+        .status-bar {
+            position: absolute; top: 10px; left: 0; right: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; color: #fff; font-size: 14px; font-weight: 600;
+            z-index: 100; pointer-events: none;
+        }
+        .status-right { display: flex; align-items: center; gap: 5px; }
+        .battery-icon { width: 22px; height: 11px; border: 1px solid currentColor; border-radius: 3px; position: relative; padding: 1px; }
+        .battery-icon::after { content: ''; position: absolute; right: -3px; top: 2px; width: 2px; height: 5px; background: currentColor; border-radius: 0 1px 1px 0; }
+        .battery-level { height: 100%; width: 80%; background: currentColor; border-radius: 1px; }
+
+        /* ================= 1. 锁屏层 ================= */
+        #lock-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(180deg, #d4d4d4 0%, #888888 100%);
+            z-index: 99; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); cursor: grab;
+        }
+        #lock-screen .status-bar { color: #333; }
+        .lock-time-area { margin-top: 80px; text-align: center; color: #333; }
+        .lock-time { font-size: 80px; font-weight: 700; letter-spacing: -2px; }
+        .lock-date { font-size: 18px; font-weight: 500; margin-top: -5px;}
+        .music-widget {
+            margin-top: 40px; width: 340px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px);
+            border-radius: 25px; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6);
+        }
+        .music-info { display: flex; align-items: center; gap: 12px; }
+        .music-cover { width: 45px; height: 45px; border-radius: 8px; background: #333; }
+        .music-text { flex: 1; }
+        .music-title { font-size: 15px; font-weight: 600; color: #222; }
+        .music-artist { font-size: 12px; color: #666; }
+        .music-progress { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #666;}
+        .progress-bar { flex: 1; height: 3px; background: rgba(0,0,0,0.1); border-radius: 2px; position: relative;}
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 30%; background: #555; border-radius: 2px;}
+        .music-controls { display: flex; justify-content: space-between; padding: 0 10px; font-size: 20px; color: #444; }
+        .swipe-up-hint { margin-top: auto; margin-bottom: 30px; font-size: 12px; color: #555; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* ================= 2. 桌面层 ================= */
+        #home-screen {
+            width: 100%; height: 100%; padding: 60px 25px 20px;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+            display: flex; flex-direction: column; opacity: 0; transition: opacity 0.5s ease; z-index: 1;
+        }
+        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 30px; }
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.1s; }
+        .app-icon:active { transform: scale(0.9); }
+        .app-name { font-size: 11px; color: #fff; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5);}
+
+        /* ★★★ 纯CSS版 iOS 图标 (绝对不会丢失) ★★★ */
+        .icon-box {
+            width: 60px; height: 60px; border-radius: 22%;
+            display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+        }
+        .icon-msg { background: linear-gradient(180deg, #5BF675 0%, #0FD13A 100%); }
+        .icon-photos { background: #fff; }
+        .icon-memo { background: linear-gradient(180deg, #FFE579 0%, #FFC300 100%); color: #333;}
+        .icon-phone { background: linear-gradient(180deg, #5BF675 0%, #0FD13A 100%); }
+        .icon-settings { background: linear-gradient(180deg, #A6A6A6 0%, #555 100%); }
+        .icon-x-box { width: 60px; height: 60px; border-radius: 22%; background: #000; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 1px solid #333;}
+        .icon-x-logo { width: 34px; height: 34px; background: linear-gradient(to bottom right, transparent 45%, #fff 46%, #fff 53%, transparent 54%), linear-gradient(to top right, transparent 45%, #fff 46%, #fff 53%, transparent 54%); }
+        
+        .dock {
+            margin-top: auto; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); border-radius: 35px;
+            padding: 15px 20px; display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dock .icon-box { width: 55px; height: 55px; }
+
+        /* ================= 通用 APP 页面 ================= */
+        .app-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; display: none; flex-direction: column; z-index: 200;
+            transform: translateY(100%); transition: transform 0.3s ease;
+        }
+        .app-screen.active { display: flex; transform: translateY(0); }
+        .app-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 55px 15px 10px; background: rgba(0,0,0,0.9); border-bottom: 1px solid #1c1c1e; z-index: 10;
+        }
+        .back-btn { color: #0B84FF; background: none; border: none; font-size: 16px; cursor: pointer;}
+        
+        /* --- 列表页通用 --- */
+        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #1c1c1e; cursor: pointer; transition: background 0.1s; }
+        .list-item:active { background: #1c1c1e; }
+        .list-avatar { width: 50px; height: 50px; border-radius: 50%; background: #ff8c69; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 15px; flex-shrink: 0;}
+        .list-content { flex: 1; overflow: hidden; }
+        .list-title-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .list-title { color: #fff; font-size: 16px; font-weight: 600; }
+        .list-time { color: #888; font-size: 13px; }
+        .list-subtitle { color: #888; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-arrow { color: #555; font-size: 18px; margin-left: 10px; }
+
+        /* --- iMessage 聊天 --- */
+        .contact-info { display: flex; flex-direction: column; align-items: center; }
+        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ff8c69; margin-bottom: 4px; display: flex; justify-content: center; align-items: center; font-size: 20px;}
+        .contact-name { color: #fff; font-weight: 600; font-size: 11px; }
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column;}
+        .time-stamp { text-align: center; color: #888; font-size: 12px; margin: 15px 0; }
+        .message-row { display: flex; flex-direction: column; margin-bottom: 5px; width: 100%; }
+        .message-row.user { align-items: flex-end; }
+        .message-row.ai { align-items: flex-start; }
+        .bubble { max-width: 75%; padding: 10px 15px; border-radius: 18px; line-height: 1.4; font-size: 16px; word-wrap: break-word; margin-bottom: 2px; }
+        .user .bubble { background-color: #0B84FF; color: #fff; border-bottom-right-radius: 4px; }
+        .ai .bubble { background-color: #26252A; color: #fff; border-bottom-left-radius: 4px; }
+        .status-text { font-size: 11px; color: #888; margin-right: 5px; margin-top: 2px; }
+        .input-area { display: flex; gap: 10px; padding: 10px 15px; background: #000; padding-bottom: 25px; align-items: flex-end; }
+        .plus-btn { width: 32px; height: 32px; border-radius: 50%; background: #26252A; color: #888; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; }
+        input { flex: 1; background-color: #1c1c1e; border: 1px solid #333; padding: 8px 15px; border-radius: 18px; color: white; font-size: 16px; outline: none; min-height: 36px; }
+        button.send-btn { background-color: #0B84FF; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; margin-left: 5px; }
+        button.send-btn:disabled { background-color: #1c1c1e; color: #555; }
+
+        /* ================= 深度复刻 Twitter ================= */
+        .tw-header { display: flex; align-items: center; justify-content: space-between; padding: 50px 15px 0; background: #000; z-index: 10; border-bottom: 1px solid #2f3336; }
+        .tw-profile-pic { width: 32px; height: 32px; border-radius: 50%; background: #ff8c69; display: flex; justify-content: center; align-items: center; font-size: 16px;}
+        .tw-logo { font-size: 24px; font-weight: bold; color: #fff; }
+        .tw-back-btn { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer;}
+        .tw-tabs { display: flex; background: #000; border-bottom: 1px solid #2f3336; }
+        .tw-tab { flex: 1; text-align: center; padding: 15px 0; color: #71767b; font-weight: 600; font-size: 15px; cursor: pointer; position: relative; }
+        .tw-tab.active { color: #fff; }
+        .tw-tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 50px; height: 4px; background: #1d9bf0; border-radius: 2px; }
+        #tw-feed { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        .tweet { padding: 12px 15px; border-bottom: 1px solid #2f3336; display: flex; gap: 12px; position: relative;}
+        .tweet-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ccc; display: flex; justify-content: center; align-items: center; font-size: 20px; flex-shrink: 0; object-fit: cover;}
+        .tweet-content { flex: 1; }
+        .tweet-header { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+        .tweet-name { color: #e7e9ea; font-weight: 700; font-size: 15px; }
+        .tweet-verified { color: #1d9bf0; font-size: 14px; }
+        .tweet-handle { color: #71767b; font-size: 15px; }
+        .tweet-time { color: #71767b; font-size: 15px; }
+        .tweet-more { position: absolute; right: 15px; top: 15px; color: #71767b; font-size: 16px;}
+        .tweet-text { color: #e7e9ea; font-size: 15px; line-height: 1.4; margin-bottom: 10px;}
+        .tweet-actions { display: flex; justify-content: space-between; color: #71767b; font-size: 13px; max-width: 350px; margin-top: 10px;}
+        .tweet-action { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        
+        .tw-fab { position: absolute; right: 20px; bottom: 80px; width: 55px; height: 55px; background: #1d9bf0; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 28px; box-shadow: 0 4px 10px rgba(29, 155, 240, 0.4); cursor: pointer; z-index: 10; }
+        .tw-bottom-nav { position: absolute; bottom: 0; width: 100%; height: 50px; background: #000; border-top: 1px solid #2f3336; display: flex; justify-content: space-around; align-items: center; padding-bottom: 15px; font-size: 22px; color: #e7e9ea; }
+        .tw-nav-icon { display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer;}
+        .tw-nav-icon.active { color: #fff; font-weight: bold; }
+        .tw-nav-icon:not(.active) { color: #71767b; }
+        .tw-badge { position: absolute; top: -5px; right: -8px; background: #1d9bf0; color: #fff; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 1px solid #000; }
+
+        /* --- 备忘录 --- */
+        #app-notes { background: #000; }
+        .note-item { background: #1c1c1e; border-radius: 10px; padding: 15px; margin: 10px 15px; cursor: pointer; }
+        .note-title { color: #ffcc00; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
+        .note-preview { color: #888; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #app-note-detail { background: #1c1c1e; }
+        #app-note-detail .app-header { background: #1c1c1e; border-bottom: none; }
+        .note-detail-content { padding: 20px; color: #e7e9ea; font-size: 16px; line-height: 1.6; overflow-y: auto;}
+        .note-detail-date { color: #888; font-size: 12px; text-align: center; margin-bottom: 20px; }
+
+        /* --- 设置 App --- */
+        #app-settings { background: #f2f2f7; color: #000; overflow-y: auto;}
+        #app-settings .app-header { background: #f2f2f7; border-bottom: 1px solid #c6c6c8; }
+        #app-settings .back-btn { color: #0B84FF; }
+        .settings-content { padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px;}
+        .setting-group { background: #fff; border-radius: 10px; padding: 15px; }
+        .setting-label { font-size: 13px; color: #666; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        .setting-input { width: 100%; background: #f2f2f7; border: none; padding: 10px; border-radius: 8px; font-size: 14px; color: #000; margin-bottom: 10px; outline: none;}
+        .setting-textarea { width: 100%; height: 100px; background: #f2f2f7; border: none; padding: 10px; border-radius: 8px; font-size: 12px; color: #000; margin-bottom: 10px; outline: none; resize: none;}
+        .save-btn { background: #0B84FF; color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 5px; width: 100%;}
+        .upload-btn { display: block; width: 100%; text-align: center; background: #e5e5ea; color: #0B84FF; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        #wallpaper-preview { width: 100%; height: 120px; background: #ddd; border-radius: 8px; background-size: cover; background-position: center; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div id="phone">
+        <!-- 锁屏与桌面 -->
+        <div id="lock-screen">
+            <div class="status-bar"><span id="lock-time-top">8:00</span><div class="status-right"><span>📶</span><div class="battery-icon"><div class="battery-level"></div></div><span id="lock-battery-text">80%</span></div></div>
+            <div class="lock-time-area"><div class="lock-time" id="lock-clock">8:00</div><div class="lock-date" id="lock-date">Wed Sep 30</div></div>
+            <div class="music-widget">
+                <div class="music-info"><div class="music-cover" style="background: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop') center/cover;"></div><div class="music-text"><div class="music-title">我恨这思念</div><div class="music-artist">AI 推荐</div></div></div>
+                <div class="music-progress"><span>1:21</span><div class="progress-bar"><div class="progress-fill"></div></div><span>-2:44</span></div>
+                <div class="music-controls"><span>☆</span><span>⏮</span><span>⏸</span><span>⏭</span><span>📡</span></div>
+            </div>
+            <div class="swipe-up-hint">向上滑动解锁</div>
+        </div>
+
+        <div id="home-screen">
+            <div class="status-bar"><span id="home-time-top">8:00</span><div class="status-right"><span>📶</span><div class="battery-icon"><div class="battery-level"></div></div><span id="home-battery-text">80%</span></div></div>
+            <div class="app-grid">
+                <!-- 纯CSS图标，绝对稳定 -->
+                <div class="app-icon" onclick="openApp('imessage-list')">
+                    <div class="icon-box icon-msg">💬</div><div class="app-name">信息</div>
+                </div>
+                <div class="app-icon" onclick="openApp('twitter')">
+                    <div class="icon-x-box"><div class="icon-x-logo"></div></div><div class="app-name">Twitter</div>
+                </div>
+                <div class="app-icon" onclick="alert('相册 正在开发中...')">
+                    <div class="icon-box icon-photos" style="color:#f00; font-size:30px;">🌸</div><div class="app-name">照片</div>
+                </div>
+                <div class="app-icon" onclick="openApp('notes')">
+                    <div class="icon-box icon-memo">📝</div><div class="app-name">备忘录</div>
+                </div>
+            </div>
+            <div class="dock">
+                <div class="app-icon" onclick="alert('电话功能暂不可用')"><div class="icon-box icon-phone">📞</div></div>
+                <div class="app-icon" onclick="openApp('settings')"><div class="icon-box icon-settings">⚙️</div></div>
+            </div>
+        </div>
+
+        <!-- iMessage 列表页 -->
+        <div id="app-imessage-list" class="app-screen">
+            <div class="app-header">
+                <button class="back-btn" onclick="goHome()">◀ 主页</button>
+                <div style="font-weight:600; font-size:16px; color:white;">信息</div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div style="flex:1; overflow-y:auto;" id="imessage-list-container"></div>
+        </div>
+
+        <!-- iMessage 聊天详情页 -->
+        <div id="app-imessage-chat" class="app-screen">
+            <div class="app-header">
+                <button class="back-btn" onclick="openApp('imessage-list')">◀ 信息</button>
+                <div class="contact-info"><div class="contact-avatar" id="chat-contact-avatar">🤖</div><div class="contact-name" id="chat-contact-name">未设定</div></div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div id="chat-container"></div>
+            <div class="input-area">
+                <div class="plus-btn">+</div>
+                <input type="text" id="user-input" placeholder="iMessage" onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>↑</button>
+            </div>
+        </div>
+
+        <!-- Twitter 界面 -->
+        <div id="app-twitter" class="app-screen">
+            <div class="tw-header">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button class="tw-back-btn" onclick="goHome()">◀</button>
+                    <div class="tw-profile-pic" id="tw-my-avatar">🤖</div>
+                </div>
+                <div class="tw-logo">𝕏</div>
+                <div style="width:30px;"></div>
+            </div>
+            <div class="tw-tabs">
+                <div class="tw-tab active" onclick="switchTwTab(this)">为你推荐</div>
+                <div class="tw-tab" onclick="switchTwTab(this)">正在关注</div>
+                <div class="tw-tab" style="flex:0; width:40px;">＋</div>
+            </div>
+
+            <div id="tw-feed"></div>
+
+            <input type="file" id="tw-upload-img" accept="image/*" style="display:none;" onchange="processTwImage(event)">
+            <div class="tw-fab" style="font-size:20px;" onclick="document.getElementById('tw-upload-img').click()">🖼️</div>
+            
+            <div class="tw-bottom-nav">
+                <div class="tw-nav-icon active">🏠</div><div class="tw-nav-icon">🔍</div><div class="tw-nav-icon">🕊️</div><div class="tw-nav-icon">🔔<div class="tw-badge">1</div></div><div class="tw-nav-icon">✉️</div>
+            </div>
+        </div>
+
+        <!-- 备忘录 列表 -->
+        <div id="app-notes" class="app-screen">
+            <div class="app-header">
+                <button class="back-btn" onclick="goHome()">◀ 主页</button>
+                <div style="font-weight:600; font-size:16px; color:white;">备忘录</div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div style="flex:1; overflow-y:auto;" id="notes-list-container"></div>
+        </div>
+
+        <!-- 备忘录 详情 -->
+        <div id="app-note-detail" class="app-screen">
+            <div class="app-header">
+                <button class="back-btn" onclick="openApp('notes')">◀ 备忘录</button>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="note-detail-content">
+                <div class="note-detail-date" id="note-detail-date"></div>
+                <h2 id="note-detail-title" style="color:#ffcc00; margin-bottom:15px;"></h2>
+                <div id="note-detail-text"></div>
+            </div>
+        </div>
+
+        <!-- 设置界面 -->
+        <div id="app-settings" class="app-screen">
+            <div class="app-header">
+                <button class="back-btn" onclick="goHome()">◀ 主页</button>
+                <div style="font-weight:600; font-size:16px;">设置</div>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="settings-content">
+                
+                <!-- 导入数据包 (支持上传文件) -->
+                <div class="setting-group">
+                    <div class="setting-label"><span>导入专属数据包 (JSON)</span></div>
+                    
+                    <input type="file" id="json-file" accept=".json" style="display:none;" onchange="handleJsonUpload(event)">
+                    <label for="json-file" class="upload-btn">📁 上传本地 JSON 文件</label>
+                    
+                    <div style="text-align:center; font-size:12px; color:#888; margin:5px 0;">或者直接粘贴 JSON 代码</div>
+                    <textarea id="input-datapack" class="setting-textarea" placeholder='{"contactName":"名字", "contactAvatar":"头像", "persona":"角色设定", "initialChat":[...]}'></textarea>
+                    <button class="save-btn" style="background:#34C759;" onclick="importDataPackText()">✨ 解析并注入灵魂</button>
+                </div>
+
+                <!-- API 设置区 -->
+                <div class="setting-group">
+                    <div class="setting-label">API Key (建议用支持视觉的模型)</div>
+                    <input type="password" id="input-apikey" class="setting-input" placeholder="sk-...">
+                    <div class="setting-label">API URL</div>
+                    <input type="text" id="input-apiurl" class="setting-input" value="https://api.deepseek.com/chat/completions">
+                    <div class="setting-label">模型名称</div>
+                    <input type="text" id="input-model" class="setting-input" value="deepseek-chat">
+                    <button class="save-btn" onclick="saveApiSettings()">保存 API 配置</button>
+                </div>
+
+                <!-- 壁纸设置区 -->
+                <div class="setting-group">
+                    <div class="setting-label">桌面壁纸</div>
+                    <div id="wallpaper-preview">当前壁纸</div>
+                    <input type="file" id="wallpaper-file" accept="image/*" style="display:none;" onchange="handleWallpaperUpload(event)">
+                    <label for="wallpaper-file" class="upload-btn">📁 点击上传本地照片</label>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 全局数据变量 (由 JSON 数据包注入)
+        // ==========================================
+        let SYSTEM_PROMPT = "";
+        let CONTACT_NAME = "未设定"; 
+        let CONTACT_AVATAR = "🤖"; 
+
+        let API_KEY = localStorage.getItem('phone_api_key') || ""; 
+        let API_URL = localStorage.getItem('phone_api_url') || "https://api.deepseek.com/chat/completions"; 
+        let MODEL_NAME = localStorage.getItem('phone_model_name') || "deepseek-chat"; 
+
+        let chatHistory = [];
+        let notesData = [];
+        let tweetsData = [];
+
+        // ==========================================
+        // 2. 界面交互与时钟
+        // ==========================================
+        function updateStatus() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('lock-time-top').innerText = timeStr;
+            document.getElementById('lock-clock').innerText = timeStr;
+            document.getElementById('home-time-top').innerText = timeStr;
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            document.getElementById('lock-date').innerText = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()}`;
+            const batteryLevel = Math.floor(Math.random() * 10) + 75;
+            document.getElementById('lock-battery-text').innerText = batteryLevel + '%';
+            document.getElementById('home-battery-text').innerText = batteryLevel + '%';
+            document.querySelectorAll('.battery-level').forEach(el => el.style.width = batteryLevel + '%');
+        }
+        setInterval(updateStatus, 60000); updateStatus();
+
+        const lockScreen = document.getElementById('lock-screen');
+        const homeScreen = document.getElementById('home-screen');
+        lockScreen.addEventListener('click', () => {
+            lockScreen.style.transform = 'translateY(-100%)';
+            homeScreen.style.opacity = '1';
+        });
+
+        function openApp(appName) { 
+            document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('app-' + appName).classList.add('active'); 
+        }
+        function goHome() { document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active')); }
+        function switchTwTab(element) {
+            document.querySelectorAll('.tw-tab').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // ==========================================
+        // 3. 数据包导入与渲染引擎
+        // ==========================================
+        // 通过上传本地 JSON 文件
+        function handleJsonUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('input-datapack').value = e.target.result;
+                importDataPackText(); // 直接触发解析
+            };
+            reader.readAsText(file);
+        }
+
+        // 解析并注入
+        function importDataPackText() {
+            const rawText = document.getElementById('input-datapack').value.trim();
+            if(!rawText) return alert("请先上传或粘贴 JSON 数据包！");
+
+            try {
+                const data = JSON.parse(rawText);
+                
+                // 1. 注入人设
+                if(data.persona) {
+                    SYSTEM_PROMPT = data.persona;
+                    localStorage.setItem('phone_persona', SYSTEM_PROMPT);
+                }
+                
+                // 2. 注入名字和头像
+                if(data.contactName) { CONTACT_NAME = data.contactName; localStorage.setItem('phone_name', CONTACT_NAME); }
+                if(data.contactAvatar) { CONTACT_AVATAR = data.contactAvatar; localStorage.setItem('phone_avatar', CONTACT_AVATAR); }
+
+                // 3. 注入聊天记录
+                if(data.initialChat && Array.isArray(data.initialChat)) {
+                    const newChat = [{ role: "system", content: SYSTEM_PROMPT }];
+                    data.initialChat.forEach(msg => { newChat.push(msg); });
+                    localStorage.setItem('phone_chat_history', JSON.stringify(newChat));
+                }
+
+                // 4. 注入备忘录
+                if(data.notes && Array.isArray(data.notes)) {
+                    localStorage.setItem('phone_notes', JSON.stringify(data.notes));
+                }
+
+                // 5. 注入推文
+                if(data.tweets && Array.isArray(data.tweets)) {
+                    localStorage.setItem('phone_tweets', JSON.stringify(data.tweets));
+                }
+
+                alert("灵魂注入成功！手机即将刷新。");
+                window.location.reload();
+
+            } catch (error) {
+                alert("数据格式有误，请检查是否是合法的 JSON 格式！\n" + error.message);
+            }
+        }
+
+        function loadAppData() {
+            SYSTEM_PROMPT = localStorage.getItem('phone_persona') || "";
+            CONTACT_NAME = localStorage.getItem('phone_name') || "未设定";
+            CONTACT_AVATAR = localStorage.getItem('phone_avatar') || "🤖";
+            
+            try {
+                const savedChat = localStorage.getItem('phone_chat_history');
+                chatHistory = savedChat ? JSON.parse(savedChat) : [];
+                const savedNotes = localStorage.getItem('phone_notes');
+                notesData = savedNotes ? JSON.parse(savedNotes) : [];
+                const savedTweets = localStorage.getItem('phone_tweets');
+                tweetsData = savedTweets ? JSON.parse(savedTweets) : [];
+            } catch (e) { console.error("数据解析失败", e); }
+
+            renderChatUI();
+            renderNotesUI();
+            renderTweetsUI();
+        }
+
+        // ==========================================
+        // 4. UI 渲染函数
+        // ==========================================
+        function renderChatUI() {
+            const listContainer = document.getElementById('imessage-list-container');
+            listContainer.innerHTML = '';
+            if(chatHistory.length > 1) {
+                const lastMsg = chatHistory[chatHistory.length - 1].content;
+                listContainer.innerHTML = `
+                <div class="list-item" onclick="openApp('imessage-chat')">
+                    <div class="list-avatar">${CONTACT_AVATAR}</div>
+                    <div class="list-content">
+                        <div class="list-title-row"><div class="list-title">${CONTACT_NAME} <span style="font-size:12px; color:#0B84FF;">✔</span></div><div class="list-time">刚刚</div></div>
+                        <div class="list-subtitle">${lastMsg}</div>
+                    </div>
+                    <div class="list-arrow">›</div>
+                </div>`;
+            } else {
+                listContainer.innerHTML = '<div style="color:#666; text-align:center; margin-top:50px;">暂无联系人</div>';
+            }
+
+            document.getElementById('chat-contact-avatar').innerText = CONTACT_AVATAR;
+            document.getElementById('chat-contact-name').innerText = CONTACT_NAME;
+
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.innerHTML = ''; 
+            if(chatHistory.length > 1) {
+                chatHistory.forEach(msg => {
+                    if (msg.role === 'user') appendMessage(msg.content, 'user', false);
+                    if (msg.role === 'assistant') appendMessage(msg.content, 'ai', false);
+                });
+                setTimeout(scrollToBottom, 100);
+            } else {
+                chatContainer.innerHTML = '<div style="color:#666; text-align:center; margin-top:50px;">暂无聊天记录，请发送第一条消息。</div>';
+            }
+        }
+
+        function renderNotesUI() {
+            const container = document.getElementById('notes-list-container');
+            container.innerHTML = '';
+            if(notesData.length === 0) {
+                container.innerHTML = '<div style="color:#666; text-align:center; margin-top:50px;">暂无备忘录</div>';
+                return;
+            }
+            notesData.forEach((note, index) => {
+                const div = document.createElement('div');
+                div.className = 'note-item';
+                div.onclick = () => openNote(index);
+                div.innerHTML = `<div class="note-title">${note.title}</div><div class="note-preview">${note.preview || '点击查看...'}</div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderTweetsUI() {
+            const feed = document.getElementById('tw-feed');
+            feed.innerHTML = '';
+            document.getElementById('tw-my-avatar').innerText = CONTACT_AVATAR;
+
+            if(tweetsData.length === 0) {
+                feed.innerHTML = '<div style="color:#666; text-align:center; margin-top:50px;">暂无推文</div>';
+                return;
+            }
+
+            const reversedTweets = [...tweetsData].reverse();
+            reversedTweets.forEach(tweet => {
+                const newTweet = document.createElement('div');
+                newTweet.className = 'tweet';
+                newTweet.innerHTML = `
+                    <div class="tweet-avatar" style="background:#ff8c69;">${CONTACT_AVATAR}</div>
+                    <div class="tweet-content">
+                        <div class="tweet-more">𝕏</div>
+                        <div class="tweet-header">
+                            <span class="tweet-name">${CONTACT_NAME}</span><span class="tweet-verified">✔</span>
+                            <span class="tweet-handle">@user</span><span class="tweet-time">·${tweet.time || '刚刚'}</span>
+                        </div>
+                        <div class="tweet-text">${tweet.text}</div>
+                        <div class="tweet-actions">
+                            <div class="tweet-action">💬 0</div><div class="tweet-action">🔁 0</div>
+                            <div class="tweet-action">❤️ 0</div><div class="tweet-action">📊 1</div>
+                            <div class="tweet-action">🔖</div><div class="tweet-action">📤</div>
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(newTweet);
+            });
+        }
+
+        function openNote(index) {
+            const data = notesData[index];
+            document.getElementById('note-detail-title').innerText = data.title;
+            document.getElementById('note-detail-date').innerText = data.date || '记录';
+            document.getElementById('note-detail-text').innerHTML = data.content;
+            openApp('note-detail');
+        }
+
+        // ==========================================
+        // 5. 设置与聊天交互逻辑
+        // ==========================================
+        function loadSettings() {
+            document.getElementById('input-apikey').value = API_KEY;
+            document.getElementById('input-apiurl').value = API_URL;
+            document.getElementById('input-model').value = MODEL_NAME;
+            applySavedWallpaper();
+        }
+
+        function saveApiSettings() {
+            const keyVal = document.getElementById('input-apikey').value.trim();
+            if (!keyVal) { alert("API Key 不能为空！"); return; }
+            localStorage.setItem('phone_api_key', keyVal);
+            localStorage.setItem('phone_api_url', document.getElementById('input-apiurl').value.trim());
+            localStorage.setItem('phone_model_name', document.getElementById('input-model').value.trim());
+            API_KEY = keyVal; API_URL = document.getElementById('input-apiurl').value.trim(); MODEL_NAME = document.getElementById('input-model').value.trim();
+            alert("API 配置保存成功！");
+        }
+
+        function applySavedWallpaper() {
+            const savedWallpaper = localStorage.getItem('phone_wallpaper');
+            if (savedWallpaper) {
+                document.getElementById('home-screen').style.backgroundImage = `url('${savedWallpaper}')`;
+                document.getElementById('wallpaper-preview').style.backgroundImage = `url('${savedWallpaper}')`;
+                document.getElementById('wallpaper-preview').innerText = '';
+            }
+        }
+
+        function handleWallpaperUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Url = e.target.result;
+                document.getElementById('home-screen').style.backgroundImage = `url('${base64Url}')`;
+                document.getElementById('wallpaper-preview').style.backgroundImage = `url('${base64Url}')`;
+                document.getElementById('wallpaper-preview').innerText = '';
+                try { localStorage.setItem('phone_wallpaper', base64Url); alert("壁纸已更换！"); } catch (error) { alert("存储空间不足！"); }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatContainer = document.getElementById('chat-container');
+        userInput.addEventListener('input', () => { sendBtn.disabled = userInput.value.trim() === ''; });
+
+        window.onload = function() { loadSettings(); loadAppData(); }
+        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+
+        async function sendMessage() {
+            if (!API_KEY) { alert("请先去【设置】里填写 API Key！"); openApp('settings'); return; }
+            if (!SYSTEM_PROMPT) { alert("手机还没有注入灵魂，请先去【设置】导入数据包！"); openApp('settings'); return; }
+
+            const text = userInput.value.trim();
+            if (!text) return;
+            
+            chatHistory[0].content = SYSTEM_PROMPT; 
+            appendMessage(text, 'user', true);
+            chatHistory.push({ role: "user", content: text });
+            localStorage.setItem('phone_chat_history', JSON.stringify(chatHistory));
+            
+            userInput.value = ''; sendBtn.disabled = true;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                    body: JSON.stringify({ model: MODEL_NAME, messages: chatHistory, temperature: 0.85, max_tokens: 500 })
+                });
+                if (!response.ok) throw new Error('Network error');
+                const data = await response.json();
+                if (data.choices && data.choices.length > 0) {
+                    const aiReply = data.choices[0].message.content;
+                    appendMessage(aiReply, 'ai', true);
+                    chatHistory.push({ role: "assistant", content: aiReply });
+                    localStorage.setItem('phone_chat_history', JSON.stringify(chatHistory));
+                }
+            } catch (error) { appendMessage("【连接失败！请检查Key或网络】", 'ai', true); }
+        }
+
+        function appendMessage(text, sender, needScroll = true) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = `message-row ${sender}`;
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            bubbleDiv.innerHTML = text.replace(/\n/g, '<br>');
+            rowDiv.appendChild(bubbleDiv);
+            if (sender === 'user') {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'status-text'; statusDiv.innerText = '已送达';
+                rowDiv.appendChild(statusDiv);
+            }
+            chatContainer.appendChild(rowDiv);
+            if (needScroll) scrollToBottom();
+        }
+        function scrollToBottom() { chatContainer.scrollTop = chatContainer.scrollHeight; }
+
+        // ==========================================
+        // 6. 推特图片识别发推
+        // ==========================================
+        async function processTwImage(event) {
+            const file = event.target.files[0];
+            if (!file || !API_KEY || !SYSTEM_PROMPT) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'tweet';
+                loadingDiv.id = 'tw-loading';
+                loadingDiv.innerHTML = `<div style="color:#1d9bf0; padding: 20px;">${CONTACT_NAME} 正在读取图片...</div>`;
+                document.getElementById('tw-feed').prepend(loadingDiv);
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+                        body: JSON.stringify({ 
+                            model: MODEL_NAME, 
+                            messages: [
+                                { role: "system", content: SYSTEM_PROMPT },
+                                { role: "user", content: [
+                                    { type: "text", text: `这是一张截图。请你仔细看图里的内容，然后以${CONTACT_NAME}的口吻，发一条推文。直接输出推文内容，不要任何解释。` },
+                                    { type: "image_url", image_url: { url: base64Image } }
+                                ]}
+                            ], 
+                            temperature: 0.85, max_tokens: 300 
+                        })
+                    });
+                    const data = await response.json();
+                    document.getElementById('tw-loading').remove();
+
+                    if (data.choices && data.choices.length > 0) {
+                        const aiTweet = data.choices[0].message.content;
+                        tweetsData.push({ time: "刚刚", text: aiTweet });
+                        localStorage.setItem('phone_tweets', JSON.stringify(tweetsData));
+                        renderTweetsUI();
+                    } else {
+                        alert("识别失败，可能是当前模型不支持图片。请去设置换成支持 Vision 的模型。");
+                    }
+                } catch (err) {
+                    document.getElementById('tw-loading').remove();
+                    alert("请求出错，请检查网络。");
+                }
+                document.getElementById('tw-upload-img').value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
