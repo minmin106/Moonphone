@@ -1,78 +1,12 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>iOS Liquid Glass Home Screen</title>
+  <title>iOS Home Screen - Exact Replica</title>
   <style>
     /* ==========================================================================
-       1. COLOR SYSTEM & CSS TOKENS
-       ========================================================================== */
-    :root {
-      --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-      --ios-squircle: 22.5%;
-      --trans-speed: 0.35s;
-      --trans-curve: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Light Theme */
-    [data-theme="light"] {
-      --bg-canvas: radial-gradient(circle at 10% 15%, #f1f4f9 0%, #e5eaf3 45%, #d6dfea 100%),
-                   linear-gradient(135deg, #e3ecf8 0%, #f7f9fd 50%, #dbe3ee 100%);
-      --glow-ambient-1: rgba(100, 165, 245, 0.22);
-      --glow-ambient-2: rgba(230, 165, 75, 0.15);
-
-      --glass-surface: rgba(255, 255, 255, 0.48);
-      --glass-elevated: rgba(255, 255, 255, 0.65);
-      --glass-dock: rgba(255, 255, 255, 0.58);
-
-      --specular-top: rgba(255, 255, 255, 0.85);
-      --specular-side: rgba(255, 255, 255, 0.35);
-      --specular-bottom: rgba(0, 0, 0, 0.07);
-      --inner-refract: inset 0 1px 1.5px rgba(255, 255, 255, 0.7);
-
-      --shadow-ambient: 0 14px 34px -6px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.04);
-      --shadow-dock: 0 20px 48px -8px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
-
-      --text-main: #1C1D21;
-      --text-sub: #7A7E85;
-      --text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-
-      --dynamic-island-fill: #000000;
-      --home-bar: rgba(0, 0, 0, 0.35);
-      --status-color: #1C1D21;
-    }
-
-    /* Dark Theme */
-    [data-theme="dark"] {
-      --bg-canvas: radial-gradient(circle at 15% 15%, #16181f 0%, #0b0c0f 55%, #060708 100%),
-                   linear-gradient(135deg, #0e1014 0%, #151820 60%, #08090c 100%);
-      --glow-ambient-1: rgba(65, 140, 245, 0.16);
-      --glow-ambient-2: rgba(150, 135, 240, 0.13);
-
-      --glass-surface: rgba(28, 30, 36, 0.44);
-      --glass-elevated: rgba(38, 41, 50, 0.50);
-      --glass-dock: rgba(30, 32, 40, 0.55);
-
-      --specular-top: rgba(255, 255, 255, 0.35);
-      --specular-side: rgba(255, 255, 255, 0.12);
-      --specular-bottom: rgba(0, 0, 0, 0.35);
-      --inner-refract: inset 0 1px 1px rgba(255, 255, 255, 0.22);
-
-      --shadow-ambient: 0 16px 38px -6px rgba(0, 0, 0, 0.48), 0 4px 10px rgba(0, 0, 0, 0.28);
-      --shadow-dock: 0 24px 52px -6px rgba(0, 0, 0, 0.65), 0 6px 14px rgba(0, 0, 0, 0.35);
-
-      --text-main: #F2F4F7;
-      --text-sub: #8E929B;
-      --text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-
-      --dynamic-island-fill: #000000;
-      --home-bar: rgba(255, 255, 255, 0.45);
-      --status-color: #F2F4F7;
-    }
-
-    /* ==========================================================================
-       2. RESET & MOBILE RESPONSIVE ENGINE
+       1. 全局与真实灰度渐变背景
        ========================================================================== */
     * {
       box-sizing: border-box;
@@ -80,7 +14,8 @@
       padding: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     body {
@@ -89,818 +24,915 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #020304;
-      font-family: var(--font-family);
-      color: var(--text-main);
+      background: #000000;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
       overflow-x: hidden;
     }
 
-    /* Theme Switcher Button (Desktop & Mobile) */
-    .theme-controller {
-      position: fixed;
-      top: 14px;
-      right: 14px;
-      z-index: 1000;
-      display: flex;
-      background: rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 20px;
-      padding: 3px;
-      gap: 3px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    .theme-btn {
-      border: none;
-      background: transparent;
-      padding: 5px 12px;
-      border-radius: 16px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #FFFFFF;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .theme-btn.active {
-      background: #FFFFFF;
-      color: #000000;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Device Canvas (Desktop Simulation) */
-    .device-viewport {
+    /* 模拟手机物理外壳（桌面端居中，手机端全屏自适应） */
+    .iphone-canvas {
       position: relative;
       width: 100%;
       max-width: 402px;
       height: 874px;
-      max-height: 96vh;
+      max-height: 100dvh;
       border-radius: 54px;
       overflow: hidden;
-      background: var(--bg-canvas);
-      box-shadow: 0 0 0 11px #1a1b1e,
-                  0 0 0 13px #282a30,
-                  0 30px 80px rgba(0, 0, 0, 0.8);
-      transition: background var(--trans-speed) var(--trans-curve);
+      /* 还原截图中的高级雾面灰度弥散壁纸 */
+      background: radial-gradient(circle at 50% 28%, #f0f2f6 0%, #dbe0e9 45%, #b5bcc8 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 0 0 12px #18191b, 0 35px 80px rgba(0,0,0,0.85);
     }
 
-    /* Ambient Wallpaper Glows */
-    .device-viewport::before,
-    .device-viewport::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(65px);
-      pointer-events: none;
-      z-index: 1;
-      transition: all var(--trans-speed) var(--trans-curve);
-    }
-
-    .device-viewport::before {
-      top: 12%;
-      left: 8%;
-      width: 270px;
-      height: 270px;
-      background: var(--glow-ambient-1);
-    }
-
-    .device-viewport::after {
-      bottom: 22%;
-      right: 5%;
-      width: 250px;
-      height: 250px;
-      background: var(--glow-ambient-2);
-    }
-
-    /* NATIVE MOBILE PHONE ADAPTATION (Viewport <= 480px) */
     @media (max-width: 480px) {
       body {
         padding: 0;
         background: transparent;
       }
-      .device-viewport {
+      .iphone-canvas {
         max-width: 100vw;
         width: 100vw;
         height: 100vh;
         height: 100dvh;
-        max-height: 100dvh;
         border-radius: 0;
-        border: none;
         box-shadow: none;
       }
-      .theme-controller {
-        top: calc(env(safe-area-inset-top, 12px) + 6px);
-        right: 16px;
-      }
-      .home-screen {
-        padding-top: env(safe-area-inset-top, 8px) !important;
-        padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+      .screen-padding {
+        padding-top: env(safe-area-inset-top, 12px) !important;
+        padding-bottom: env(safe-area-inset-bottom, 10px) !important;
       }
     }
 
-    /* Main Screen Grid Container */
-    .home-screen {
-      position: relative;
-      z-index: 2;
-      width: 100%;
+    .screen-padding {
       height: 100%;
-      padding: 0 20px;
+      padding: 10px 22px 14px 22px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
     /* ==========================================================================
-       3. LIQUID GLASS TEXTURE ENGINE
-       ========================================================================== */
-    .liquid-glass {
-      background: var(--glass-surface);
-      backdrop-filter: blur(34px) saturate(175%);
-      -webkit-backdrop-filter: blur(34px) saturate(175%);
-      border-top: 0.8px solid var(--specular-top);
-      border-left: 0.6px solid var(--specular-side);
-      border-right: 0.6px solid var(--specular-side);
-      border-bottom: 0.8px solid var(--specular-bottom);
-      box-shadow: var(--inner-refract), var(--shadow-ambient);
-      transition: background var(--trans-speed) var(--trans-curve),
-                  border var(--trans-speed) var(--trans-curve),
-                  box-shadow var(--trans-speed) var(--trans-curve);
-    }
-
-    /* ==========================================================================
-       4. TOP ZONE: STATUS BAR & DYNAMIC ISLAND
+       2. 顶部状态栏（00:00 / 信号点格 / WiFi / 100%电量药丸）
        ========================================================================== */
     .status-bar {
       height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: var(--status-color);
-      font-size: 15px;
+      color: #111317;
       font-weight: 600;
+      font-size: 16px;
       letter-spacing: -0.3px;
-      padding: 0 8px;
-      margin-top: 4px;
-      z-index: 20;
+      padding: 0 4px;
+      margin-top: 2px;
     }
 
-    .dynamic-island {
-      width: 122px;
-      height: 35px;
-      background: var(--dynamic-island-fill);
-      border-radius: 20px;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-    }
-
-    .status-glyphs {
+    .status-right {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
     }
 
-    .status-glyphs svg {
-      fill: currentColor;
+    /* 经典五点蜂窝信号 */
+    .cellular-dots {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+    .cellular-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #111317;
+    }
+    .cellular-dots .bar {
+      width: 2.8px;
+      border-radius: 1px;
+      background: #111317;
+    }
+
+    /* 截图同款 100% 电池药丸 */
+    .battery-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111317;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1.5px 6.5px;
+      border-radius: 10px;
+      height: 17px;
+      letter-spacing: -0.2px;
     }
 
     /* ==========================================================================
-       5. UPPER WIDGET ZONE (2x2 LIQUID GLASS MODULES)
+       3. 核心部件质感：阴影、圆角与磨砂规则
        ========================================================================== */
-    .widget-zone {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 12px;
+    /* iOS 标准大卡片阴影质感 */
+    .ios-card {
+      border-radius: 24px;
+      box-shadow: 0 8px 24px -4px rgba(22, 28, 36, 0.08), 
+                  0 2px 6px rgba(22, 28, 36, 0.04);
+      position: relative;
     }
 
-    .widget-2x2 {
+    /* 标准 Squircle 图标 */
+    .squircle-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 13.5px;
+      box-shadow: 0 5px 14px -2px rgba(18, 22, 28, 0.14),
+                  0 1px 3px rgba(18, 22, 28, 0.06);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .element-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #111317;
+      text-align: center;
+      margin-top: 5px;
+      letter-spacing: -0.2px;
+    }
+
+    /* ==========================================================================
+       4. 顶部 4x2 日历大组件 (Sunday 9 November)
+       ========================================================================== */
+    .calendar-widget-wrapper {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .calendar-widget {
+      width: 100%;
+      height: 160px;
+      background: #FFFFFF;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 1.05fr 1.35fr;
+      gap: 12px;
+    }
+
+    /* 日历左侧 */
+    .cal-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cal-title-red {
+      color: #FF3B30;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .cal-large-day {
+      font-size: 44px;
+      font-weight: 400;
+      color: #111317;
+      line-height: 0.95;
+      margin-top: 2px;
+      letter-spacing: -1.5px;
+    }
+    .cal-no-events {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #8E8E93;
+      margin-top: auto;
+      letter-spacing: -0.2px;
+    }
+
+    /* 日历右侧月历 */
+    .cal-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cal-month-name {
+      color: #FF3B30;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-align: left;
+      margin-bottom: 4px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      row-gap: 3px;
+      column-gap: 2px;
+    }
+    .cal-head-day {
+      font-size: 9px;
+      font-weight: 700;
+      color: #111317;
+      margin-bottom: 2px;
+    }
+    .cal-num {
+      font-size: 10px;
+      font-weight: 600;
+      color: #111317;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cal-num.empty {
+      visibility: hidden;
+    }
+    /* 截图中的 9 号红色高亮实心圆圈 */
+    .cal-num.active-day {
+      background: #FF3B30;
+      color: #FFFFFF;
+      border-radius: 50%;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       5. 中部核心混排主屏：天气小卡片 + 图标组 + 睡眠小卡片
+       ========================================================================== */
+    .mid-content-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 14px;
+      margin-top: 14px;
+      align-items: start;
+    }
+
+    .app-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* --- 2x2 暗色天气小组件 (Cangshan 22°) --- */
+    .weather-widget {
+      grid-column: span 2;
+      grid-row: span 2;
       height: 154px;
-      border-radius: 26px;
+      background: linear-gradient(155deg, #222941 0%, #171b2d 100%);
+      color: #FFFFFF;
       padding: 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-
-    .widget-header {
+    .weather-city-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .location-arrow {
+      width: 10px;
+      height: 10px;
+      fill: #FFFFFF;
+      transform: rotate(45deg);
+    }
+    .weather-temp {
+      font-size: 40px;
+      font-weight: 300;
+      letter-spacing: -1.5px;
+      line-height: 1;
+      margin: 4px 0 6px 0;
+    }
+    .weather-cloud-row {
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .widget-title {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text-sub);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      font-weight: 500;
+      opacity: 0.95;
     }
-
-    .metric-main {
-      font-size: 34px;
-      font-weight: 300;
-      letter-spacing: -1px;
-      color: var(--text-main);
-      line-height: 1.1;
-    }
-
-    .metric-sub {
-      font-size: 12px;
-      color: var(--text-sub);
+    .weather-highlow {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.7);
       margin-top: 2px;
     }
 
-    .mini-chart {
-      height: 22px;
-      width: 100%;
-      display: flex;
-      align-items: flex-end;
-      gap: 4px;
-    }
-
-    .chart-bar {
-      flex: 1;
-      border-radius: 3px;
-      background: #4592F7;
-      opacity: 0.35;
-    }
-
-    .chart-bar.active {
-      opacity: 0.95;
-    }
-
-    .ring-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .progress-ring {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 3.5px solid rgba(255, 255, 255, 0.16);
-      border-top-color: #52B495;
-      border-right-color: #52B495;
-      transform: rotate(45deg);
-    }
-
-    /* ==========================================================================
-       6. TRANSIENT LIQUID CAPSULE (BANNER)
-       ========================================================================== */
-    .transient-capsule-zone {
-      margin-top: 12px;
-      width: 100%;
-    }
-
-    .transient-capsule {
-      height: 46px;
-      border-radius: 23px;
-      padding: 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--glass-elevated);
-      backdrop-filter: blur(40px) saturate(190%);
-      -webkit-backdrop-filter: blur(40px) saturate(190%);
-    }
-
-    .capsule-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #FF2D55, #D2143A);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #FFFFFF;
-      flex-shrink: 0;
-    }
-
-    .capsule-icon svg {
-      width: 15px;
-      height: 15px;
-      fill: currentColor;
-    }
-
-    .capsule-text {
-      flex: 1;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-main);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .capsule-accent {
-      color: #FF2D55;
-      font-weight: 600;
-    }
-
-    /* ==========================================================================
-       7. CENTRAL ICON GRID & AUTHENTIC IPHONE ICONS
-       ========================================================================== */
-    .icon-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      row-gap: 16px;
-      column-gap: 16px;
-      margin-top: 14px;
-    }
-
-    .app-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Apple Standard Continuous Squircle Geometry */
-    .app-icon {
-      width: 62px;
-      height: 62px;
-      border-radius: var(--ios-squircle);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
-      border-top: 0.8px solid var(--specular-top);
-      border-bottom: 0.8px solid var(--specular-bottom);
-      flex-shrink: 0;
-    }
-
-    .app-label {
-      margin-top: 6px;
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-main);
-      text-shadow: var(--text-shadow);
-      text-align: center;
-      letter-spacing: -0.1px;
-    }
-
-    /* --------------------------------------------------------------------------
-       PRECISE IPHONE ICON RENDERING
-       -------------------------------------------------------------------------- */
-    /* 1. Calendar Icon */
-    .icon-calendar {
+    /* --- 2x2 白色睡眠小组件 (Sleep) --- */
+    .sleep-widget {
+      grid-column: span 2;
+      grid-row: span 2;
+      height: 154px;
       background: #FFFFFF;
+      padding: 16px;
+      display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      border: 0.5px solid rgba(0,0,0,0.08);
+      justify-content: space-between;
     }
-    .cal-header {
-      width: 100%;
-      background: #FF3B30;
-      color: #FFFFFF;
-      font-size: 9px;
+    .sleep-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #5856D6;
+      font-size: 14px;
       font-weight: 700;
-      text-transform: uppercase;
-      text-align: center;
-      padding: 2.5px 0 1px 0;
-      letter-spacing: 0.5px;
     }
-    .cal-day {
-      color: #1C1C1E;
+    /* 睡眠柱状图 */
+    .sleep-bars {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 4px;
+    }
+    .sleep-bar-col {
+      width: 9px;
+      border-radius: 5px;
+      background: #D1D1D6;
+    }
+    .sleep-footer {
+      display: flex;
+      flex-direction: column;
+    }
+    .sleep-sub {
+      font-size: 11px;
+      color: #8E8E93;
+      font-weight: 500;
+    }
+    .sleep-main {
+      font-size: 14px;
+      color: #111317;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    /* ==========================================================================
+       6. 100% 还原的独立图标质感
+       ========================================================================== */
+    /* 1. 日历应用图标 */
+    .icon-cal-app {
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      border: 0.5px solid rgba(0, 0, 0, 0.08);
+    }
+    .icon-cal-app .tag {
+      color: #FF3B30;
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .icon-cal-app .val {
       font-size: 32px;
       font-weight: 300;
+      color: #111317;
       line-height: 1;
-      margin-top: 4px;
+      margin-top: -1px;
       letter-spacing: -1px;
     }
 
-    /* 2. Weather Icon */
-    .icon-weather {
-      background: linear-gradient(180deg, #1A75D2 0%, #68A7E8 100%);
+    /* 2. 真实拟物镜头相机图标 */
+    .icon-camera-lens {
+      background: linear-gradient(180deg, #E2E3E7 0%, #C8CBD2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px solid rgba(255, 255, 255, 0.6);
     }
-
-    /* 3. Photos Icon (Flower Pinwheel) */
-    .icon-photos {
-      background: #FFFFFF;
-    }
-    .photos-flower {
+    .camera-rim {
       width: 48px;
       height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #252830 50%, #525866 90%, #8E94A0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .camera-glass {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #233458 0%, #0d121c 70%);
+      position: relative;
+      box-shadow: inset 0 0 4px #000000;
+    }
+    /* 镀膜反光 */
+    .camera-glass::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 7px;
+      width: 9px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(140, 195, 255, 0.6);
+      filter: blur(0.8px);
+      transform: rotate(-30deg);
+    }
+    .camera-center-dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #020305;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
 
-    /* 4. Notes Icon */
-    .icon-notes {
-      background: #F9F9FB;
+    /* 3. 走针时钟图标 */
+    .icon-clock-face {
+      background: #FFFFFF;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px solid rgba(0,0,0,0.06);
+    }
+    .clock-dial {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      position: relative;
+    }
+    .clock-num {
+      position: absolute;
+      font-size: 8.5px;
+      font-weight: 600;
+      color: #111317;
+    }
+    .clock-12 { top: 0; left: 50%; transform: translateX(-50%); }
+    .clock-3  { right: 1px; top: 50%; transform: translateY(-50%); }
+    .clock-6  { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .clock-9  { left: 1px; top: 50%; transform: translateY(-50%); }
+    .clock-hand-hour {
+      position: absolute;
+      width: 2.2px;
+      height: 12px;
+      background: #111317;
+      top: 13px;
+      left: 23px;
+      border-radius: 2px;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+    }
+    .clock-hand-min {
+      position: absolute;
+      width: 1.8px;
+      height: 16px;
+      background: #111317;
+      top: 9px;
+      left: 23px;
+      border-radius: 2px;
+      transform-origin: bottom center;
+      transform: rotate(2deg);
+    }
+    .clock-hand-sec {
+      position: absolute;
+      width: 1px;
+      height: 18px;
+      background: #FF9500;
+      top: 7px;
+      left: 23.5px;
+      transform-origin: bottom center;
+      transform: rotate(100deg);
+    }
+    .clock-center-pin {
+      position: absolute;
+      width: 3.5px;
+      height: 3.5px;
+      background: #FF9500;
+      border-radius: 50%;
+      top: 22.5px;
+      left: 22.5px;
+    }
+
+    /* 4. 照片花瓣图标 */
+    .icon-photos-flower {
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0.5px solid rgba(0,0,0,0.06);
+    }
+
+    /* 5. 天气图标 */
+    .icon-weather-app {
+      background: linear-gradient(180deg, #2884E2 0%, #6BA9E9 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 6. 备忘录图标 */
+    .icon-notes-app {
+      background: #FFFFFF;
       display: flex;
       flex-direction: column;
+      border: 0.5px solid rgba(0,0,0,0.06);
     }
-    .notes-topbar {
+    .notes-tape {
       width: 100%;
       height: 16px;
-      background: linear-gradient(180deg, #FFD60A 0%, #ECC302 100%);
-      border-bottom: 1px dashed rgba(0,0,0,0.15);
+      background: linear-gradient(180deg, #FAD02C 0%, #F5C61E 100%);
+      border-bottom: 1px dashed rgba(180, 140, 20, 0.4);
     }
-    .notes-lines {
-      width: 100%;
+    .notes-body {
       flex: 1;
+      padding: 6px 8px;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      padding: 5px 8px;
+      justify-content: space-around;
     }
-    .notes-line {
-      height: 1.5px;
+    .notes-h-line {
+      height: 1px;
       background: #E5E5EA;
-      border-radius: 1px;
+      width: 100%;
     }
 
-    /* 5. Reminders Icon */
-    .icon-reminders {
+    /* 7. 提醒事项图标 */
+    .icon-reminders-app {
       background: #FFFFFF;
       padding: 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      border: 0.5px solid rgba(0,0,0,0.06);
     }
-    .reminder-row {
+    .rem-item {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .rem-dot {
-      width: 7px;
-      height: 7px;
+    .rem-circle {
+      width: 7.5px;
+      height: 7.5px;
       border-radius: 50%;
     }
-    .rem-bar {
+    .rem-line {
       flex: 1;
       height: 3px;
       background: #E5E5EA;
       border-radius: 2px;
     }
 
-    /* 6. Health Icon */
-    .icon-health {
-      background: #FFFFFF;
-    }
-
-    /* 7. Settings Icon (Realistic iOS Cog) */
-    .icon-settings {
-      background: linear-gradient(180deg, #8E8E93 0%, #636366 100%);
-    }
-
-    /* 8. Process Log Icon */
-    .icon-process {
-      background: linear-gradient(180deg, #5856D6 0%, #3634A3 100%);
-    }
-
-    /* ==========================================================================
-       8. PAGE INDICATOR
-       ========================================================================== */
-    .page-indicator {
+    /* 8. App Store 图标 */
+    .icon-appstore-app {
+      background: linear-gradient(180deg, #1C88F7 0%, #046CE4 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      margin: 10px 0 4px 0;
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--text-main);
-      opacity: 0.28;
-      transition: all var(--trans-speed);
-    }
-
-    .dot.active {
-      width: 14px;
-      border-radius: 4px;
-      opacity: 0.85;
-      background: var(--text-main);
     }
 
     /* ==========================================================================
-       9. DOCK & HOME INDICATOR
+       7. 搜索药丸按钮 (Search Capsule)
        ========================================================================== */
-    .dock-container {
-      margin-bottom: 20px;
+    .search-row {
+      display: flex;
+      justify-content: center;
+      margin: 12px 0 6px 0;
     }
-
-    .dock {
-      height: 84px;
-      border-radius: 36px;
-      padding: 0 14px;
+    .search-pill {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 5px 12px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
-      justify-content: space-around;
-      background: var(--glass-dock);
-      backdrop-filter: blur(44px) saturate(200%);
-      -webkit-backdrop-filter: blur(44px) saturate(200%);
-      border-top: 1px solid var(--specular-top);
-      border-bottom: 0.8px solid var(--specular-bottom);
-      box-shadow: var(--inner-refract), var(--shadow-dock);
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111317;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .search-pill svg {
+      width: 11px;
+      height: 11px;
+      fill: #111317;
+      opacity: 0.7;
     }
 
-    .home-indicator-bar {
-      width: 134px;
-      height: 5px;
-      border-radius: 3px;
-      background: var(--home-bar);
-      margin: 0 auto 6px auto;
+    /* ==========================================================================
+       8. 底部磨砂玻璃 Dock (电话 / 信息 / 设置)
+       ========================================================================== */
+    .dock-wrapper {
+      margin-bottom: 12px;
+    }
+
+    .glass-dock {
+      height: 90px;
+      border-radius: 35px;
+      /* 截图中的高透液态磨砂质感 */
+      background: rgba(255, 255, 255, 0.38);
+      backdrop-filter: blur(45px) saturate(180%);
+      -webkit-backdrop-filter: blur(45px) saturate(180%);
+      border: 0.8px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 16px 36px -4px rgba(20, 25, 35, 0.12),
+                  inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 0 18px;
+    }
+
+    /* Dock 电话图标 (纯正原版 iOS 绿渐变与听筒) */
+    .dock-phone {
+      background: linear-gradient(180deg, #5DE068 0%, #29C83C 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dock 信息图标 (纯正原版 iOS 对话泡泡) */
+    .dock-messages {
+      background: linear-gradient(180deg, #5DE068 0%, #29C83C 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dock 设置图标 (精细放射纹银色金属齿轮) */
+    .dock-settings {
+      background: linear-gradient(180deg, #A8ACB4 0%, #848892 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
 <body>
 
-  <!-- Light / Dark Visual Mode Switcher -->
-  <aside class="theme-controller" aria-label="Theme Controller">
-    <button class="theme-btn" id="btnLight">Light</button>
-    <button class="theme-btn active" id="btnDark">Dark</button>
-  </aside>
+  <!-- 主体视图容器 -->
+  <main class="iphone-canvas">
+    <div class="screen-padding">
 
-  <!-- iPhone Viewport Shell -->
-  <main class="device-viewport">
-    <div class="home-screen">
-
-      <!-- TOP: 1. Status Bar & Dynamic Island -->
-      <header>
-        <div class="status-bar">
-          <time datetime="09:41">09:41</time>
-          <div class="dynamic-island" aria-hidden="true"></div>
-          <div class="status-glyphs" aria-label="Status Indicators">
-            <!-- Cellular Signal -->
-            <svg width="17" height="11" viewBox="0 0 17 11">
-              <rect x="0" y="8" width="3" height="3" rx="0.8"/>
-              <rect x="4.5" y="5.5" width="3" height="5.5" rx="0.8"/>
-              <rect x="9" y="3" width="3" height="8" rx="0.8"/>
-              <rect x="13.5" y="0" width="3" height="11" rx="0.8"/>
-            </svg>
-            <!-- Wi-Fi -->
-            <svg width="16" height="12" viewBox="0 0 16 12">
-              <path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-4.2-2.8a6 6 0 018.4 0 .8.8 0 001.1-1.1 7.5 7.5 0 00-10.6 0 .8.8 0 001.1 1.1zm-2.8-2.8a10 10 0 0114 0 .8.8 0 101.1-1.1 11.5 11.5 0 00-16.2 0 .8.8 0 101.1 1.1z"/>
-            </svg>
-            <!-- Battery Outline -->
-            <svg width="24" height="11" viewBox="0 0 24 11">
-              <rect x="0.5" y="0.5" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1"/>
-              <rect x="2" y="2" width="14" height="7" rx="1.5"/>
-              <path d="M22 3.5v4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-            </svg>
+      <!-- 1. 顶部状态栏 -->
+      <header class="status-bar">
+        <span>00:00</span>
+        <div class="status-right">
+          <!-- 蜂窝网络信号点 -->
+          <div class="cellular-dots" aria-label="5G">
+            <div class="cellular-dot"></div>
+            <div class="cellular-dot"></div>
+            <div class="cellular-dot"></div>
+            <div class="bar" style="height: 8px;"></div>
+            <div class="bar" style="height: 11px;"></div>
           </div>
+          <!-- Wi-Fi 图标 -->
+          <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor">
+            <path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-4.2-2.8a6 6 0 018.4 0 .8.8 0 001.1-1.1 7.5 7.5 0 00-10.6 0 .8.8 0 001.1 1.1zm-2.8-2.8a10 10 0 0114 0 .8.8 0 101.1-1.1 11.5 11.5 0 00-16.2 0 .8.8 0 101.1 1.1z"/>
+          </svg>
+          <!-- 100 电池药丸 -->
+          <div class="battery-pill">100</div>
         </div>
       </header>
 
-      <!-- UPPER: 2. Dual 2x2 Liquid Glass Widgets -->
-      <section class="widget-zone" aria-label="Widgets">
-        <!-- Weather Widget -->
-        <article class="widget-2x2 liquid-glass">
-          <div class="widget-header">
-            <span class="widget-title">Paris</span>
+      <!-- 2. 顶部 4x2 日历大组件 -->
+      <section class="calendar-widget-wrapper">
+        <div class="calendar-widget ios-card">
+          <!-- 左半部分 -->
+          <div class="cal-left">
+            <span class="cal-title-red">Sunday</span>
+            <span class="cal-large-day">9</span>
+            <span class="cal-no-events">No Events Today</span>
           </div>
-          <div>
-            <div class="metric-main">18°</div>
-            <div class="metric-sub">Cloudy · H:21° L:14°</div>
-          </div>
-          <div class="mini-chart">
-            <div class="chart-bar" style="height: 35%;"></div>
-            <div class="chart-bar" style="height: 55%;"></div>
-            <div class="chart-bar active" style="height: 90%;"></div>
-            <div class="chart-bar" style="height: 60%;"></div>
-            <div class="chart-bar" style="height: 40%;"></div>
-          </div>
-        </article>
+          <!-- 右半部分月历 -->
+          <div class="cal-right">
+            <span class="cal-month-name">NOVEMBER</span>
+            <div class="cal-grid">
+              <span class="cal-head-day">S</span>
+              <span class="cal-head-day">M</span>
+              <span class="cal-head-day">T</span>
+              <span class="cal-head-day">W</span>
+              <span class="cal-head-day">T</span>
+              <span class="cal-head-day">F</span>
+              <span class="cal-head-day">S</span>
 
-        <!-- Milestone / Shared Schedule Widget -->
-        <article class="widget-2x2 liquid-glass">
-          <div class="widget-header">
-            <span class="widget-title">Schedule</span>
-          </div>
-          <div class="ring-container">
-            <div class="progress-ring"></div>
-            <div>
-              <div class="metric-main" style="font-size: 24px;">D-14</div>
-              <div class="metric-sub">Anniversary</div>
+              <!-- 第 1 周 -->
+              <span class="cal-num empty"></span><span class="cal-num empty"></span><span class="cal-num empty"></span><span class="cal-num empty"></span><span class="cal-num empty"></span><span class="cal-num empty"></span><span class="cal-num">1</span>
+              <!-- 第 2 周 (包含高亮 9 号) -->
+              <span class="cal-num">2</span><span class="cal-num">3</span><span class="cal-num">4</span><span class="cal-num">5</span><span class="cal-num">6</span><span class="cal-num">7</span><span class="cal-num">8</span>
+              <span class="cal-num active-day">9</span><span class="cal-num">10</span><span class="cal-num">11</span><span class="cal-num">12</span><span class="cal-num">13</span><span class="cal-num">14</span><span class="cal-num">15</span>
+              <!-- 第 3 周 -->
+              <span class="cal-num">16</span><span class="cal-num">17</span><span class="cal-num">18</span><span class="cal-num">19</span><span class="cal-num">20</span><span class="cal-num">21</span><span class="cal-num">22</span>
+              <!-- 第 4 周 -->
+              <span class="cal-num">23</span><span class="cal-num">24</span><span class="cal-num">25</span><span class="cal-num">26</span><span class="cal-num">27</span><span class="cal-num">28</span><span class="cal-num">29</span>
+              <!-- 第 5 周 -->
+              <span class="cal-num">30</span>
             </div>
           </div>
-          <div class="metric-sub" style="font-size: 11px;">Both Available: 19:30</div>
-        </article>
+        </div>
+        <div class="element-label">Calendar</div>
       </section>
 
-      <!-- FLOATING TRANSIENT CAPSULE -->
-      <section class="transient-capsule-zone" aria-label="Notification Pill">
-        <div class="transient-capsule liquid-glass">
-          <div class="capsule-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-          </div>
-          <div class="capsule-text">
-            <span class="capsule-accent">Now Playing:</span> Debussy - Clair de Lune
-          </div>
-        </div>
-      </section>
+      <!-- 3. 中部核心混排主屏 -->
+      <section class="mid-content-grid">
 
-      <!-- CENTRAL: 4-Column Icon Grid with Authentic iPhone Icons -->
-      <section class="icon-grid" aria-label="Applications Grid">
-        
-        <!-- 1. Apple Calendar -->
-        <div class="app-item">
-          <div class="app-icon icon-calendar">
-            <div class="cal-header">FRI</div>
-            <div class="cal-day">23</div>
+        <!-- 左侧 2x2 天气小卡片 (Cangshan 22°) -->
+        <div style="grid-column: span 2; grid-row: span 2; display: flex; flex-direction: column; align-items: center;">
+          <div class="weather-widget ios-card" style="width: 100%;">
+            <div class="weather-city-row">
+              <span>Cangshan</span>
+              <svg class="location-arrow" viewBox="0 0 24 24"><path d="M2 12l20-9-9 20-3-8z"/></svg>
+            </div>
+            <div>
+              <div class="weather-temp">22°</div>
+              <div class="weather-cloud-row">
+                <svg width="15" height="12" viewBox="0 0 24 24" fill="#FFFFFF">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                </svg>
+                <span>Partly Cloudy</span>
+              </div>
+              <div class="weather-highlow">H:28° L:21°</div>
+            </div>
           </div>
-          <span class="app-label">Calendar</span>
-        </div>
-
-        <!-- 2. Apple Weather -->
-        <div class="app-item">
-          <div class="app-icon icon-weather">
-            <svg width="42" height="42" viewBox="0 0 42 42">
-              <!-- Sun -->
-              <circle cx="16" cy="18" r="8" fill="#FFCC00" filter="drop-shadow(0 0 4px #FFAA00)"/>
-              <!-- Cloud -->
-              <path d="M14 28h15a6 6 0 001.2-11.88 8 8 0 00-14.88-2.12A6.5 6.5 0 0014 28z" fill="#FFFFFF" opacity="0.95"/>
-            </svg>
-          </div>
-          <span class="app-label">Weather</span>
+          <div class="element-label">Weather</div>
         </div>
 
-        <!-- 3. Apple Photos (Authentic Rainbow Petals) -->
-        <div class="app-item">
-          <div class="app-icon icon-photos">
-            <svg class="photos-flower" viewBox="0 0 100 100">
+        <!-- 第 1 行右侧图标：日历应用 -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-cal-app">
+            <div class="tag">Sun</div>
+            <div class="val">9</div>
+          </div>
+          <div class="element-label">Calendar</div>
+        </div>
+
+        <!-- 第 1 行右侧图标：拟物相机镜头 -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-camera-lens">
+            <div class="camera-rim">
+              <div class="camera-glass">
+                <div class="camera-center-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="element-label">Camera</div>
+        </div>
+
+        <!-- 第 2 行右侧图标：走针时钟 -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-clock-face">
+            <div class="clock-dial">
+              <span class="clock-num clock-12">12</span>
+              <span class="clock-num clock-3">3</span>
+              <span class="clock-num clock-6">6</span>
+              <span class="clock-num clock-9">9</span>
+              <div class="clock-hand-hour"></div>
+              <div class="clock-hand-min"></div>
+              <div class="clock-hand-sec"></div>
+              <div class="clock-center-pin"></div>
+            </div>
+          </div>
+          <div class="element-label">Clock</div>
+        </div>
+
+        <!-- 第 2 行右侧图标：彩虹照片花瓣 -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-photos-flower">
+            <svg width="46" height="46" viewBox="0 0 100 100">
               <g transform="translate(50, 50)">
-                <!-- 8 overlapping translucent colored petals -->
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#FF3B30" opacity="0.85" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#FF9500" opacity="0.85" transform="rotate(45)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#FFCC00" opacity="0.85" transform="rotate(90)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#34C759" opacity="0.85" transform="rotate(135)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#00C7BE" opacity="0.85" transform="rotate(180)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#007AFF" opacity="0.85" transform="rotate(225)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#5856D6" opacity="0.85" transform="rotate(270)" />
-                <ellipse cx="0" cy="-22" rx="11" ry="20" fill="#AF52DE" opacity="0.85" transform="rotate(315)" />
-                <circle cx="0" cy="0" r="7" fill="#FFFFFF"/>
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#FF3B30" opacity="0.88" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#FF9500" opacity="0.88" transform="rotate(45)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#FFCC00" opacity="0.88" transform="rotate(90)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#34C759" opacity="0.88" transform="rotate(135)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#00C7BE" opacity="0.88" transform="rotate(180)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#007AFF" opacity="0.88" transform="rotate(225)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#5856D6" opacity="0.88" transform="rotate(270)" />
+                <ellipse cx="0" cy="-21" rx="10.5" ry="19" fill="#AF52DE" opacity="0.88" transform="rotate(315)" />
+                <circle cx="0" cy="0" r="6.5" fill="#FFFFFF"/>
               </g>
             </svg>
           </div>
-          <span class="app-label">Photos</span>
+          <div class="element-label">Photos</div>
         </div>
 
-        <!-- 4. Apple Notes -->
-        <div class="app-item">
-          <div class="app-icon icon-notes">
-            <div class="notes-topbar"></div>
-            <div class="notes-lines">
-              <div class="notes-line" style="width: 85%;"></div>
-              <div class="notes-line" style="width: 70%;"></div>
-              <div class="notes-line" style="width: 90%;"></div>
-              <div class="notes-line" style="width: 50%;"></div>
-            </div>
-          </div>
-          <span class="app-label">Notes</span>
-        </div>
-
-        <!-- 5. Apple Reminders -->
-        <div class="app-item">
-          <div class="app-icon icon-reminders">
-            <div class="reminder-row">
-              <div class="rem-dot" style="background: #007AFF;"></div>
-              <div class="rem-bar"></div>
-            </div>
-            <div class="reminder-row">
-              <div class="rem-dot" style="background: #FF9500;"></div>
-              <div class="rem-bar"></div>
-            </div>
-            <div class="reminder-row">
-              <div class="rem-dot" style="background: #FF3B30;"></div>
-              <div class="rem-bar"></div>
-            </div>
-          </div>
-          <span class="app-label">Reminders</span>
-        </div>
-
-        <!-- 6. Apple Health -->
-        <div class="app-item">
-          <div class="app-icon icon-health">
-            <svg width="34" height="34" viewBox="0 0 24 24">
-              <defs>
-                <linearGradient id="heartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#FF2D55"/>
-                  <stop offset="100%" stop-color="#FF375F"/>
-                </linearGradient>
-              </defs>
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#heartGrad)"/>
+        <!-- 第 3 行左侧图标：天气 App -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-weather-app">
+            <svg width="40" height="40" viewBox="0 0 42 42">
+              <circle cx="16" cy="17" r="7.5" fill="#FFCC00" />
+              <path d="M14 27h15a5.5 5.5 0 001.2-10.88 7.5 7.5 0 00-14.88-2.12A6 6 0 0014 27z" fill="#FFFFFF"/>
             </svg>
           </div>
-          <span class="app-label">Health</span>
+          <div class="element-label">Weather</div>
         </div>
 
-        <!-- 7. Apple Settings -->
-        <div class="app-item">
-          <div class="app-icon icon-settings">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="#E5E5EA">
-              <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.484.484 0 0013.9 2h-3.8c-.24 0-.44.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.75 8.55c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.8c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 110-7.2 3.6 3.6 0 010 7.2z"/>
-            </svg>
+        <!-- 第 3 行左侧图标：备忘录 App -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-notes-app">
+            <div class="notes-tape"></div>
+            <div class="notes-body">
+              <div class="notes-h-line"></div>
+              <div class="notes-h-line"></div>
+              <div class="notes-h-line"></div>
+            </div>
           </div>
-          <span class="app-label">Settings</span>
+          <div class="element-label">Notes</div>
         </div>
 
-        <!-- 8. Process Log (Shortcuts/System Engine) -->
-        <div class="app-item">
-          <div class="app-icon icon-process">
+        <!-- 右侧 2x2 睡眠组件 (Sleep) -->
+        <div style="grid-column: span 2; grid-row: span 2; display: flex; flex-direction: column; align-items: center;">
+          <div class="sleep-widget ios-card" style="width: 100%;">
+            <div class="sleep-header">
+              <!-- 床铺小图标 -->
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 10.78V8c0-1.65-1.35-3-3-3h-4c-.77 0-1.47.3-2 .78-.53-.48-1.23-.78-2-.78H6C4.35 5 3 6.35 3 8v2.78C1.84 11.4 1 12.6 1 14v5h2v-2h18v2h2v-5c0-1.4-.84-2.6-2-3.22zM7 7h3v3H7V7zm10 0h-3v3h3V7zM3 14c0-.55.45-1 1-1h16c.55 0 1 .45 1 1v1H3v-1z"/>
+              </svg>
+              <span>Sleep</span>
+            </div>
+            <!-- 睡眠长短条形柱 -->
+            <div class="sleep-bars">
+              <div class="sleep-bar-col" style="height: 38px;"></div>
+              <div class="sleep-bar-col" style="height: 48px;"></div>
+              <div class="sleep-bar-col" style="height: 32px;"></div>
+              <div class="sleep-bar-col" style="height: 30px;"></div>
+              <div class="sleep-bar-col" style="height: 44px;"></div>
+              <div class="sleep-bar-col" style="height: 20px;"></div>
+              <div style="width: 7px; height: 7px; border-radius: 50%; background: #D1D1D6;"></div>
+            </div>
+            <div class="sleep-footer">
+              <span class="sleep-sub">Time Asleep</span>
+              <span class="sleep-main">No Data Today</span>
+            </div>
+          </div>
+          <div class="element-label">Sleep</div>
+        </div>
+
+        <!-- 第 4 行左侧图标：提醒事项 -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-reminders-app">
+            <div class="rem-item"><div class="rem-circle" style="background: #007AFF;"></div><div class="rem-line"></div></div>
+            <div class="rem-item"><div class="rem-circle" style="background: #FF9500;"></div><div class="rem-line"></div></div>
+            <div class="rem-item"><div class="rem-circle" style="background: #FF3B30;"></div><div class="rem-line"></div></div>
+          </div>
+          <div class="element-label">Reminders</div>
+        </div>
+
+        <!-- 第 4 行左侧图标：App Store -->
+        <div class="app-slot">
+          <div class="squircle-icon icon-appstore-app">
             <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFFFFF">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              <!-- App Store 'A' 三角形三笔画 -->
+              <path d="M12 2a1 1 0 01.89.55l3.24 6.48 2.22-1.11a1 1 0 11.89 1.79l-1.9 .95 2.1 4.2a1 1 0 11-1.78.89L16.2 12H7.8l-1.46 2.92a1 1 0 01-1.78-.89l2.1-4.2-1.9-.95a1 1 0 01.89-1.79l2.22 1.11L11.11 2.55A1 1 0 0112 2zm0 4.24L9.88 10h4.24L12 6.24z"/>
             </svg>
           </div>
-          <span class="app-label">Process Log</span>
+          <div class="element-label">App Store</div>
         </div>
 
       </section>
 
-      <!-- PAGE INDICATOR -->
-      <nav class="page-indicator" aria-label="Page Indicator">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </nav>
-
-      <!-- BOTTOM DOCK & HOME INDICATOR -->
-      <footer>
-        <div class="dock-container">
-          <div class="dock">
-
-            <!-- KakaoTalk -->
-            <div class="app-item">
-              <div class="app-icon" style="background: #FEE500;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="#3C1E1E">
-                  <path d="M12 3c-5.52 0-10 3.58-10 8 0 2.85 1.86 5.36 4.69 6.74l-.96 3.54c-.08.31.25.56.52.4l4.24-2.81c.49.07 1 .13 1.51.13 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
-                </svg>
-              </div>
-            </div>
-
-            <!-- Apple iMessage -->
-            <div class="app-item">
-              <div class="app-icon" style="background: linear-gradient(180deg, #53D769 0%, #34C759 100%);">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                </svg>
-              </div>
-            </div>
-
-            <!-- Apple Safari (Compass) -->
-            <div class="app-item">
-              <div class="app-icon" style="background: #FFFFFF; border: 0.5px solid rgba(0,0,0,0.1);">
-                <svg width="46" height="46" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="44" fill="#007AFF"/>
-                  <!-- Degree Ticks -->
-                  <circle cx="50" cy="50" r="38" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2 6" opacity="0.6"/>
-                  <!-- Compass Needle -->
-                  <g transform="rotate(45 50 50)">
-                    <polygon points="50,14 44,50 56,50" fill="#FF3B30"/>
-                    <polygon points="50,86 44,50 56,50" fill="#FFFFFF"/>
-                    <circle cx="50" cy="50" r="3" fill="#FFFFFF"/>
-                  </g>
-                </svg>
-              </div>
-            </div>
-
-            <!-- Apple Music -->
-            <div class="app-item">
-              <div class="app-icon" style="background: linear-gradient(180deg, #FA2D55 0%, #E81A46 100%);">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                </svg>
-              </div>
-            </div>
-
-          </div>
+      <!-- 4. 搜索胶囊按键 -->
+      <div class="search-row">
+        <div class="search-pill">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span>Search</span>
         </div>
+      </div>
 
-        <!-- Physical Home Indicator Bar -->
-        <div class="home-indicator-bar" aria-hidden="true"></div>
+      <!-- 5. 底部高透磨砂液态玻璃 Dock (电话 / 短信 / 设置) -->
+      <footer class="dock-wrapper">
+        <div class="glass-dock">
+
+          <!-- 电话 -->
+          <div class="squircle-icon dock-phone">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFFFFF">
+              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            </svg>
+          </div>
+
+          <!-- 信息 -->
+          <div class="squircle-icon dock-messages">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFFFFF">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+          </div>
+
+          <!-- 设置 (精密双层金属齿轮) -->
+          <div class="squircle-icon dock-settings">
+            <svg width="40" height="40" viewBox="0 0 100 100" fill="#EAECEF">
+              <g transform="translate(50, 50)">
+                <!-- 外齿轮齿牙轮廓 -->
+                <circle cx="0" cy="0" r="30" fill="none" stroke="#EAECEF" stroke-width="9" stroke-dasharray="14 5.7" />
+                <circle cx="0" cy="0" r="23" fill="#696D76" />
+                <circle cx="0" cy="0" r="13" fill="#D6D9E0" />
+                <circle cx="0" cy="0" r="6" fill="#4B4E56" />
+              </g>
+            </svg>
+          </div>
+
+        </div>
       </footer>
 
     </div>
   </main>
 
-  <!-- Visual Theme Switcher Logic -->
-  <script>
-    const btnLight = document.getElementById('btnLight');
-    const btnDark = document.getElementById('btnDark');
-    const root = document.documentElement;
-
-    btnLight.addEventListener('click', () => {
-      root.setAttribute('data-theme', 'light');
-      btnLight.classList.add('active');
-      btnDark.classList.remove('active');
-    });
-
-    btnDark.addEventListener('click', () => {
-      root.setAttribute('data-theme', 'dark');
-      btnDark.classList.add('active');
-      btnLight.classList.remove('active');
-    });
-  </script>
 </body>
 </html>
