@@ -7,13 +7,12 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 0px; }
-        
         body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
 
         /* 手机全屏 */
         #phone { width: 100vw; height: 100vh; position: relative; overflow: hidden; background: linear-gradient(180deg, #e6e6e6 0%, #a8a8a8 100%); transition: background 0.3s; }
 
-        /* 亮度遮罩 (修复版) */
+        /* 亮度遮罩 */
         #brightness-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.1s; }
 
         /* 状态栏 */
@@ -42,33 +41,33 @@
         .app-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 200; opacity: 0; transform: scale(0.2); transition: opacity 0.3s, transform 0.35s; background: #000; }
         .app-screen.active { display: flex; opacity: 1; transform: scale(1); }
 
+        /* 细箭头返回键 */
+        .thin-back { font-size: 32px; font-weight: 300; line-height: 1; padding-right: 15px; cursor: pointer; }
+
         /* ================= KakaoTalk ================= */
         #app-kakao { background: #000; color: #fff; }
-        .kakao-header { padding: 55px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .kakao-header h1 { font-size: 22px; font-weight: 600; }
-        .header-icons { display: flex; gap: 18px; font-size: 20px; cursor: pointer; }
+        .kakao-header { padding: 55px 20px 10px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .kakao-header h1 { font-size: 22px; font-weight: 600; margin-left: 30px;}
+        .header-icons { display: flex; gap: 15px; font-size: 20px; cursor: pointer; }
         
         .pill-container { display: flex; gap: 8px; padding: 10px 20px; overflow-x: auto; }
         .pill { padding: 6px 14px; border-radius: 20px; background: #2c2c2e; color: #888; font-size: 14px; cursor: pointer; }
         .pill.active { background: #fff; color: #000; font-weight: 600; }
 
-        .kakao-list { flex: 1; overflow-y: auto; }
+        .kakao-list { flex: 1; overflow-y: auto; padding-bottom: 60px;}
         .kakao-item { display: flex; padding: 15px 20px; align-items: center; gap: 15px; cursor: pointer; }
         .kakao-item:active { background: #111; }
-        .kakao-avatar { width: 50px; height: 50px; border-radius: 18px; background: #FEE500; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #3C1E1E; font-weight: bold; flex-shrink: 0;}
+        .kakao-avatar { width: 50px; height: 50px; border-radius: 18px; background: #555; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
         .kakao-info { flex: 1; overflow: hidden; }
         .kakao-name { font-size: 15px; margin-bottom: 4px; }
         .kakao-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .kakao-meta { text-align: right; font-size: 12px; color: #888; align-self: flex-start; margin-top: 4px;}
 
-        .kakao-bottom-nav { position: absolute; bottom: 0; width: 100%; height: 80px; background: #111; display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid #222;}
+        .kakao-bottom-nav { position: absolute; bottom: 0; width: 100%; height: 80px; background: #111; display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid #222; z-index: 10;}
         .nav-item { color: #555; font-size: 24px; cursor: pointer; }
         .nav-item.active { color: #fff; }
 
-        /* 细箭头返回键 */
-        .thin-back { font-size: 32px; font-weight: 300; line-height: 1; padding-right: 15px; cursor: pointer; }
-
-        /* 子页面 */
+        /* 子页面通用 */
         .sub-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: none; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
         .sub-page.active { display: flex; transform: translateX(0); }
         .sub-header { padding: 55px 20px 15px; display: flex; align-items: center; border-bottom: 1px solid #222; }
@@ -87,6 +86,11 @@
         .chat-input-area input { flex: 1; padding: 10px; border-radius: 20px; border: none; background: #f0f0f0; outline: none; font-size: 14px;}
         .chat-input-area button { background: var(--bubble-color, #FEE500); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;}
 
+        /* 朋友圈 (动态) */
+        .feed-header { width: 100%; height: 200px; background: #333; background-size: cover; background-position: center; position: relative; cursor: pointer;}
+        .feed-header::after { content: '点击更换背景'; position: absolute; bottom: 10px; right: 10px; font-size: 12px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 10px;}
+        .feed-profile { width: 60px; height: 60px; border-radius: 20px; background: #fff; margin-top: -30px; margin-left: 20px; border: 3px solid #000; display: flex; justify-content: center; align-items: center; font-size: 30px;}
+
         /* ================= 设置 ================= */
         #app-settings { background: #f2f2f7; color: #000; overflow-y: auto; }
         .settings-header { display: flex; align-items: center; padding: 55px 15px 10px; border-bottom: 1px solid #ccc;}
@@ -102,15 +106,15 @@
         .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background: #fff; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
         .switch.on::after { transform: translateX(20px); }
 
-        /* 设置子页面 */
         .set-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f2f2f7; z-index: 400; display: none; flex-direction: column; transform: translateX(100%); transition: transform 0.3s; color: #000; }
         .set-page.active { display: flex; transform: translateX(0); }
         .set-page-header { padding: 55px 15px 10px; display: flex; align-items: center; border-bottom: 1px solid #ccc; }
         .set-page-content { padding: 20px; }
         .set-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 15px; background: #fff; margin-bottom: 15px;}
         .set-btn { background: #007aff; color: #fff; padding: 12px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; width: 100%;}
+        .set-textarea { width: 100%; height: 150px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 12px; background: #fff; margin-bottom: 15px; resize: none;}
 
-        /* 颜色块选择器 (Kakao设置) */
+        /* 颜色块 */
         .color-picker { display: flex; gap: 15px; margin: 15px 0; }
         .color-option { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-option.active { border-color: #007aff; }
@@ -120,10 +124,8 @@
 
     <div id="phone">
         <div id="brightness-overlay"></div>
-        
-        <!-- 状态栏 (全局) -->
-        <div class="status-bar" id="main-status-bar">
-            <span id="time">09:13</span>
+        <div class="status-bar">
+            <span id="time">09:31</span>
             <div class="status-right"><span>📶</span><div class="battery-icon"><div class="battery-level"></div></div></div>
         </div>
 
@@ -150,11 +152,10 @@
             <!-- 主界面 -->
             <div id="kakao-main">
                 <div class="kakao-header">
+                    <span class="thin-back" onclick="goHome()" style="position:absolute; left:10px; top:55px;">‹</span>
                     <h1>聊天</h1>
                     <div class="header-icons">
-                        <span onclick="alert('搜索功能暂未开放')">🔍</span>
                         <span onclick="openSub('add-friend-page')">👤+</span>
-                        <span onclick="alert('新建聊天')">💬+</span>
                         <span onclick="openSub('kakao-settings-page')">⚙️</span>
                     </div>
                 </div>
@@ -162,31 +163,26 @@
                     <div class="pill active" id="tab-all" onclick="switchTab('all')">全部</div>
                     <div class="pill" id="tab-unread" onclick="switchTab('unread')">未读</div>
                 </div>
-                <div class="kakao-list" id="kakao-list">
-                    <!-- 动态渲染 -->
-                </div>
+                <div class="kakao-list" id="kakao-list"></div>
                 <div class="kakao-bottom-nav">
-                    <div class="nav-item" onclick="alert('好友列表')">👤</div>
+                    <div class="nav-item" onclick="alert('好友列表暂未开放')">👤</div>
                     <div class="nav-item active">💬</div>
-                    <div class="nav-item" onclick="alert('通话')">📞</div>
-                    <div class="nav-item" onclick="alert('更多')">⋯</div>
+                    <div class="nav-item" onclick="openSub('calls-page')">📞</div>
+                    <div class="nav-item" onclick="openSub('more-page')">⋯</div>
                 </div>
             </div>
 
             <!-- 添加好友页面 -->
             <div id="add-friend-page" class="sub-page">
-                <div class="sub-header">
-                    <span class="thin-back" onclick="closeSub('add-friend-page')">‹</span>
-                    <div class="sub-title">添加人物</div>
-                </div>
+                <div class="sub-header"><span class="thin-back" onclick="closeSub('add-friend-page')">‹</span><div class="sub-title">添加人物</div></div>
                 <div class="sub-content">
-                    <input type="text" id="new-friend-name" class="set-input" placeholder="输入名字 (如: 阿月)">
+                    <input type="text" id="new-friend-name" class="set-input" placeholder="输入名字 (如: 月)">
                     <input type="text" id="new-friend-avatar" class="set-input" placeholder="输入一个Emoji作为头像 (如: 🌙)">
                     <button class="set-btn" onclick="saveNewFriend()">保存并添加</button>
                 </div>
             </div>
 
-            <!-- 聊天室页面 -->
+            <!-- 聊天室 -->
             <div id="kakao-chat-page" class="sub-page">
                 <div class="sub-header" style="background:#b2c7d9; border:none;">
                     <span class="thin-back" onclick="closeSub('kakao-chat-page')" style="color:#333;">‹</span>
@@ -199,27 +195,47 @@
                 </div>
             </div>
 
-            <!-- Kakao 设置页面 -->
-            <div id="kakao-settings-page" class="sub-page">
-                <div class="sub-header">
-                    <span class="thin-back" onclick="closeSub('kakao-settings-page')">‹</span>
-                    <div class="sub-title">KakaoTalk 设置</div>
-                </div>
+            <!-- 通话记录 -->
+            <div id="calls-page" class="sub-page">
+                <div class="sub-header"><span class="thin-back" onclick="closeSub('calls-page')">‹</span><div class="sub-title">通话记录</div></div>
+                <div class="sub-content" style="text-align:center; color:#666; margin-top:50px;">暂无通话记录</div>
+            </div>
+
+            <!-- 更多 -->
+            <div id="more-page" class="sub-page">
+                <div class="sub-header"><span class="thin-back" onclick="closeSub('more-page')">‹</span><div class="sub-title">更多</div></div>
                 <div class="sub-content">
-                    <div style="font-size:15px; margin-bottom:10px;">我的气泡颜色</div>
-                    <div class="color-picker">
+                    <div class="kakao-item" onclick="openSub('feed-page')" style="background:#1c1c1e; border-radius:12px; margin-bottom:15px;">
+                        <div class="kakao-avatar" style="background:#ff8c69;">🖼️</div>
+                        <div class="kakao-info"><div class="kakao-name">朋友圈 / 动态</div><div class="kakao-preview">查看或发布动态</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 朋友圈 (动态) -->
+            <div id="feed-page" class="sub-page" style="background:#1c1c1e;">
+                <div class="sub-header" style="border:none;"><span class="thin-back" onclick="closeSub('feed-page')">‹</span><div class="sub-title">动态</div></div>
+                <input type="file" id="feed-bg-upload" accept="image/*" style="display:none;" onchange="changeFeedBg(event)">
+                <div class="feed-header" id="feed-bg" onclick="document.getElementById('feed-bg-upload').click()"></div>
+                <div class="feed-profile">👤</div>
+                <div style="padding: 20px; color:#888; font-size:14px;">暂无动态</div>
+            </div>
+
+            <!-- Kakao 设置 -->
+            <div id="kakao-settings-page" class="sub-page">
+                <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-settings-page')">‹</span><div class="sub-title">KakaoTalk 设置</div></div>
+                <div class="sub-content">
+                    <div style="font-size:15px; margin-bottom:10px; color:#fff;">我的气泡颜色</div>
+                    <div class="color-picker" id="bubble-picker">
                         <div class="color-option active" style="background:#FEE500;" onclick="setBubbleColor('#FEE500', this)"></div>
                         <div class="color-option" style="background:#ff8c69;" onclick="setBubbleColor('#ff8c69', this)"></div>
                         <div class="color-option" style="background:#0B84FF;" onclick="setBubbleColor('#0B84FF', this)"></div>
-                        <div class="color-option" style="background:#34c759;" onclick="setBubbleColor('#34c759', this)"></div>
                     </div>
-
-                    <div style="font-size:15px; margin-top:30px; margin-bottom:10px;">聊天背景颜色</div>
-                    <div class="color-picker">
+                    <div style="font-size:15px; margin-top:30px; margin-bottom:10px; color:#fff;">聊天背景颜色</div>
+                    <div class="color-picker" id="bg-picker">
                         <div class="color-option active" style="background:#b2c7d9;" onclick="setChatBg('#b2c7d9', this)"></div>
                         <div class="color-option" style="background:#f2f2f7;" onclick="setChatBg('#f2f2f7', this)"></div>
-                        <div class="color-option" style="background:#1c1c1e;" onclick="setChatBg('#1c1c1e', this)"></div>
-                        <div class="color-option" style="background:#fff;" onclick="setChatBg('#fff', this)"></div>
+                        <div class="color-option" style="background:#000;" onclick="setChatBg('#000', this)"></div>
                     </div>
                 </div>
             </div>
@@ -227,18 +243,15 @@
 
         <!-- ================= 设置 App ================= -->
         <div id="app-settings" class="app-screen">
-            <!-- 主目录 -->
             <div id="settings-main">
-                <div class="settings-header">
-                    <span class="thin-back" onclick="goHome()">‹</span>
-                    <div style="font-weight:600; font-size:18px; margin-left:10px;">设置</div>
-                </div>
+                <div class="settings-header"><span class="thin-back" onclick="goHome()">‹</span><div style="font-weight:600; font-size:18px; margin-left:10px;">设置</div></div>
                 <div class="settings-content">
                     <div class="settings-group">
                         <div class="settings-item" onclick="openSetPage('set-wallpaper')"><span>🖼️ 壁纸</span><span class="arrow">›</span></div>
                         <div class="settings-item" onclick="openSetPage('set-brightness')"><span>🔆 亮度</span><span class="arrow">›</span></div>
                         <div class="settings-item" onclick="openSetPage('set-mode')"><span>🌙 模式</span><span class="arrow">›</span></div>
                         <div class="settings-item" onclick="openSetPage('set-api')"><span>🔌 API</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-backup')"><span>☁️ 备份</span><span class="arrow">›</span></div>
                         <div class="settings-item">
                             <span>🌜 勿扰模式</span>
                             <div class="switch" id="dnd-switch" onclick="toggleSwitch(this)"></div>
@@ -247,12 +260,9 @@
                 </div>
             </div>
 
-            <!-- 壁纸子页 -->
+            <!-- 壁纸 -->
             <div id="set-wallpaper" class="set-page">
-                <div class="set-page-header">
-                    <span class="thin-back" onclick="closeSetPage('set-wallpaper')" style="color:#007aff;">‹</span>
-                    <div style="font-size:17px;">壁纸</div>
-                </div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-wallpaper')" style="color:#007aff;">‹</span><div style="font-size:17px;">壁纸</div></div>
                 <div class="set-page-content">
                     <div style="width:100%; height:200px; background:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover; border-radius:12px; margin-bottom:20px;" id="wp-preview"></div>
                     <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(event)" style="display:none;">
@@ -260,12 +270,9 @@
                 </div>
             </div>
 
-            <!-- 亮度子页 -->
+            <!-- 亮度 -->
             <div id="set-brightness" class="set-page">
-                <div class="set-page-header">
-                    <span class="thin-back" onclick="closeSetPage('set-brightness')" style="color:#007aff;">‹</span>
-                    <div style="font-size:17px;">亮度</div>
-                </div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-brightness')" style="color:#007aff;">‹</span><div style="font-size:17px;">亮度</div></div>
                 <div class="set-page-content">
                     <div style="background:#fff; padding:20px; border-radius:12px;">
                         <input type="range" min="10" max="100" value="100" style="width:100%; accent-color:#007aff;" oninput="changeBrightness(this.value)">
@@ -274,34 +281,35 @@
                 </div>
             </div>
 
-            <!-- 模式子页 -->
+            <!-- 模式 -->
             <div id="set-mode" class="set-page">
-                <div class="set-page-header">
-                    <span class="thin-back" onclick="closeSetPage('set-mode')" style="color:#007aff;">‹</span>
-                    <div style="font-size:17px;">模式</div>
-                </div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-mode')" style="color:#007aff;">‹</span><div style="font-size:17px;">模式</div></div>
                 <div class="set-page-content">
                     <div style="background:#fff; border-radius:12px; padding:0 15px;">
-                        <div class="settings-item">
-                            <span>深色模式</span>
-                            <div class="switch" id="dark-mode-switch" onclick="toggleDarkMode(this)"></div>
-                        </div>
+                        <div class="settings-item"><span>深色模式</span><div class="switch" id="dark-mode-switch" onclick="toggleDarkMode(this)"></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- API 子页 -->
+            <!-- API -->
             <div id="set-api" class="set-page">
-                <div class="set-page-header">
-                    <span class="thin-back" onclick="closeSetPage('set-api')" style="color:#007aff;">‹</span>
-                    <div style="font-size:17px;">API 设置</div>
-                </div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-api')" style="color:#007aff;">‹</span><div style="font-size:17px;">API 设置</div></div>
                 <div class="set-page-content">
                     <input type="password" id="api-key" class="set-input" placeholder="填入 API Key">
                     <input type="text" id="api-url" class="set-input" value="https://api.deepseek.com/chat/completions">
                     <input type="text" id="api-model" class="set-input" value="deepseek-chat" placeholder="模型名称">
                     <button class="set-btn" onclick="saveApi()">保存配置</button>
-                    <div style="font-size:12px; color:#888; margin-top:15px; text-align:center;">提示：如果想发照片让AI识别，请把模型换成支持 Vision 的模型（如 gpt-4o 或 qwen-vl）。</div>
+                </div>
+            </div>
+
+            <!-- 备份 -->
+            <div id="set-backup" class="set-page">
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-backup')" style="color:#007aff;">‹</span><div style="font-size:17px;">备份与恢复</div></div>
+                <div class="set-page-content">
+                    <div style="font-size:13px; color:#666; margin-bottom:15px;">这里会备份你的聊天记录、好友列表、API配置。换手机时，把下面的代码复制过去，在新手机里粘贴恢复。</div>
+                    <button class="set-btn" style="margin-bottom:15px;" onclick="generateBackup()">生成备份数据</button>
+                    <textarea id="backup-data" class="set-textarea" placeholder="点击上方按钮生成备份数据"></textarea>
+                    <button class="set-btn" style="background:#34c759;" onclick="restoreBackup()">读取上方数据恢复</button>
                 </div>
             </div>
         </div>
@@ -332,9 +340,8 @@
 
         function goHome() {
             document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
-            closeSub('kakao-chat-page');
-            closeSub('add-friend-page');
-            closeSetPage('set-api');
+            document.querySelectorAll('.sub-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.set-page').forEach(el => el.classList.remove('active'));
         }
 
         // ================= 设置 App 逻辑 =================
@@ -343,7 +350,6 @@
         function toggleSwitch(el) { el.classList.toggle('on'); }
         
         function changeBrightness(val) {
-            // 10-100 映射到 0.8-0
             let opacity = (100 - val) / 100 * 0.8;
             document.getElementById('brightness-overlay').style.opacity = opacity;
         }
@@ -370,15 +376,43 @@
             alert("API 保存成功！");
         }
 
-        // 初始化加载设置
+        // 备份与恢复
+        function generateBackup() {
+            const data = {
+                api_key: localStorage.getItem('api_key'),
+                api_url: localStorage.getItem('api_url'),
+                api_model: localStorage.getItem('api_model'),
+                friends: localStorage.getItem('kakao_friends'),
+                chats: localStorage.getItem('kakao_chats')
+            };
+            document.getElementById('backup-data').value = JSON.stringify(data);
+            alert("备份成功！请复制文本框里的代码保存。");
+        }
+
+        function restoreBackup() {
+            const raw = document.getElementById('backup-data').value.trim();
+            if(!raw) return alert("请先粘贴备份数据！");
+            try {
+                const data = JSON.parse(raw);
+                if(data.api_key) localStorage.setItem('api_key', data.api_key);
+                if(data.api_url) localStorage.setItem('api_url', data.api_url);
+                if(data.api_model) localStorage.setItem('api_model', data.api_model);
+                if(data.friends) localStorage.setItem('kakao_friends', data.friends);
+                if(data.chats) localStorage.setItem('kakao_chats', data.chats);
+                alert("恢复成功！即将刷新页面。");
+                location.reload();
+            } catch(e) { alert("数据格式错误！"); }
+        }
+
+        // 加载初始设置
         document.getElementById('api-key').value = localStorage.getItem('api_key') || '';
         document.getElementById('api-url').value = localStorage.getItem('api_url') || 'https://api.deepseek.com/chat/completions';
         document.getElementById('api-model').value = localStorage.getItem('api_model') || 'deepseek-chat';
 
-
         // ================= KakaoTalk 逻辑 =================
         let friends = JSON.parse(localStorage.getItem('kakao_friends')) || [];
-        let chats = JSON.parse(localStorage.getItem('kakao_chats')) || {}; // 以好友名字为 key
+        // 聊天数据结构升级：增加 unread 属性
+        let chats = JSON.parse(localStorage.getItem('kakao_chats')) || {}; 
         let currentTab = 'all';
         let activeFriendName = '';
 
@@ -396,19 +430,21 @@
 
         function saveNewFriend() {
             const name = document.getElementById('new-friend-name').value.trim();
-            const avatar = document.getElementById('new-friend-avatar').value.trim() || '👤';
             if (!name) return alert("请输入名字");
             
             if (!friends.includes(name)) {
                 friends.push(name);
-                chats[name] = []; // 初始化聊天记录
-                localStorage.setItem('kakao_friends', JSON.stringify(friends));
-                localStorage.setItem('kakao_chats', JSON.stringify(chats));
+                chats[name] = { messages: [], unread: false }; // 初始结构
+                saveData();
             }
             document.getElementById('new-friend-name').value = '';
-            document.getElementById('new-friend-avatar').value = '';
             closeSub('add-friend-page');
-            renderKakaoList();
+            switchTab('all');
+        }
+
+        function saveData() {
+            localStorage.setItem('kakao_friends', JSON.stringify(friends));
+            localStorage.setItem('kakao_chats', JSON.stringify(chats));
         }
 
         function renderKakaoList() {
@@ -416,12 +452,9 @@
             list.innerHTML = '';
 
             let displayFriends = friends;
+            // 过滤未读
             if (currentTab === 'unread') {
-                // 简单实现：如果有聊天记录且最后一条不是用户发的，算未读
-                displayFriends = friends.filter(name => {
-                    const history = chats[name] || [];
-                    return history.length > 0 && history[history.length - 1].role === 'assistant';
-                });
+                displayFriends = friends.filter(name => chats[name] && chats[name].unread);
             }
 
             if (displayFriends.length === 0) {
@@ -430,15 +463,18 @@
             }
 
             displayFriends.forEach(name => {
-                const history = chats[name] || [];
-                const lastMsg = history.length > 0 ? history[history.length - 1].content : '开始聊天吧';
-                const unreadBadge = (history.length > 0 && history[history.length-1].role === 'assistant') ? `<div style="background:#FEE500; color:#333; border-radius:10px; padding:2px 6px; margin-top:5px; font-weight:bold; display:inline-block;">1</div>` : '';
+                const chatData = chats[name] || { messages: [], unread: false };
+                const msgs = chatData.messages;
+                const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1].content : '开始聊天吧';
+                
+                // 未读角标
+                const unreadBadge = chatData.unread ? `<div style="background:#FEE500; color:#333; border-radius:10px; padding:2px 6px; margin-top:5px; font-weight:bold; display:inline-block;">1</div>` : '';
 
                 const div = document.createElement('div');
                 div.className = 'kakao-item';
                 div.onclick = () => enterChat(name);
                 div.innerHTML = `
-                    <div class="kakao-avatar" style="background:#ddd;">👤</div>
+                    <div class="kakao-avatar">👤</div>
                     <div class="kakao-info">
                         <div class="kakao-name">${name}</div>
                         <div class="kakao-preview">${lastMsg}</div>
@@ -455,6 +491,13 @@
         function enterChat(name) {
             activeFriendName = name;
             document.getElementById('chat-target-name').innerText = name;
+            
+            // 进入聊天室，立刻消除未读
+            if (chats[name]) {
+                chats[name].unread = false;
+                saveData();
+            }
+            
             openSub('kakao-chat-page');
             renderChatMessages();
         }
@@ -462,9 +505,10 @@
         function renderChatMessages() {
             const container = document.getElementById('chat-messages');
             container.innerHTML = '';
-            const history = chats[activeFriendName] || [];
+            const chatData = chats[activeFriendName];
+            if(!chatData) return;
             
-            history.forEach(msg => {
+            chatData.messages.forEach(msg => {
                 const row = document.createElement('div');
                 row.className = `msg-row ${msg.role === 'user' ? 'user' : 'ai'}`;
                 row.innerHTML = `<div class="msg-bubble">${msg.content}</div>`;
@@ -480,22 +524,20 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // 写入用户消息
-            if(!chats[activeFriendName]) chats[activeFriendName] = [];
-            chats[activeFriendName].push({ role: 'user', content: text });
-            localStorage.setItem('kakao_chats', JSON.stringify(chats));
+            chats[activeFriendName].messages.push({ role: 'user', content: text });
+            saveData();
             input.value = '';
             renderChatMessages();
 
-            // 请求 API
             const apiKey = localStorage.getItem('api_key');
             const apiUrl = localStorage.getItem('api_url');
             const model = localStorage.getItem('api_model');
 
             if (!apiKey) {
                 setTimeout(() => {
-                    chats[activeFriendName].push({ role: 'assistant', content: '(请先去设置里配置 API)' });
-                    localStorage.setItem('kakao_chats', JSON.stringify(chats));
+                    chats[activeFriendName].messages.push({ role: 'assistant', content: '(请先去设置配置 API)' });
+                    chats[activeFriendName].unread = true;
+                    saveData();
                     renderChatMessages();
                 }, 500);
                 return;
@@ -509,36 +551,43 @@
                         model: model, 
                         messages: [
                             { role: "system", content: `你现在的名字叫${activeFriendName}。你是一个真实的聊天对象。请简短自然地回复。` },
-                            ...chats[activeFriendName].map(m => ({role: m.role, content: m.content}))
+                            ...chats[activeFriendName].messages.map(m => ({role: m.role, content: m.content}))
                         ]
                     })
                 });
                 const data = await response.json();
                 if (data.choices && data.choices.length > 0) {
-                    chats[activeFriendName].push({ role: 'assistant', content: data.choices[0].message.content });
-                    localStorage.setItem('kakao_chats', JSON.stringify(chats));
+                    chats[activeFriendName].messages.push({ role: 'assistant', content: data.choices[0].message.content });
+                    chats[activeFriendName].unread = true; 
+                    saveData();
                     renderChatMessages();
                 }
             } catch (e) {
-                chats[activeFriendName].push({ role: 'assistant', content: '(网络出错)' });
+                chats[activeFriendName].messages.push({ role: 'assistant', content: '(网络出错)' });
                 renderChatMessages();
             }
+        }
+
+        // 动态背景替换
+        function changeFeedBg(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('feed-bg').style.backgroundImage = `url('${e.target.result}')`;
+            };
+            reader.readAsDataURL(file);
         }
 
         // Kakao 外观设置
         function setBubbleColor(color, el) {
             document.documentElement.style.setProperty('--bubble-color', color);
-            document.querySelectorAll('.color-option').forEach(e => {
-                if(e.parentElement.previousElementSibling.innerText.includes("气泡")) e.classList.remove('active');
-            });
+            document.querySelectorAll('#bubble-picker .color-option').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
         }
 
         function setChatBg(color, el) {
             document.documentElement.style.setProperty('--chat-bg', color);
-            document.querySelectorAll('.color-option').forEach(e => {
-                if(e.parentElement.previousElementSibling.innerText.includes("背景")) e.classList.remove('active');
-            });
+            document.querySelectorAll('#bg-picker .color-option').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
         }
 
