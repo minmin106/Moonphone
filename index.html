@@ -3,738 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Minimal Phone</title>
+    <title>Liquid Glass UI</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { width: 0px; }
-        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; transition: background 0.3s; }
-
-        /* 手机全屏 */
-        #phone { width: 100vw; height: 100vh; position: relative; overflow: hidden; background: linear-gradient(180deg, #e6e6e6 0%, #a8a8a8 100%); transition: background 0.3s; }
-
-        /* 亮度遮罩 */
-        #brightness-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.1s; }
-
-        /* 状态栏 */
-        .status-bar { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #333; font-size: 14px; font-weight: 600; z-index: 100; pointer-events: none; transition: color 0.3s; }
-        .battery-icon { width: 24px; height: 12px; border: 1.5px solid currentColor; border-radius: 4px; position: relative; padding: 1.5px; display:flex; align-items:center; }
-        .battery-icon::after { content: ''; position: absolute; right: -4px; top: 3px; width: 2px; height: 4px; background: currentColor; border-radius: 0 2px 2px 0; }
-        .battery-level { height: 100%; width: 73%; background: currentColor; border-radius: 2px; }
-
-        /* 桌面 */
-        #home-screen { width: 100%; height: 100%; padding: 60px 25px 20px; display: flex; flex-direction: column; z-index: 1; }
-        .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 30px; }
-        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
-        .app-icon:active { transform: scale(0.85); }
-        .app-name { font-size: 11px; color: #333; font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.5); transition: color 0.3s;}
         
-        .icon-kakao { width: 60px; height: 60px; border-radius: 22%; background: #FEE500; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        .kakao-bubble { width: 40px; height: 32px; background: #3C1E1E; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #FEE500; font-weight: 900; font-size: 12px; position: relative;}
-        .kakao-bubble::after { content: ''; position: absolute; bottom: -4px; left: 10px; border-width: 6px 8px 0 0; border-style: solid; border-color: #3C1E1E transparent transparent transparent; transform: rotate(-15deg); }
-
-        .icon-settings { width: 60px; height: 60px; border-radius: 22%; background: linear-gradient(180deg, #d4d4d4 0%, #8c8c8c 100%); display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .settings-gear { width: 40px; height: 40px; fill: #555; }
-
-        /* 毛玻璃 Dock 栏 */
-        .dock { 
-            margin-top: auto; 
-            background: rgba(255, 255, 255, 0.25); 
-            backdrop-filter: blur(40px) saturate(200%); 
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border-radius: 35px; 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: center; 
-            gap: 40px; 
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 3px rgba(255, 255, 255, 0.7);
-            transition: all 0.3s;
+        body { 
+            margin: 0; padding: 0; height: 100vh; overflow: hidden; 
+            /* 用一个高对比度、色彩丰富的模糊背景来凸显玻璃质感 */
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        /* App 页面容器 */
-        .app-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 200; opacity: 0; transform: scale(0.2); transition: opacity 0.3s, transform 0.35s; background: #000; }
-        .app-screen.active { display: flex; opacity: 1; transform: scale(1); }
+        /* 手机全屏容器 */
+        #phone { 
+            width: 100vw; height: 100vh; position: relative; 
+            display: flex; flex-direction: column; padding: 0 20px;
+            /* 整体加一层极暗的遮罩，让白色文字和图标更清晰 */
+            background: rgba(0, 0, 0, 0.4);
+        }
 
-        /* 细箭头返回键 */
-        .thin-back { font-size: 32px; font-weight: 300; line-height: 1; padding-right: 15px; cursor: pointer; }
+        /* 1. Status Bar & Dynamic Pill (状态栏与灵动岛) */
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 10px 0; color: #fff; font-size: 14px; font-weight: 600; z-index: 100;
+        }
+        /* 灵动岛 */
+        .dynamic-pill {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            width: 120px; height: 35px; background: #000; border-radius: 20px;
+            box-shadow: inset 0 0 2px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .dynamic-pill::before, .dynamic-pill::after {
+            content: ''; width: 6px; height: 6px; border-radius: 50%; background: #333;
+        }
 
-        /* ================= KakaoTalk ================= */
-        #app-kakao { background: #000; color: #fff; }
-        .kakao-header { padding: 55px 20px 10px; display: flex; justify-content: space-between; align-items: center; position: relative; }
-        .kakao-header h1 { font-size: 22px; font-weight: 600; margin-left: 30px;}
-        .header-icons { display: flex; gap: 15px; font-size: 20px; cursor: pointer; }
+        /* 2. Upper Widget Zone (上方双 2x2 小组件) */
+        .widget-zone { display: flex; gap: 15px; margin-top: 35px; }
+        .widget-card {
+            flex: 1; height: 160px; border-radius: 24px;
+            /* 核心：液态玻璃质感 */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* 顶部高光，底部阴影，形成立体感 */
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.15);
+            padding: 15px; display: flex; flex-direction: column; justify-content: center; color: #fff;
+        }
+        .widget-card h3 { font-size: 18px; margin-bottom: 5px; font-weight: 500;}
+        .widget-card p { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+        /* 3. Floating Glass Banner (悬浮胶囊通知) */
+        .floating-banner {
+            margin: 20px auto; width: 90%; padding: 12px 20px; border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.4);
+            color: #fff; font-size: 13px; text-align: center;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* 4. Central App Icon Grid (中央图标网格) */
+        .app-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 20px 15px; margin-top: 20px; flex: 1; align-content: start;
+        }
+        .app-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;}
+        .app-icon:active { transform: scale(0.9); transition: 0.1s; }
         
-        .pill-container { display: flex; gap: 8px; padding: 10px 20px; overflow-x: auto; }
-        .pill { padding: 6px 14px; border-radius: 20px; background: #2c2c2e; color: #888; font-size: 14px; cursor: pointer; }
-        .pill.active { background: #fff; color: #000; font-weight: 600; }
+        /* 拟物+玻璃图标 */
+        .icon-box {
+            width: 60px; height: 60px; border-radius: 22%; /* 连续圆角感 */
+            /* 玻璃底座 */
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.4);
+            display: flex; justify-content: center; align-items: center; font-size: 28px;
+        }
+        .app-name { font-size: 11px; color: #fff; font-weight: 500; }
 
-        .kakao-list { flex: 1; overflow-y: auto; padding-bottom: 60px;}
-        .kakao-item { display: flex; padding: 15px 20px; align-items: center; gap: 15px; cursor: pointer; }
-        .kakao-item:active { background: #111; }
-        .kakao-avatar { width: 50px; height: 50px; border-radius: 18px; background: #555; display: flex; justify-content: center; align-items: center; font-size: 24px; flex-shrink: 0;}
-        .kakao-info { flex: 1; overflow: hidden; }
-        .kakao-name { font-size: 15px; margin-bottom: 4px; }
-        .kakao-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .kakao-meta { text-align: right; font-size: 12px; color: #888; align-self: flex-start; margin-top: 4px;}
+        /* 5. Page Indicator Dots (页面指示器) */
+        .page-dots { display: flex; justify-content: center; gap: 6px; margin: 15px 0; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+        .dot.active { background: #fff; }
 
-        .kakao-bottom-nav { position: absolute; bottom: 0; width: 100%; height: 80px; background: #111; display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid #222; z-index: 10;}
-        .nav-item { color: #555; font-size: 24px; cursor: pointer; }
-        .nav-item.active { color: #fff; }
+        /* 6. Bottom Floating Glass Dock (底部悬浮玻璃 Dock) */
+        .dock {
+            margin-bottom: 25px; width: 100%; height: 80px; border-radius: 35px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.5);
+            display: flex; justify-content: space-around; align-items: center; padding: 0 10px;
+        }
+        .dock .icon-box { box-shadow: none; border: none; background: transparent; font-size: 35px;}
 
-        /* 子页面通用 */
-        .sub-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: none; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
-        .sub-page.active { display: flex; transform: translateX(0); }
-        .sub-header { padding: 55px 20px 15px; display: flex; align-items: center; border-bottom: 1px solid #222; }
-        .sub-title { font-size: 18px; font-weight: 600; }
-        .sub-content { flex: 1; overflow-y: auto; padding: 20px; }
-
-        /* 聊天室 */
-        .chat-messages { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; background: var(--chat-bg, #b2c7d9); }
-        .msg-row { display: flex; gap: 8px; align-items: flex-start; }
-        .msg-row.user { flex-direction: row-reverse; }
-        .msg-bubble { max-width: 70%; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; color: #333; word-break: break-all;}
-        .msg-row.ai .msg-bubble { background: #fff; border-top-left-radius: 4px; }
-        .msg-row.user .msg-bubble { background: var(--bubble-color, #FEE500); border-top-right-radius: 4px; }
-        
-        .chat-input-area { padding: 10px 15px 25px; background: #fff; display: flex; gap: 10px; align-items: center;}
-        .chat-input-area input { flex: 1; padding: 10px; border-radius: 20px; border: none; background: #f0f0f0; outline: none; font-size: 14px;}
-        .chat-input-area button { background: var(--bubble-color, #FEE500); border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;}
-
-        /* 朋友圈 (动态) */
-        .feed-header { width: 100%; height: 200px; background: #333; background-size: cover; background-position: center; position: relative; cursor: pointer;}
-        .feed-header::after { content: '点击更换背景'; position: absolute; bottom: 10px; right: 10px; font-size: 12px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 10px;}
-        .feed-profile { width: 60px; height: 60px; border-radius: 20px; background: #fff; margin-top: -30px; margin-left: 20px; border: 3px solid #000; display: flex; justify-content: center; align-items: center; font-size: 30px;}
-
-        /* ================= 设置 App ================= */
-        #app-settings, .set-page { background: #d1d1d6; color: #000; overflow-y: auto; transition: background 0.3s, color 0.3s;}
-        .settings-header, .set-page-header { display: flex; align-items: center; padding: 55px 15px 10px; border-bottom: 1px solid #b0b0b5; transition: border-color 0.3s;}
-        .settings-header .thin-back, .set-page-header .thin-back { color: #007aff; font-weight: 400;}
-        .settings-content { display: flex; flex-direction: column; gap: 20px; padding: 20px;}
-        .settings-group { background: #fff; border-radius: 10px; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: background 0.3s;}
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e5e5ea; font-size: 16px; cursor: pointer; transition: border-color 0.3s;}
-        .settings-item:last-child { border-bottom: none; }
-        .settings-item .arrow { color: #bbb; font-size: 20px; font-weight: 300;}
-        
-        .switch { width: 50px; height: 30px; background: #e5e5ea; border-radius: 15px; position: relative; cursor: pointer; transition: background 0.3s; }
-        .switch.on { background: #34c759; }
-        .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; background: #fff; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
-        .switch.on::after { transform: translateX(20px); }
-
-        .set-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 400; display: none; flex-direction: column; transform: translateX(100%); transition: transform 0.3s; }
-        .set-page.active { display: flex; transform: translateX(0); }
-        .set-page-content { padding: 20px; }
-        .set-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 15px; background: #fff; margin-bottom: 15px; transition: background 0.3s, color 0.3s, border-color 0.3s;}
-        .set-btn { background: #007aff; color: #fff; padding: 12px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; width: 100%;}
-        .set-textarea { width: 100%; height: 150px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 12px; background: #fff; margin-bottom: 15px; resize: none; transition: background 0.3s, color 0.3s, border-color 0.3s;}
-
-        /* 语言选择列表 */
-        .lang-option { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e5e5ea; cursor: pointer; font-size: 16px;}
-        .lang-option:last-child { border-bottom: none; }
-        .lang-option.active { color: #007aff; font-weight: 600; }
-
-        /* 颜色块 */
-        .color-picker { display: flex; gap: 15px; margin: 15px 0; }
-        .color-option { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-        .color-option.active { border-color: #007aff; }
-
-        /* Kakao 设置列表 */
-        .kakao-settings-group { background: #1c1c1e; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-        .kakao-settings-item { padding: 15px; color: #fff; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: pointer;}
-        .kakao-settings-item:last-child { border-bottom: none; }
-
-        /* ================= 全局深色模式适配 ================= */
-        body.dark-mode #phone { background: #000; }
-        body.dark-mode .status-bar, body.dark-mode .app-name { color: #fff; }
-        body.dark-mode .dock { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
-        
-        body.dark-mode #app-settings, body.dark-mode .set-page { background: #000; color: #fff; }
-        body.dark-mode .settings-header, body.dark-mode .set-page-header { border-bottom-color: #333; }
-        body.dark-mode .settings-group { background: #1c1c1e; }
-        body.dark-mode .settings-item, body.dark-mode .lang-option { border-bottom-color: #333; }
-        body.dark-mode .set-input, body.dark-mode .set-textarea { background: #1c1c1e; color: #fff; border-color: #333; }
-
+        /* 7. Home Indicator Bar (底部主页横条) */
+        .home-bar {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            width: 130px; height: 5px; border-radius: 10px; background: #fff;
+        }
     </style>
 </head>
 <body>
 
     <div id="phone">
-        <div id="brightness-overlay"></div>
+        <!-- 1. Status Bar & Dynamic Pill -->
         <div class="status-bar">
-            <span id="time">09:31</span>
-            <div class="status-right"><div class="battery-icon"><div class="battery-level"></div></div></div>
+            <span>09:41</span>
+            <div class="dynamic-pill"></div>
+            <span>5G 🔋</span>
         </div>
 
-        <!-- 桌面 -->
-        <div id="home-screen">
-            <div class="app-grid">
-                <div class="app-icon" onclick="openApp('kakao', this)">
-                    <div class="icon-kakao"><div class="kakao-bubble">TALK</div></div>
-                    <div class="app-name">KakaoTalk</div>
-                </div>
+        <!-- 2. Upper Widget Zone -->
+        <div class="widget-zone">
+            <div class="widget-card">
+                <h3>26°</h3>
+                <p>晴转多云 / 空气优</p>
             </div>
-            <div class="dock">
-                <div class="app-icon" onclick="openApp('settings', this)">
-                    <div class="icon-settings">
-                        <svg class="settings-gear" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-                    </div>
-                    <div class="app-name">设置</div>
-                </div>
+            <div class="widget-card">
+                <h3>专注中</h3>
+                <p>剩余 45 分钟</p>
             </div>
         </div>
 
-        <!-- ================= KakaoTalk ================= -->
-        <div id="app-kakao" class="app-screen">
-            <!-- 主界面 -->
-            <div id="kakao-main">
-                <div class="kakao-header">
-                    <span class="thin-back" onclick="goHome()" style="position:absolute; left:10px; top:55px;">‹</span>
-                    <h1>聊天</h1>
-                    <div class="header-icons">
-                        <span onclick="openSub('add-friend-page')">👤+</span>
-                        <span onclick="openSub('kakao-settings-page')">⚙️</span>
-                    </div>
-                </div>
-                <div class="pill-container">
-                    <div class="pill active" id="tab-all" onclick="switchTab('all')">全部</div>
-                    <div class="pill" id="tab-unread" onclick="switchTab('unread')">未读</div>
-                </div>
-                <div class="kakao-list" id="kakao-list"></div>
-                <div class="kakao-bottom-nav">
-                    <div class="nav-item" onclick="openSub('friends-page')">👤</div>
-                    <div class="nav-item active">💬</div>
-                    <div class="nav-item" onclick="openSub('calls-page')">📞</div>
-                    <div class="nav-item" onclick="openSub('feed-page')">🖼️</div>
-                </div>
-            </div>
-
-            <!-- 添加好友 -->
-            <div id="add-friend-page" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('add-friend-page')">‹</span><div class="sub-title">添加人物</div></div>
-                <div class="sub-content">
-                    <input type="text" id="new-friend-name" class="set-input" placeholder="输入名字 (如: 月)">
-                    <button class="set-btn" onclick="saveNewFriend()">保存并添加</button>
-                </div>
-            </div>
-
-            <!-- 聊天室 -->
-            <div id="kakao-chat-page" class="sub-page">
-                <div class="sub-header" style="background:#b2c7d9; border:none;">
-                    <span class="thin-back" onclick="closeSub('kakao-chat-page')" style="color:#333;">‹</span>
-                    <div class="sub-title" id="chat-target-name" style="color:#333;">名字</div>
-                </div>
-                <div class="chat-messages" id="chat-messages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="发送消息..." onkeypress="handleChatKey(event)">
-                    <button onclick="sendKakaoMsg()">发送</button>
-                </div>
-            </div>
-
-            <!-- 好友列表 -->
-            <div id="friends-page" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('friends-page')">‹</span><div class="sub-title">好友</div></div>
-                <div class="sub-content" id="friends-list" style="padding:0;"></div>
-            </div>
-
-            <!-- 通话记录 -->
-            <div id="calls-page" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('calls-page')">‹</span><div class="sub-title">通话记录</div></div>
-                <div class="sub-content" style="text-align:center; color:#666; margin-top:50px;">暂无通话记录</div>
-            </div>
-
-            <!-- 朋友圈 -->
-            <div id="feed-page" class="sub-page" style="background:#1c1c1e;">
-                <div class="sub-header" style="border:none;"><span class="thin-back" onclick="closeSub('feed-page')">‹</span><div class="sub-title">动态</div></div>
-                <input type="file" id="feed-bg-upload" accept="image/*" style="display:none;" onchange="changeFeedBg(event)">
-                <div class="feed-header" id="feed-bg" onclick="document.getElementById('feed-bg-upload').click()"></div>
-                <div class="feed-profile">👤</div>
-                <div style="padding: 20px; color:#888; font-size:14px;">暂无动态</div>
-            </div>
-
-            <!-- Kakao 设置 -->
-            <div id="kakao-settings-page" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-settings-page')">‹</span><div class="sub-title">KakaoTalk 设置</div></div>
-                <div class="sub-content">
-                    <div class="kakao-settings-group">
-                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bubble')"><span>聊天气泡</span><span style="color:#888;">›</span></div>
-                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bg')"><span>聊天背景</span><span style="color:#888;">›</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kakao 气泡颜色 -->
-            <div id="kakao-set-bubble" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-set-bubble')">‹</span><div class="sub-title">聊天气泡</div></div>
-                <div class="sub-content">
-                    <div class="color-picker" id="bubble-picker">
-                        <div class="color-option active" style="background:#FEE500;" onclick="setBubbleColor('#FEE500', this)"></div>
-                        <div class="color-option" style="background:#ff8c69;" onclick="setBubbleColor('#ff8c69', this)"></div>
-                        <div class="color-option" style="background:#0B84FF;" onclick="setBubbleColor('#0B84FF', this)"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kakao 背景颜色 -->
-            <div id="kakao-set-bg" class="sub-page">
-                <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-set-bg')">‹</span><div class="sub-title">聊天背景</div></div>
-                <div class="sub-content">
-                    <div class="color-picker" id="bg-picker">
-                        <div class="color-option active" style="background:#b2c7d9;" onclick="setChatBg('#b2c7d9', this)"></div>
-                        <div class="color-option" style="background:#f2f2f7;" onclick="setChatBg('#f2f2f7', this)"></div>
-                        <div class="color-option" style="background:#000;" onclick="setChatBg('#000', this)"></div>
-                    </div>
-                </div>
-            </div>
+        <!-- 3. Floating Glass Banner -->
+        <div class="floating-banner">
+            <span>✨</span> 阿月发来了一条新消息...
         </div>
 
-        <!-- ================= 设置 App ================= -->
-        <div id="app-settings" class="app-screen">
-            <div id="settings-main">
-                <div class="settings-header"><span class="thin-back" onclick="goHome()">‹</span><div style="font-weight:600; font-size:18px; margin-left:10px;" id="lbl-settings">设置</div></div>
-                <div class="settings-content">
-                    <div class="settings-group">
-                        <div class="settings-item" onclick="openSetPage('set-wallpaper')"><span id="lbl-wp">壁纸</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-brightness')"><span id="lbl-br">亮度</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-mode')"><span id="lbl-mode">模式</span><span class="arrow">›</span></div>
-                    </div>
-                    <div class="settings-group">
-                        <div class="settings-item" onclick="openSetPage('set-api')"><span>API</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-backup')"><span id="lbl-backup">备份</span><span class="arrow">›</span></div>
-                        <div class="settings-item">
-                            <span id="lbl-dnd">勿扰模式</span>
-                            <div class="switch" id="dnd-switch" onclick="toggleSwitch(this)"></div>
-                        </div>
-                    </div>
-                    <div class="settings-group">
-                        <div class="settings-item" onclick="openSetPage('set-lang')"><span id="lbl-lang">语言与地区</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-about')"><span id="lbl-about">关于本机</span><span class="arrow">›</span></div>
-                    </div>
-                </div>
+        <!-- 4. Central App Icon Grid -->
+        <div class="app-grid">
+            <div class="app-icon">
+                <div class="icon-box" style="background: rgba(254, 229, 0, 0.8);">💬</div>
+                <div class="app-name">KakaoTalk</div>
             </div>
-
-            <!-- 壁纸 -->
-            <div id="set-wallpaper" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-wallpaper')">‹</span><div style="font-size:17px;" class="lbl-wp-sub">壁纸</div></div>
-                <div class="set-page-content">
-                    <div style="width:100%; height:200px; background:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover; border-radius:12px; margin-bottom:20px;" id="wp-preview"></div>
-                    <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(event)" style="display:none;">
-                    <button class="set-btn" onclick="document.getElementById('wp-upload').click()">上传本地图片</button>
-                </div>
+            <div class="app-icon">
+                <div class="icon-box">⚙️</div>
+                <div class="app-name">设置</div>
             </div>
-
-            <!-- 亮度 -->
-            <div id="set-brightness" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-brightness')">‹</span><div style="font-size:17px;" class="lbl-br-sub">亮度</div></div>
-                <div class="set-page-content">
-                    <div style="background:#fff; padding:20px; border-radius:12px;">
-                        <input type="range" min="10" max="100" value="100" style="width:100%; accent-color:#007aff;" oninput="changeBrightness(this.value)">
-                    </div>
-                </div>
+            <div class="app-icon">
+                <div class="icon-box">🖼️</div>
+                <div class="app-name">相册</div>
             </div>
-
-            <!-- 模式 -->
-            <div id="set-mode" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-mode')">‹</span><div style="font-size:17px;" class="lbl-mode-sub">模式</div></div>
-                <div class="set-page-content">
-                    <div style="background:#fff; border-radius:12px; padding:0 15px;">
-                        <div class="settings-item"><span>深色模式</span><div class="switch" id="dark-mode-switch" onclick="toggleDarkMode(this)"></div></div>
-                    </div>
-                </div>
+            <div class="app-icon">
+                <div class="icon-box" style="background: #000; color: #fff;">𝕏</div>
+                <div class="app-name">Twitter</div>
             </div>
-
-            <!-- API -->
-            <div id="set-api" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-api')">‹</span><div style="font-size:17px;">API</div></div>
-                <div class="set-page-content">
-                    <input type="password" id="api-key" class="set-input" placeholder="填入 API Key">
-                    <input type="text" id="api-url" class="set-input" value="https://api.deepseek.com/chat/completions">
-                    <input type="text" id="api-model" class="set-input" value="deepseek-chat" placeholder="模型名称">
-                    <button class="set-btn" onclick="saveApi()">保存配置</button>
-                </div>
-            </div>
-
-            <!-- 备份 -->
-            <div id="set-backup" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-backup')">‹</span><div style="font-size:17px;" class="lbl-backup-sub">备份</div></div>
-                <div class="set-page-content">
-                    <button class="set-btn" style="margin-bottom:15px;" onclick="generateBackup()">生成备份</button>
-                    <textarea id="backup-data" class="set-textarea"></textarea>
-                    <button class="set-btn" style="background:#34c759;" onclick="restoreBackup()">恢复数据</button>
-                </div>
-            </div>
-
-            <!-- 语言 -->
-            <div id="set-lang" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-lang')">‹</span><div style="font-size:17px;" class="lbl-lang-sub">语言与地区</div></div>
-                <div class="set-page-content">
-                    <div style="background:#fff; border-radius:12px; padding:0 15px;">
-                        <div class="lang-option" onclick="changeLanguage('zh')"><span>简体中文</span><span id="check-zh" style="color:#007aff;">✓</span></div>
-                        <div class="lang-option" onclick="changeLanguage('en')"><span>English</span><span id="check-en" style="color:#007aff;"></span></div>
-                        <div class="lang-option" onclick="changeLanguage('ko')"><span>한국어</span><span id="check-ko" style="color:#007aff;"></span></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 关于本机 -->
-            <div id="set-about" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-about')">‹</span><div style="font-size:17px;" class="lbl-about-sub">关于本机</div></div>
-                <div class="set-page-content">
-                    <div style="background:#fff; border-radius:12px; padding:15px; margin-bottom:20px;">
-                        <div style="font-size:13px; color:#666; margin-bottom:8px;">设备名称</div>
-                        <input type="text" id="device-name" class="set-input" style="margin-bottom:0;" placeholder="输入你的手机名字" oninput="saveDeviceName(this.value)">
-                    </div>
-                    <div style="text-align:center; font-size:12px; color:#888; line-height:1.6;">
-                        Kiro OS v1.0<br>
-                        Model: Moonphone 15 Pro<br>
-                        Serial: KY-2026-1023
-                    </div>
-                </div>
-            </div>
+            <!-- 留空几个占位，展现排版节奏 -->
+            <div class="app-icon"><div class="icon-box" style="opacity: 0.5;"></div></div>
+            <div class="app-icon"><div class="icon-box" style="opacity: 0.5;"></div></div>
         </div>
+
+        <!-- 5. Page Indicator Dots -->
+        <div class="page-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <!-- 6. Bottom Floating Glass Dock -->
+        <div class="dock">
+            <div class="icon-box">📞</div>
+            <div class="icon-box">🌐</div>
+            <div class="icon-box">🎵</div>
+            <div class="icon-box">✉️</div>
+        </div>
+
+        <!-- 7. Home Indicator Bar -->
+        <div class="home-bar"></div>
     </div>
 
-    <script>
-        // ================= 基础逻辑 =================
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('time').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-        }
-        setInterval(updateClock, 1000); updateClock();
-
-        function openApp(appName, iconElement) {
-            const rect = iconElement.getBoundingClientRect();
-            const phoneRect = document.getElementById('phone').getBoundingClientRect();
-            const originX = rect.left - phoneRect.left + rect.width / 2;
-            const originY = rect.top - phoneRect.top + rect.height / 2;
-
-            const appScreen = document.getElementById('app-' + appName);
-            appScreen.style.transformOrigin = `${originX}px ${originY}px`;
-            appScreen.style.display = 'flex';
-            void appScreen.offsetWidth; 
-            appScreen.classList.add('active');
-            
-            if(appName === 'kakao') renderKakaoList();
-        }
-
-        function goHome() {
-            document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.sub-page').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.set-page').forEach(el => el.classList.remove('active'));
-        }
-
-        // ================= 设置 App 逻辑 =================
-        function openSetPage(id) { document.getElementById(id).classList.add('active'); }
-        function closeSetPage(id) { document.getElementById(id).classList.remove('active'); }
-        function toggleSwitch(el) { el.classList.toggle('on'); }
-        
-        function changeBrightness(val) {
-            let opacity = (100 - val) / 100 * 0.8;
-            document.getElementById('brightness-overlay').style.opacity = opacity;
-        }
-
-        function changeWallpaper(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('phone').style.background = `url('${e.target.result}') center/cover`;
-                document.getElementById('wp-preview').style.background = `url('${e.target.result}') center/cover`;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // 深色模式
-        function toggleDarkMode(el) {
-            el.classList.toggle('on');
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('dark_mode', el.classList.contains('on') ? 'on' : 'off');
-        }
-
-        // 关于本机：保存名称
-        function saveDeviceName(val) {
-            localStorage.setItem('device_name', val);
-        }
-        document.getElementById('device-name').value = localStorage.getItem('device_name') || 'Lena 的手机';
-
-        // ================= 语言切换 =================
-        const langData = {
-            zh: { settings: "设置", wp: "壁纸", br: "亮度", mode: "模式", backup: "备份", dnd: "勿扰模式", lang: "语言与地区", about: "关于本机" },
-            en: { settings: "Settings", wp: "Wallpaper", br: "Brightness", mode: "Display", backup: "Backup", dnd: "Do Not Disturb", lang: "Language", about: "About" },
-            ko: { settings: "설정", wp: "배경화면", br: "밝기", mode: "디스플레이", backup: "백업", dnd: "방해 금지", lang: "언어 및 지역", about: "일반" }
-        };
-        let currentLang = localStorage.getItem('phone_lang') || 'zh';
-
-        function applyLanguage() {
-            const d = langData[currentLang];
-            document.getElementById('lbl-settings').innerText = d.settings;
-            document.getElementById('lbl-wp').innerText = d.wp;
-            document.getElementById('lbl-br').innerText = d.br;
-            document.getElementById('lbl-mode').innerText = d.mode;
-            document.getElementById('lbl-backup').innerText = d.backup;
-            document.getElementById('lbl-dnd').innerText = d.dnd;
-            document.getElementById('lbl-lang').innerText = d.lang;
-            document.getElementById('lbl-about').innerText = d.about;
-
-            // 更新子页面标题
-            document.querySelector('.lbl-wp-sub').innerText = d.wp;
-            document.querySelector('.lbl-br-sub').innerText = d.br;
-            document.querySelector('.lbl-mode-sub').innerText = d.mode;
-            document.querySelector('.lbl-backup-sub').innerText = d.backup;
-            document.querySelector('.lbl-lang-sub').innerText = d.lang;
-            document.querySelector('.lbl-about-sub').innerText = d.about;
-
-            // 更新勾选状态
-            document.getElementById('check-zh').innerText = currentLang === 'zh' ? '✓' : '';
-            document.getElementById('check-en').innerText = currentLang === 'en' ? '✓' : '';
-            document.getElementById('check-ko').innerText = currentLang === 'ko' ? '✓' : '';
-        }
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('phone_lang', lang);
-            applyLanguage();
-        }
-
-        // ================= 备份与其他 API =================
-        function saveApi() {
-            localStorage.setItem('api_key', document.getElementById('api-key').value.trim());
-            localStorage.setItem('api_url', document.getElementById('api-url').value.trim());
-            localStorage.setItem('api_model', document.getElementById('api-model').value.trim());
-            alert("API 保存成功！");
-        }
-
-        function generateBackup() {
-            const data = {
-                api_key: localStorage.getItem('api_key'),
-                api_url: localStorage.getItem('api_url'),
-                api_model: localStorage.getItem('api_model'),
-                friends: localStorage.getItem('kakao_friends'),
-                chats: localStorage.getItem('kakao_chats'),
-                dark_mode: localStorage.getItem('dark_mode'),
-                phone_lang: currentLang,
-                device_name: localStorage.getItem('device_name')
-            };
-            document.getElementById('backup-data').value = JSON.stringify(data);
-            alert("备份成功！");
-        }
-
-        function restoreBackup() {
-            const raw = document.getElementById('backup-data').value.trim();
-            if(!raw) return alert("请先粘贴备份数据！");
-            try {
-                const data = JSON.parse(raw);
-                if(data.api_key) localStorage.setItem('api_key', data.api_key);
-                if(data.api_url) localStorage.setItem('api_url', data.api_url);
-                if(data.api_model) localStorage.setItem('api_model', data.api_model);
-                if(data.friends) localStorage.setItem('kakao_friends', data.friends);
-                if(data.chats) localStorage.setItem('kakao_chats', data.chats);
-                if(data.dark_mode) localStorage.setItem('dark_mode', data.dark_mode);
-                if(data.phone_lang) localStorage.setItem('phone_lang', data.phone_lang);
-                if(data.device_name) localStorage.setItem('device_name', data.device_name);
-                alert("恢复成功！即将刷新页面。");
-                location.reload();
-            } catch(e) { alert("数据格式错误！"); }
-        }
-
-        // ================= KakaoTalk 逻辑 =================
-        let friends = JSON.parse(localStorage.getItem('kakao_friends')) || [];
-        let chats = JSON.parse(localStorage.getItem('kakao_chats')) || {}; 
-        let currentTab = 'all';
-        let activeFriendName = '';
-
-        function switchTab(tab) {
-            currentTab = tab;
-            document.getElementById('tab-all').classList.remove('active');
-            document.getElementById('tab-unread').classList.remove('active');
-            if(tab === 'all') document.getElementById('tab-all').classList.add('active');
-            if(tab === 'unread') document.getElementById('tab-unread').classList.add('active');
-            renderKakaoList();
-        }
-
-        function openSub(id) { 
-            document.getElementById(id).classList.add('active'); 
-            if(id === 'friends-page') renderFriendsList();
-        }
-        function closeSub(id) { document.getElementById(id).classList.remove('active'); }
-
-        function saveNewFriend() {
-            const name = document.getElementById('new-friend-name').value.trim();
-            if (!name) return alert("请输入名字");
-            
-            if (!friends.includes(name)) {
-                friends.push(name);
-                chats[name] = { messages: [], unread: false }; 
-                saveData();
-            }
-            document.getElementById('new-friend-name').value = '';
-            closeSub('add-friend-page');
-            switchTab('all');
-        }
-
-        function saveData() {
-            localStorage.setItem('kakao_friends', JSON.stringify(friends));
-            localStorage.setItem('kakao_chats', JSON.stringify(chats));
-        }
-
-        function renderKakaoList() {
-            const list = document.getElementById('kakao-list');
-            list.innerHTML = '';
-
-            let displayFriends = friends;
-            if (currentTab === 'unread') {
-                displayFriends = friends.filter(name => chats[name] && chats[name].unread);
-            }
-
-            if (displayFriends.length === 0) {
-                list.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">${currentTab === 'unread' ? '没有未读消息' : '暂无好友'}</div>`;
-                return;
-            }
-
-            displayFriends.forEach(name => {
-                const chatData = chats[name] || { messages: [], unread: false };
-                const msgs = chatData.messages;
-                const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1].content : '开始聊天吧';
-                const unreadBadge = chatData.unread ? `<div style="background:#FEE500; color:#333; border-radius:10px; padding:2px 6px; margin-top:5px; font-weight:bold; display:inline-block;">1</div>` : '';
-
-                const div = document.createElement('div');
-                div.className = 'kakao-item';
-                div.onclick = () => enterChat(name);
-                div.innerHTML = `
-                    <div class="kakao-avatar">👤</div>
-                    <div class="kakao-info">
-                        <div class="kakao-name">${name}</div>
-                        <div class="kakao-preview">${lastMsg}</div>
-                    </div>
-                    <div class="kakao-meta">
-                        <div>刚刚</div>
-                        ${unreadBadge}
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function renderFriendsList() {
-            const container = document.getElementById('friends-list');
-            container.innerHTML = '';
-            if(friends.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#666; margin-top:50px;">暂无好友</div>';
-                return;
-            }
-            friends.forEach(name => {
-                const div = document.createElement('div');
-                div.className = 'kakao-item';
-                div.onclick = () => { closeSub('friends-page'); enterChat(name); };
-                div.innerHTML = `<div class="kakao-avatar">👤</div><div class="kakao-info"><div class="kakao-name">${name}</div></div>`;
-                container.appendChild(div);
-            });
-        }
-
-        function enterChat(name) {
-            activeFriendName = name;
-            document.getElementById('chat-target-name').innerText = name;
-            if (chats[name]) { chats[name].unread = false; saveData(); }
-            openSub('kakao-chat-page');
-            renderChatMessages();
-        }
-
-        function renderChatMessages() {
-            const container = document.getElementById('chat-messages');
-            container.innerHTML = '';
-            const chatData = chats[activeFriendName];
-            if(!chatData) return;
-            chatData.messages.forEach(msg => {
-                const row = document.createElement('div');
-                row.className = `msg-row ${msg.role === 'user' ? 'user' : 'ai'}`;
-                row.innerHTML = `<div class="msg-bubble">${msg.content}</div>`;
-                container.appendChild(row);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function handleChatKey(e) { if(e.key === 'Enter') sendKakaoMsg(); }
-
-        async function sendKakaoMsg() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            chats[activeFriendName].messages.push({ role: 'user', content: text });
-            saveData();
-            input.value = '';
-            renderChatMessages();
-
-            const apiKey = localStorage.getItem('api_key');
-            const apiUrl = localStorage.getItem('api_url');
-            const model = localStorage.getItem('api_model');
-
-            if (!apiKey) {
-                setTimeout(() => {
-                    chats[activeFriendName].messages.push({ role: 'assistant', content: '(请先去设置配置 API)' });
-                    chats[activeFriendName].unread = true;
-                    saveData();
-                    renderChatMessages();
-                }, 500);
-                return;
-            }
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                    body: JSON.stringify({ 
-                        model: model, 
-                        messages: [
-                            { role: "system", content: `你现在的名字叫${activeFriendName}。你是一个真实的聊天对象。请简短自然地回复。` },
-                            ...chats[activeFriendName].messages.map(m => ({role: m.role, content: m.content}))
-                        ]
-                    })
-                });
-                const data = await response.json();
-                if (data.choices && data.choices.length > 0) {
-                    chats[activeFriendName].messages.push({ role: 'assistant', content: data.choices[0].message.content });
-                    chats[activeFriendName].unread = true; 
-                    saveData();
-                    renderChatMessages();
-                }
-            } catch (e) {
-                chats[activeFriendName].messages.push({ role: 'assistant', content: '(网络出错)' });
-                renderChatMessages();
-            }
-        }
-
-        // 初始化与外观设置
-        function changeFeedBg(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) { document.getElementById('feed-bg').style.backgroundImage = `url('${e.target.result}')`; };
-            reader.readAsDataURL(file);
-        }
-
-        function setBubbleColor(color, el) {
-            document.documentElement.style.setProperty('--bubble-color', color);
-            document.querySelectorAll('#bubble-picker .color-option').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function setChatBg(color, el) {
-            document.documentElement.style.setProperty('--chat-bg', color);
-            document.querySelectorAll('#bg-picker .color-option').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        // 初始化加载
-        window.onload = () => {
-            // 加载深色模式状态
-            if(localStorage.getItem('dark_mode') === 'on') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('dark-mode-switch').classList.add('on');
-            }
-            // 加载 API
-            document.getElementById('api-key').value = localStorage.getItem('api_key') || '';
-            document.getElementById('api-url').value = localStorage.getItem('api_url') || 'https://api.deepseek.com/chat/completions';
-            document.getElementById('api-model').value = localStorage.getItem('api_model') || 'deepseek-chat';
-            // 加载语言
-            applyLanguage();
-        }
-    </script>
 </body>
 </html>
