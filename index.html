@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 0px; }
-        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; background-color: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; transition: background 0.3s; }
 
         /* 手机全屏 */
         #phone { width: 100vw; height: 100vh; position: relative; overflow: hidden; background: linear-gradient(180deg, #e6e6e6 0%, #a8a8a8 100%); transition: background 0.3s; }
@@ -16,7 +16,7 @@
         #brightness-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.1s; }
 
         /* 状态栏 */
-        .status-bar { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #333; font-size: 14px; font-weight: 600; z-index: 100; pointer-events: none; }
+        .status-bar { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #333; font-size: 14px; font-weight: 600; z-index: 100; pointer-events: none; transition: color 0.3s; }
         .battery-icon { width: 24px; height: 12px; border: 1.5px solid currentColor; border-radius: 4px; position: relative; padding: 1.5px; display:flex; align-items:center; }
         .battery-icon::after { content: ''; position: absolute; right: -4px; top: 3px; width: 2px; height: 4px; background: currentColor; border-radius: 0 2px 2px 0; }
         .battery-level { height: 100%; width: 73%; background: currentColor; border-radius: 2px; }
@@ -26,7 +26,7 @@
         .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 30px; }
         .app-icon { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; }
         .app-icon:active { transform: scale(0.85); }
-        .app-name { font-size: 11px; color: #333; font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.5);}
+        .app-name { font-size: 11px; color: #333; font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.5); transition: color 0.3s;}
         
         .icon-kakao { width: 60px; height: 60px; border-radius: 22%; background: #FEE500; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .kakao-bubble { width: 40px; height: 32px; background: #3C1E1E; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #FEE500; font-weight: 900; font-size: 12px; position: relative;}
@@ -48,6 +48,7 @@
             gap: 40px; 
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 3px rgba(255, 255, 255, 0.7);
+            transition: all 0.3s;
         }
 
         /* App 页面容器 */
@@ -105,13 +106,12 @@
         .feed-profile { width: 60px; height: 60px; border-radius: 20px; background: #fff; margin-top: -30px; margin-left: 20px; border: 3px solid #000; display: flex; justify-content: center; align-items: center; font-size: 30px;}
 
         /* ================= 设置 App ================= */
-        /* 整体背景调灰白，增加对比度 */
-        #app-settings, .set-page { background: #d1d1d6; color: #000; overflow-y: auto; }
-        .settings-header, .set-page-header { display: flex; align-items: center; padding: 55px 15px 10px; border-bottom: 1px solid #b0b0b5;}
+        #app-settings, .set-page { background: #d1d1d6; color: #000; overflow-y: auto; transition: background 0.3s, color 0.3s;}
+        .settings-header, .set-page-header { display: flex; align-items: center; padding: 55px 15px 10px; border-bottom: 1px solid #b0b0b5; transition: border-color 0.3s;}
         .settings-header .thin-back, .set-page-header .thin-back { color: #007aff; font-weight: 400;}
         .settings-content { display: flex; flex-direction: column; gap: 20px; padding: 20px;}
-        .settings-group { background: #fff; border-radius: 10px; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);}
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e5e5ea; font-size: 16px; cursor: pointer;}
+        .settings-group { background: #fff; border-radius: 10px; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: background 0.3s;}
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e5e5ea; font-size: 16px; cursor: pointer; transition: border-color 0.3s;}
         .settings-item:last-child { border-bottom: none; }
         .settings-item .arrow { color: #bbb; font-size: 20px; font-weight: 300;}
         
@@ -123,9 +123,14 @@
         .set-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 400; display: none; flex-direction: column; transform: translateX(100%); transition: transform 0.3s; }
         .set-page.active { display: flex; transform: translateX(0); }
         .set-page-content { padding: 20px; }
-        .set-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 15px; background: #fff; margin-bottom: 15px;}
+        .set-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 15px; background: #fff; margin-bottom: 15px; transition: background 0.3s, color 0.3s, border-color 0.3s;}
         .set-btn { background: #007aff; color: #fff; padding: 12px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; width: 100%;}
-        .set-textarea { width: 100%; height: 150px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 12px; background: #fff; margin-bottom: 15px; resize: none;}
+        .set-textarea { width: 100%; height: 150px; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 12px; background: #fff; margin-bottom: 15px; resize: none; transition: background 0.3s, color 0.3s, border-color 0.3s;}
+
+        /* 语言选择列表 */
+        .lang-option { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e5e5ea; cursor: pointer; font-size: 16px;}
+        .lang-option:last-child { border-bottom: none; }
+        .lang-option.active { color: #007aff; font-weight: 600; }
 
         /* 颜色块 */
         .color-picker { display: flex; gap: 15px; margin: 15px 0; }
@@ -136,6 +141,18 @@
         .kakao-settings-group { background: #1c1c1e; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
         .kakao-settings-item { padding: 15px; color: #fff; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: pointer;}
         .kakao-settings-item:last-child { border-bottom: none; }
+
+        /* ================= 全局深色模式适配 ================= */
+        body.dark-mode #phone { background: #000; }
+        body.dark-mode .status-bar, body.dark-mode .app-name { color: #fff; }
+        body.dark-mode .dock { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
+        
+        body.dark-mode #app-settings, body.dark-mode .set-page { background: #000; color: #fff; }
+        body.dark-mode .settings-header, body.dark-mode .set-page-header { border-bottom-color: #333; }
+        body.dark-mode .settings-group { background: #1c1c1e; }
+        body.dark-mode .settings-item, body.dark-mode .lang-option { border-bottom-color: #333; }
+        body.dark-mode .set-input, body.dark-mode .set-textarea { background: #1c1c1e; color: #fff; border-color: #333; }
+
     </style>
 </head>
 <body>
@@ -182,7 +199,6 @@
                     <div class="pill" id="tab-unread" onclick="switchTab('unread')">未读</div>
                 </div>
                 <div class="kakao-list" id="kakao-list"></div>
-                <!-- 底栏：好友、聊天、通话、朋友圈 -->
                 <div class="kakao-bottom-nav">
                     <div class="nav-item" onclick="openSub('friends-page')">👤</div>
                     <div class="nav-item active">💬</div>
@@ -191,12 +207,11 @@
                 </div>
             </div>
 
-            <!-- 添加好友页面 -->
+            <!-- 添加好友 -->
             <div id="add-friend-page" class="sub-page">
                 <div class="sub-header"><span class="thin-back" onclick="closeSub('add-friend-page')">‹</span><div class="sub-title">添加人物</div></div>
                 <div class="sub-content">
                     <input type="text" id="new-friend-name" class="set-input" placeholder="输入名字 (如: 月)">
-                    <input type="text" id="new-friend-avatar" class="set-input" placeholder="输入一个Emoji作为头像 (如: 🌙)">
                     <button class="set-btn" onclick="saveNewFriend()">保存并添加</button>
                 </div>
             </div>
@@ -217,9 +232,7 @@
             <!-- 好友列表 -->
             <div id="friends-page" class="sub-page">
                 <div class="sub-header"><span class="thin-back" onclick="closeSub('friends-page')">‹</span><div class="sub-title">好友</div></div>
-                <div class="sub-content" id="friends-list" style="padding:0;">
-                    <!-- 动态渲染好友 -->
-                </div>
+                <div class="sub-content" id="friends-list" style="padding:0;"></div>
             </div>
 
             <!-- 通话记录 -->
@@ -228,7 +241,7 @@
                 <div class="sub-content" style="text-align:center; color:#666; margin-top:50px;">暂无通话记录</div>
             </div>
 
-            <!-- 朋友圈 (直通) -->
+            <!-- 朋友圈 -->
             <div id="feed-page" class="sub-page" style="background:#1c1c1e;">
                 <div class="sub-header" style="border:none;"><span class="thin-back" onclick="closeSub('feed-page')">‹</span><div class="sub-title">动态</div></div>
                 <input type="file" id="feed-bg-upload" accept="image/*" style="display:none;" onchange="changeFeedBg(event)">
@@ -237,26 +250,21 @@
                 <div style="padding: 20px; color:#888; font-size:14px;">暂无动态</div>
             </div>
 
-            <!-- Kakao 设置 (目录化) -->
+            <!-- Kakao 设置 -->
             <div id="kakao-settings-page" class="sub-page">
                 <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-settings-page')">‹</span><div class="sub-title">KakaoTalk 设置</div></div>
                 <div class="sub-content">
                     <div class="kakao-settings-group">
-                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bubble')">
-                            <span>聊天气泡</span><span style="color:#888;">›</span>
-                        </div>
-                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bg')">
-                            <span>聊天背景</span><span style="color:#888;">›</span>
-                        </div>
+                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bubble')"><span>聊天气泡</span><span style="color:#888;">›</span></div>
+                        <div class="kakao-settings-item" onclick="openSub('kakao-set-bg')"><span>聊天背景</span><span style="color:#888;">›</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Kakao 设置子页：气泡 -->
+            <!-- Kakao 气泡颜色 -->
             <div id="kakao-set-bubble" class="sub-page">
                 <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-set-bubble')">‹</span><div class="sub-title">聊天气泡</div></div>
                 <div class="sub-content">
-                    <div style="font-size:15px; margin-bottom:10px; color:#fff;">选择颜色</div>
                     <div class="color-picker" id="bubble-picker">
                         <div class="color-option active" style="background:#FEE500;" onclick="setBubbleColor('#FEE500', this)"></div>
                         <div class="color-option" style="background:#ff8c69;" onclick="setBubbleColor('#ff8c69', this)"></div>
@@ -265,11 +273,10 @@
                 </div>
             </div>
 
-            <!-- Kakao 设置子页：背景 -->
+            <!-- Kakao 背景颜色 -->
             <div id="kakao-set-bg" class="sub-page">
                 <div class="sub-header"><span class="thin-back" onclick="closeSub('kakao-set-bg')">‹</span><div class="sub-title">聊天背景</div></div>
                 <div class="sub-content">
-                    <div style="font-size:15px; margin-bottom:10px; color:#fff;">选择颜色</div>
                     <div class="color-picker" id="bg-picker">
                         <div class="color-option active" style="background:#b2c7d9;" onclick="setChatBg('#b2c7d9', this)"></div>
                         <div class="color-option" style="background:#f2f2f7;" onclick="setChatBg('#f2f2f7', this)"></div>
@@ -282,31 +289,31 @@
         <!-- ================= 设置 App ================= -->
         <div id="app-settings" class="app-screen">
             <div id="settings-main">
-                <div class="settings-header"><span class="thin-back" onclick="goHome()">‹</span><div style="font-weight:600; font-size:18px; margin-left:10px;">设置</div></div>
+                <div class="settings-header"><span class="thin-back" onclick="goHome()">‹</span><div style="font-weight:600; font-size:18px; margin-left:10px;" id="lbl-settings">设置</div></div>
                 <div class="settings-content">
                     <div class="settings-group">
-                        <div class="settings-item" onclick="openSetPage('set-wallpaper')"><span>🖼️ 壁纸</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-brightness')"><span>🔆 亮度</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-mode')"><span>🌙 模式</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-wallpaper')"><span id="lbl-wp">壁纸</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-brightness')"><span id="lbl-br">亮度</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-mode')"><span id="lbl-mode">模式</span><span class="arrow">›</span></div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-item" onclick="openSetPage('set-api')"><span>🔌 API</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="openSetPage('set-backup')"><span>☁️ 备份</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-api')"><span>API</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-backup')"><span id="lbl-backup">备份</span><span class="arrow">›</span></div>
                         <div class="settings-item">
-                            <span>🌜 勿扰模式</span>
+                            <span id="lbl-dnd">勿扰模式</span>
                             <div class="switch" id="dnd-switch" onclick="toggleSwitch(this)"></div>
                         </div>
                     </div>
                     <div class="settings-group">
-                        <div class="settings-item" onclick="alert('语言已设置为简体中文')"><span>🌐 语言与地区</span><span class="arrow">›</span></div>
-                        <div class="settings-item" onclick="alert('Kiro OS v1.0.0 (基于 iOS 17 构建)')"><span>ℹ️ 关于本机</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-lang')"><span id="lbl-lang">语言与地区</span><span class="arrow">›</span></div>
+                        <div class="settings-item" onclick="openSetPage('set-about')"><span id="lbl-about">关于本机</span><span class="arrow">›</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- 壁纸 -->
             <div id="set-wallpaper" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-wallpaper')">‹</span><div style="font-size:17px;">壁纸</div></div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-wallpaper')">‹</span><div style="font-size:17px;" class="lbl-wp-sub">壁纸</div></div>
                 <div class="set-page-content">
                     <div style="width:100%; height:200px; background:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover; border-radius:12px; margin-bottom:20px;" id="wp-preview"></div>
                     <input type="file" id="wp-upload" accept="image/*" onchange="changeWallpaper(event)" style="display:none;">
@@ -316,18 +323,17 @@
 
             <!-- 亮度 -->
             <div id="set-brightness" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-brightness')">‹</span><div style="font-size:17px;">亮度</div></div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-brightness')">‹</span><div style="font-size:17px;" class="lbl-br-sub">亮度</div></div>
                 <div class="set-page-content">
                     <div style="background:#fff; padding:20px; border-radius:12px;">
                         <input type="range" min="10" max="100" value="100" style="width:100%; accent-color:#007aff;" oninput="changeBrightness(this.value)">
-                        <div style="text-align:center; font-size:12px; color:#888; margin-top:10px;">向左滑动调暗</div>
                     </div>
                 </div>
             </div>
 
             <!-- 模式 -->
             <div id="set-mode" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-mode')">‹</span><div style="font-size:17px;">模式</div></div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-mode')">‹</span><div style="font-size:17px;" class="lbl-mode-sub">模式</div></div>
                 <div class="set-page-content">
                     <div style="background:#fff; border-radius:12px; padding:0 15px;">
                         <div class="settings-item"><span>深色模式</span><div class="switch" id="dark-mode-switch" onclick="toggleDarkMode(this)"></div></div>
@@ -337,7 +343,7 @@
 
             <!-- API -->
             <div id="set-api" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-api')">‹</span><div style="font-size:17px;">API 设置</div></div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-api')">‹</span><div style="font-size:17px;">API</div></div>
                 <div class="set-page-content">
                     <input type="password" id="api-key" class="set-input" placeholder="填入 API Key">
                     <input type="text" id="api-url" class="set-input" value="https://api.deepseek.com/chat/completions">
@@ -348,12 +354,39 @@
 
             <!-- 备份 -->
             <div id="set-backup" class="set-page">
-                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-backup')">‹</span><div style="font-size:17px;">备份与恢复</div></div>
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-backup')">‹</span><div style="font-size:17px;" class="lbl-backup-sub">备份</div></div>
                 <div class="set-page-content">
-                    <div style="font-size:13px; color:#666; margin-bottom:15px;">这里会备份你的聊天记录、好友列表、API配置。换手机时，把下面的代码复制过去，在新手机里粘贴恢复。</div>
-                    <button class="set-btn" style="margin-bottom:15px;" onclick="generateBackup()">生成备份数据</button>
-                    <textarea id="backup-data" class="set-textarea" placeholder="点击上方按钮生成备份数据"></textarea>
-                    <button class="set-btn" style="background:#34c759;" onclick="restoreBackup()">读取上方数据恢复</button>
+                    <button class="set-btn" style="margin-bottom:15px;" onclick="generateBackup()">生成备份</button>
+                    <textarea id="backup-data" class="set-textarea"></textarea>
+                    <button class="set-btn" style="background:#34c759;" onclick="restoreBackup()">恢复数据</button>
+                </div>
+            </div>
+
+            <!-- 语言 -->
+            <div id="set-lang" class="set-page">
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-lang')">‹</span><div style="font-size:17px;" class="lbl-lang-sub">语言与地区</div></div>
+                <div class="set-page-content">
+                    <div style="background:#fff; border-radius:12px; padding:0 15px;">
+                        <div class="lang-option" onclick="changeLanguage('zh')"><span>简体中文</span><span id="check-zh" style="color:#007aff;">✓</span></div>
+                        <div class="lang-option" onclick="changeLanguage('en')"><span>English</span><span id="check-en" style="color:#007aff;"></span></div>
+                        <div class="lang-option" onclick="changeLanguage('ko')"><span>한국어</span><span id="check-ko" style="color:#007aff;"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关于本机 -->
+            <div id="set-about" class="set-page">
+                <div class="set-page-header"><span class="thin-back" onclick="closeSetPage('set-about')">‹</span><div style="font-size:17px;" class="lbl-about-sub">关于本机</div></div>
+                <div class="set-page-content">
+                    <div style="background:#fff; border-radius:12px; padding:15px; margin-bottom:20px;">
+                        <div style="font-size:13px; color:#666; margin-bottom:8px;">设备名称</div>
+                        <input type="text" id="device-name" class="set-input" style="margin-bottom:0;" placeholder="输入你的手机名字" oninput="saveDeviceName(this.value)">
+                    </div>
+                    <div style="text-align:center; font-size:12px; color:#888; line-height:1.6;">
+                        Kiro OS v1.0<br>
+                        Model: Moonphone 15 Pro<br>
+                        Serial: KY-2026-1023
+                    </div>
                 </div>
             </div>
         </div>
@@ -408,11 +441,59 @@
             reader.readAsDataURL(file);
         }
 
+        // 深色模式
         function toggleDarkMode(el) {
             el.classList.toggle('on');
             document.body.classList.toggle('dark-mode');
+            localStorage.setItem('dark_mode', el.classList.contains('on') ? 'on' : 'off');
         }
 
+        // 关于本机：保存名称
+        function saveDeviceName(val) {
+            localStorage.setItem('device_name', val);
+        }
+        document.getElementById('device-name').value = localStorage.getItem('device_name') || 'Lena 的手机';
+
+        // ================= 语言切换 =================
+        const langData = {
+            zh: { settings: "设置", wp: "壁纸", br: "亮度", mode: "模式", backup: "备份", dnd: "勿扰模式", lang: "语言与地区", about: "关于本机" },
+            en: { settings: "Settings", wp: "Wallpaper", br: "Brightness", mode: "Display", backup: "Backup", dnd: "Do Not Disturb", lang: "Language", about: "About" },
+            ko: { settings: "설정", wp: "배경화면", br: "밝기", mode: "디스플레이", backup: "백업", dnd: "방해 금지", lang: "언어 및 지역", about: "일반" }
+        };
+        let currentLang = localStorage.getItem('phone_lang') || 'zh';
+
+        function applyLanguage() {
+            const d = langData[currentLang];
+            document.getElementById('lbl-settings').innerText = d.settings;
+            document.getElementById('lbl-wp').innerText = d.wp;
+            document.getElementById('lbl-br').innerText = d.br;
+            document.getElementById('lbl-mode').innerText = d.mode;
+            document.getElementById('lbl-backup').innerText = d.backup;
+            document.getElementById('lbl-dnd').innerText = d.dnd;
+            document.getElementById('lbl-lang').innerText = d.lang;
+            document.getElementById('lbl-about').innerText = d.about;
+
+            // 更新子页面标题
+            document.querySelector('.lbl-wp-sub').innerText = d.wp;
+            document.querySelector('.lbl-br-sub').innerText = d.br;
+            document.querySelector('.lbl-mode-sub').innerText = d.mode;
+            document.querySelector('.lbl-backup-sub').innerText = d.backup;
+            document.querySelector('.lbl-lang-sub').innerText = d.lang;
+            document.querySelector('.lbl-about-sub').innerText = d.about;
+
+            // 更新勾选状态
+            document.getElementById('check-zh').innerText = currentLang === 'zh' ? '✓' : '';
+            document.getElementById('check-en').innerText = currentLang === 'en' ? '✓' : '';
+            document.getElementById('check-ko').innerText = currentLang === 'ko' ? '✓' : '';
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('phone_lang', lang);
+            applyLanguage();
+        }
+
+        // ================= 备份与其他 API =================
         function saveApi() {
             localStorage.setItem('api_key', document.getElementById('api-key').value.trim());
             localStorage.setItem('api_url', document.getElementById('api-url').value.trim());
@@ -420,17 +501,19 @@
             alert("API 保存成功！");
         }
 
-        // 备份与恢复
         function generateBackup() {
             const data = {
                 api_key: localStorage.getItem('api_key'),
                 api_url: localStorage.getItem('api_url'),
                 api_model: localStorage.getItem('api_model'),
                 friends: localStorage.getItem('kakao_friends'),
-                chats: localStorage.getItem('kakao_chats')
+                chats: localStorage.getItem('kakao_chats'),
+                dark_mode: localStorage.getItem('dark_mode'),
+                phone_lang: currentLang,
+                device_name: localStorage.getItem('device_name')
             };
             document.getElementById('backup-data').value = JSON.stringify(data);
-            alert("备份成功！请复制文本框里的代码保存。");
+            alert("备份成功！");
         }
 
         function restoreBackup() {
@@ -443,15 +526,13 @@
                 if(data.api_model) localStorage.setItem('api_model', data.api_model);
                 if(data.friends) localStorage.setItem('kakao_friends', data.friends);
                 if(data.chats) localStorage.setItem('kakao_chats', data.chats);
+                if(data.dark_mode) localStorage.setItem('dark_mode', data.dark_mode);
+                if(data.phone_lang) localStorage.setItem('phone_lang', data.phone_lang);
+                if(data.device_name) localStorage.setItem('device_name', data.device_name);
                 alert("恢复成功！即将刷新页面。");
                 location.reload();
             } catch(e) { alert("数据格式错误！"); }
         }
-
-        // 加载初始设置
-        document.getElementById('api-key').value = localStorage.getItem('api_key') || '';
-        document.getElementById('api-url').value = localStorage.getItem('api_url') || 'https://api.deepseek.com/chat/completions';
-        document.getElementById('api-model').value = localStorage.getItem('api_model') || 'deepseek-chat';
 
         // ================= KakaoTalk 逻辑 =================
         let friends = JSON.parse(localStorage.getItem('kakao_friends')) || [];
@@ -503,7 +584,7 @@
             }
 
             if (displayFriends.length === 0) {
-                list.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">${currentTab === 'unread' ? '没有未读消息' : '暂无好友，点击右上角👤+添加'}</div>`;
+                list.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">${currentTab === 'unread' ? '没有未读消息' : '暂无好友'}</div>`;
                 return;
             }
 
@@ -531,27 +612,18 @@
             });
         }
 
-        // 渲染好友列表
         function renderFriendsList() {
             const container = document.getElementById('friends-list');
             container.innerHTML = '';
-            
             if(friends.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:#666; margin-top:50px;">暂无好友</div>';
                 return;
             }
-
             friends.forEach(name => {
                 const div = document.createElement('div');
                 div.className = 'kakao-item';
-                div.onclick = () => {
-                    closeSub('friends-page');
-                    enterChat(name);
-                };
-                div.innerHTML = `
-                    <div class="kakao-avatar">👤</div>
-                    <div class="kakao-info"><div class="kakao-name">${name}</div></div>
-                `;
+                div.onclick = () => { closeSub('friends-page'); enterChat(name); };
+                div.innerHTML = `<div class="kakao-avatar">👤</div><div class="kakao-info"><div class="kakao-name">${name}</div></div>`;
                 container.appendChild(div);
             });
         }
@@ -559,12 +631,7 @@
         function enterChat(name) {
             activeFriendName = name;
             document.getElementById('chat-target-name').innerText = name;
-            
-            if (chats[name]) {
-                chats[name].unread = false;
-                saveData();
-            }
-            
+            if (chats[name]) { chats[name].unread = false; saveData(); }
             openSub('kakao-chat-page');
             renderChatMessages();
         }
@@ -574,7 +641,6 @@
             container.innerHTML = '';
             const chatData = chats[activeFriendName];
             if(!chatData) return;
-            
             chatData.messages.forEach(msg => {
                 const row = document.createElement('div');
                 row.className = `msg-row ${msg.role === 'user' ? 'user' : 'ai'}`;
@@ -635,17 +701,14 @@
             }
         }
 
-        // 动态背景替换
+        // 初始化与外观设置
         function changeFeedBg(event) {
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('feed-bg').style.backgroundImage = `url('${e.target.result}')`;
-            };
+            reader.onload = function(e) { document.getElementById('feed-bg').style.backgroundImage = `url('${e.target.result}')`; };
             reader.readAsDataURL(file);
         }
 
-        // Kakao 外观设置
         function setBubbleColor(color, el) {
             document.documentElement.style.setProperty('--bubble-color', color);
             document.querySelectorAll('#bubble-picker .color-option').forEach(e => e.classList.remove('active'));
@@ -658,6 +721,20 @@
             el.classList.add('active');
         }
 
+        // 初始化加载
+        window.onload = () => {
+            // 加载深色模式状态
+            if(localStorage.getItem('dark_mode') === 'on') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-switch').classList.add('on');
+            }
+            // 加载 API
+            document.getElementById('api-key').value = localStorage.getItem('api_key') || '';
+            document.getElementById('api-url').value = localStorage.getItem('api_url') || 'https://api.deepseek.com/chat/completions';
+            document.getElementById('api-model').value = localStorage.getItem('api_model') || 'deepseek-chat';
+            // 加载语言
+            applyLanguage();
+        }
     </script>
 </body>
 </html>
