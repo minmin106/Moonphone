@@ -15,11 +15,11 @@
         /* 亮度遮罩 */
         #brightness-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.1s; }
 
-        /* 状态栏 */
+        /* 状态栏 (已去除信号图标) */
         .status-bar { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #333; font-size: 14px; font-weight: 600; z-index: 100; pointer-events: none; }
-        .battery-icon { width: 22px; height: 11px; border: 1px solid currentColor; border-radius: 3px; position: relative; padding: 1px; display:inline-block; vertical-align: middle;}
-        .battery-icon::after { content: ''; position: absolute; right: -3px; top: 2px; width: 2px; height: 5px; background: currentColor; border-radius: 0 1px 1px 0; }
-        .battery-level { height: 100%; width: 73%; background: currentColor; border-radius: 1px; }
+        .battery-icon { width: 24px; height: 12px; border: 1.5px solid currentColor; border-radius: 4px; position: relative; padding: 1.5px; display:flex; align-items:center; }
+        .battery-icon::after { content: ''; position: absolute; right: -4px; top: 3px; width: 2px; height: 4px; background: currentColor; border-radius: 0 2px 2px 0; }
+        .battery-level { height: 100%; width: 73%; background: currentColor; border-radius: 2px; }
 
         /* 桌面 */
         #home-screen { width: 100%; height: 100%; padding: 60px 25px 20px; display: flex; flex-direction: column; z-index: 1; }
@@ -35,7 +35,21 @@
         .icon-settings { width: 60px; height: 60px; border-radius: 22%; background: linear-gradient(180deg, #d4d4d4 0%, #8c8c8c 100%); display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .settings-gear { width: 40px; height: 40px; fill: #555; }
 
-        .dock { margin-top: auto; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); border-radius: 35px; padding: 15px 20px; display: flex; justify-content: center; gap: 40px; }
+        /* ★★★ 史诗级毛玻璃 Dock 栏 ★★★ */
+        .dock { 
+            margin-top: auto; 
+            background: rgba(255, 255, 255, 0.25); 
+            backdrop-filter: blur(40px) saturate(200%); 
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border-radius: 35px; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 40px; 
+            /* 增加边缘高光和立体阴影 */
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 3px rgba(255, 255, 255, 0.7);
+        }
 
         /* App 页面容器 */
         .app-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 200; opacity: 0; transform: scale(0.2); transition: opacity 0.3s, transform 0.35s; background: #000; }
@@ -96,7 +110,7 @@
         .settings-header { display: flex; align-items: center; padding: 55px 15px 10px; border-bottom: 1px solid #ccc;}
         .settings-header .thin-back { color: #007aff; font-weight: 400;}
         .settings-content { display: flex; flex-direction: column; gap: 20px; padding: 20px;}
-        .settings-group { background: #fff; border-radius: 10px; padding: 0 15px; }
+        .settings-group { background: #fff; border-radius: 10px; padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e5e5ea; font-size: 16px; cursor: pointer;}
         .settings-item:last-child { border-bottom: none; }
         .settings-item .arrow { color: #bbb; font-size: 20px; font-weight: 300;}
@@ -126,7 +140,7 @@
         <div id="brightness-overlay"></div>
         <div class="status-bar">
             <span id="time">09:31</span>
-            <div class="status-right"><span>📶</span><div class="battery-icon"><div class="battery-level"></div></div></div>
+            <div class="status-right"><div class="battery-icon"><div class="battery-level"></div></div></div>
         </div>
 
         <!-- 桌面 -->
@@ -411,7 +425,6 @@
 
         // ================= KakaoTalk 逻辑 =================
         let friends = JSON.parse(localStorage.getItem('kakao_friends')) || [];
-        // 聊天数据结构升级：增加 unread 属性
         let chats = JSON.parse(localStorage.getItem('kakao_chats')) || {}; 
         let currentTab = 'all';
         let activeFriendName = '';
@@ -434,7 +447,7 @@
             
             if (!friends.includes(name)) {
                 friends.push(name);
-                chats[name] = { messages: [], unread: false }; // 初始结构
+                chats[name] = { messages: [], unread: false }; 
                 saveData();
             }
             document.getElementById('new-friend-name').value = '';
@@ -452,7 +465,6 @@
             list.innerHTML = '';
 
             let displayFriends = friends;
-            // 过滤未读
             if (currentTab === 'unread') {
                 displayFriends = friends.filter(name => chats[name] && chats[name].unread);
             }
@@ -466,8 +478,6 @@
                 const chatData = chats[name] || { messages: [], unread: false };
                 const msgs = chatData.messages;
                 const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1].content : '开始聊天吧';
-                
-                // 未读角标
                 const unreadBadge = chatData.unread ? `<div style="background:#FEE500; color:#333; border-radius:10px; padding:2px 6px; margin-top:5px; font-weight:bold; display:inline-block;">1</div>` : '';
 
                 const div = document.createElement('div');
@@ -492,7 +502,6 @@
             activeFriendName = name;
             document.getElementById('chat-target-name').innerText = name;
             
-            // 进入聊天室，立刻消除未读
             if (chats[name]) {
                 chats[name].unread = false;
                 saveData();
