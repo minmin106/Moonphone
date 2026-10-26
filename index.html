@@ -3,579 +3,589 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Liquid Glass Desktop</title>
+  <title>iOS Liquid Glass Desktop</title>
   <style>
-        /* ==========================================================================
-   CSS VARIABLES & LIQUID GLASS SPECIFICATIONS
-   ========================================================================== */
-:root {
-  /* Translucent Liquid Glass Layers */
-  --glass-bg-base: rgba(255, 255, 255, 0.16);
-  --glass-bg-hover: rgba(255, 255, 255, 0.28);
-  --glass-bg-active: rgba(255, 255, 255, 0.38);
-  --glass-dock-bg: rgba(255, 255, 255, 0.2);
-  --glass-modal-bg: rgba(248, 250, 252, 0.45);
+    /* ==========================================================================
+       CSS VARIABLES & LIQUID GLASS SPECIFICATIONS
+       ========================================================================== */
+    :root {
+      /* Translucent Liquid Glass Materials */
+      --glass-bg-base: rgba(255, 255, 255, 0.16);
+      --glass-bg-hover: rgba(255, 255, 255, 0.28);
+      --glass-dock-bg: rgba(255, 255, 255, 0.2);
+      --glass-modal-bg: rgba(248, 250, 252, 0.45);
 
-  /* Delicate Specular Edges & Borders */
-  --glass-border: rgba(255, 255, 255, 0.42);
-  --glass-border-subtle: rgba(255, 255, 255, 0.2);
-  --glass-inner-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.7),
-                           inset 0 -1px 1px rgba(255, 255, 255, 0.15);
+      /* Specular Edges & Borders */
+      --glass-border: rgba(255, 255, 255, 0.42);
+      --glass-border-subtle: rgba(255, 255, 255, 0.2);
+      --glass-inner-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.7),
+                               inset 0 -1px 1px rgba(255, 255, 255, 0.15);
 
-  /* Optical Blur */
-  --blur-surface: blur(30px) saturate(180%);
-  --blur-dock: blur(36px) saturate(200%);
-  --blur-modal: blur(48px) saturate(210%);
+      /* Blur Engine */
+      --blur-surface: blur(30px) saturate(180%);
+      --blur-dock: blur(36px) saturate(200%);
+      --blur-modal: blur(48px) saturate(210%);
 
-  /* Soft Ambient Shadows */
-  --shadow-tile: 0 8px 24px -4px rgba(20, 24, 38, 0.06),
-                 0 2px 6px -1px rgba(20, 24, 38, 0.03);
-  --shadow-dock: 0 18px 42px -6px rgba(20, 24, 38, 0.1),
-                 0 2px 6px rgba(0, 0, 0, 0.03);
-  --shadow-modal: 0 32px 64px -12px rgba(10, 15, 30, 0.22);
+      /* Ambient Shadows */
+      --shadow-tile: 0 8px 24px -4px rgba(20, 24, 38, 0.06),
+                     0 2px 6px -1px rgba(20, 24, 38, 0.03);
+      --shadow-dock: 0 18px 42px -6px rgba(20, 24, 38, 0.1),
+                     0 2px 6px rgba(0, 0, 0, 0.03);
+      --shadow-modal: 0 32px 64px -12px rgba(10, 15, 30, 0.22);
 
-  /* Color Palette */
-  --text-primary: rgba(18, 22, 30, 0.86);
-  --text-secondary: rgba(18, 22, 30, 0.52);
-  --accent-color: #0071e3;
-  --icon-stroke-color: rgba(22, 26, 35, 0.82);
+      /* Typography & Strokes */
+      --text-primary: rgba(18, 22, 30, 0.86);
+      --text-secondary: rgba(18, 22, 30, 0.52);
+      --accent-color: #0071e3;
+      --icon-stroke-color: rgba(22, 26, 35, 0.82);
 
-  /* Geometry & Scaling */
-  --icon-size: clamp(56px, 7vw, 66px);
-  --icon-radius: clamp(16px, 2vw, 19px);
-  --dock-radius: clamp(26px, 3.5vw, 36px);
-  --grid-gap: clamp(18px, 3vw, 36px);
+      /* Geometry & Scaling */
+      --icon-size: clamp(56px, 7vw, 66px);
+      --icon-radius: clamp(16px, 2vw, 19px);
+      --dock-radius: clamp(26px, 3.5vw, 36px);
+      --grid-gap: clamp(18px, 3vw, 36px);
 
-  /* Easing curves */
-  --ease-liquid: cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-fast: 0.22s var(--ease-liquid);
-  --transition-smooth: 0.4s var(--ease-liquid);
-}
+      /* Transitions */
+      --ease-liquid: cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-fast: 0.22s var(--ease-liquid);
+      --transition-smooth: 0.4s var(--ease-liquid);
+    }
 
-/* Base Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+    /* Base Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-               "Helvetica Neue", Helvetica, Arial, sans-serif;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow: hidden;
-  background-color: #e2e6eb;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                   "Helvetica Neue", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      background-color: #e2e6eb;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-/* ==========================================================================
-   AMBIENT ATMOSPHERIC BACKGROUND
-   ========================================================================== */
-.ambient-background {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(135deg, #e4ebf3 0%, #d5e0ec 50%, #dce5ec 100%);
-}
+    /* ==========================================================================
+       AMBIENT ATMOSPHERE
+       ========================================================================== */
+    .ambient-background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: linear-gradient(135deg, #e4ebf3 0%, #d5e0ec 50%, #dce5ec 100%);
+    }
 
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(85px);
-  opacity: 0.58;
-}
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: 0.58;
+    }
 
-.orb-1 {
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(168, 198, 232, 0.7) 0%, rgba(180, 215, 245, 0) 70%);
-  top: -80px;
-  right: -60px;
-}
+    .orb-1 {
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(168, 198, 232, 0.7) 0%, rgba(180, 215, 245, 0) 70%);
+      top: -80px;
+      right: -60px;
+    }
 
-.orb-2 {
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(235, 208, 222, 0.6) 0%, rgba(235, 210, 225, 0) 70%);
-  bottom: -40px;
-  left: -80px;
-}
+    .orb-2 {
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(235, 208, 222, 0.6) 0%, rgba(235, 210, 225, 0) 70%);
+      bottom: -40px;
+      left: -80px;
+    }
 
-.orb-3 {
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(198, 228, 222, 0.5) 0%, rgba(198, 228, 222, 0) 70%);
-  top: 35%;
-  left: 28%;
-}
+    .orb-3 {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(198, 228, 222, 0.5) 0%, rgba(198, 228, 222, 0) 70%);
+      top: 35%;
+      left: 28%;
+    }
 
-/* ==========================================================================
-   VIEWPORT & STATUS BAR
-   ========================================================================== */
-.desktop-viewport {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 8px) env(safe-area-inset-left, 16px);
-  max-width: 1280px;
-  margin: 0 auto;
-}
+    /* ==========================================================================
+       VIEWPORT & STATUS BAR (REDRAWN LINEAR ICONS)
+       ========================================================================== */
+    .desktop-viewport {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 8px) env(safe-area-inset-left, 16px);
+      max-width: 1280px;
+      margin: 0 auto;
+    }
 
-.status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 44px;
-  padding: 0 20px;
-  font-size: 0.94rem;
-  letter-spacing: -0.01em;
-}
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 44px;
+      padding: 0 20px;
+      font-size: 0.94rem;
+      letter-spacing: -0.01em;
+    }
 
-.status-time {
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
+    .status-left {
+      display: flex;
+      align-items: center;
+    }
 
-.status-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+    .status-time {
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
 
-/* Minimalist Linear System SVGs */
-.sys-icon {
-  width: 17px;
-  height: 17px;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
 
-.battery-wrapper {
-  display: flex;
-  align-items: center;
-}
+    /* Minimalist Linear System SVGs */
+    .sys-icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
 
-.battery-svg {
-  width: 24px;
-  height: 12px;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
+    /* Redesigned iOS Style Battery Wrapper */
+    .battery-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-/* ==========================================================================
-   APP GRID & ICON SPECIFICATIONS
-   ========================================================================== */
-.app-grid-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.app-grid-container::-webkit-scrollbar {
-  display: none;
-}
+    .battery-percent {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
 
-.app-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--grid-gap);
-  padding: 16px;
-  max-width: 480px;
-  width: 100%;
-  margin: auto;
-}
+    .battery-svg {
+      width: 25px;
+      height: 12px;
+      overflow: visible;
+      display: block;
+    }
 
-@media (min-width: 768px) {
-  .app-grid {
-    grid-template-columns: repeat(6, 1fr);
-    max-width: 760px;
-  }
-}
+    /* ==========================================================================
+       APP GRID & LIQUID GLASS ICONS
+       ========================================================================== */
+    .app-grid-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .app-grid-container::-webkit-scrollbar {
+      display: none;
+    }
 
-@media (min-width: 1024px) {
-  .app-grid {
-    grid-template-columns: repeat(6, 1fr);
-    max-width: 840px;
-  }
-}
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--grid-gap);
+      padding: 16px;
+      max-width: 480px;
+      width: 100%;
+      margin: auto;
+    }
 
-.app-item {
-  background: none;
-  border: none;
-  outline: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-}
+    @media (min-width: 768px) {
+      .app-grid {
+        grid-template-columns: repeat(6, 1fr);
+        max-width: 760px;
+      }
+    }
 
-.app-item:active {
-  transform: scale(0.92);
-}
+    @media (min-width: 1024px) {
+      .app-grid {
+        grid-template-columns: repeat(6, 1fr);
+        max-width: 840px;
+      }
+    }
 
-/* Pure Liquid Glass Material */
-.icon-tile {
-  width: var(--icon-size);
-  height: var(--icon-size);
-  border-radius: var(--icon-radius);
-  background: var(--glass-bg-base);
-  backdrop-filter: var(--blur-surface);
-  -webkit-backdrop-filter: var(--blur-surface);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-tile), var(--glass-inner-highlight);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--icon-stroke-color);
-  position: relative;
-  overflow: hidden;
-  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
+    .app-item {
+      background: none;
+      border: none;
+      outline: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
 
-/* Top Subtle Specular Light Film */
-.icon-tile::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 44%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 100%);
-  border-radius: var(--icon-radius) var(--icon-radius) 0 0;
-  pointer-events: none;
-}
+    .app-item:active {
+      transform: scale(0.92);
+    }
 
-.app-item:hover .icon-tile {
-  background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 10px 26px -3px rgba(20, 24, 38, 0.09), var(--glass-inner-highlight);
-}
+    .icon-tile {
+      width: var(--icon-size);
+      height: var(--icon-size);
+      border-radius: var(--icon-radius);
+      background: var(--glass-bg-base);
+      backdrop-filter: var(--blur-surface);
+      -webkit-backdrop-filter: var(--blur-surface);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-tile), var(--glass-inner-highlight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--icon-stroke-color);
+      position: relative;
+      overflow: hidden;
+      transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
 
-.icon-tile.active-trigger {
-  color: var(--accent-color);
-  border-color: rgba(0, 113, 227, 0.35);
-  background: rgba(0, 113, 227, 0.08);
-}
+    .icon-tile::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 44%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 100%);
+      border-radius: var(--icon-radius) var(--icon-radius) 0 0;
+      pointer-events: none;
+    }
 
-/* Strict Minimalist Linear App SVG Rules */
-.app-svg {
-  width: 50%;
-  height: 50%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  position: relative;
-  z-index: 1;
-}
+    .app-item:hover .icon-tile {
+      background: var(--glass-bg-hover);
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 10px 26px -3px rgba(20, 24, 38, 0.09), var(--glass-inner-highlight);
+    }
 
-.app-label {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-  pointer-events: none;
-}
+    .icon-tile.active-trigger {
+      color: var(--accent-color);
+      border-color: rgba(0, 113, 227, 0.35);
+      background: rgba(0, 113, 227, 0.08);
+    }
 
-/* ==========================================================================
-   BOTTOM DOCK
-   ========================================================================== */
-.dock-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 6px;
-}
+    /* Strict Minimalist Linear App SVG Rules */
+    .app-svg {
+      width: 50%;
+      height: 50%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      position: relative;
+      z-index: 1;
+    }
 
-.dock-glass {
-  background: var(--glass-dock-bg);
-  backdrop-filter: var(--blur-dock);
-  -webkit-backdrop-filter: var(--blur-dock);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-dock), var(--glass-inner-highlight);
-  border-radius: var(--dock-radius);
-  padding: clamp(10px, 1.6vw, 15px);
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2.2vw, 24px);
-  position: relative;
-  overflow: hidden;
-}
+    .app-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+      pointer-events: none;
+    }
 
-.dock-glass::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 100%);
-  border-radius: var(--dock-radius) var(--dock-radius) 0 0;
-  pointer-events: none;
-}
+    /* ==========================================================================
+       BOTTOM DOCK
+       ========================================================================== */
+    .dock-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 6px;
+    }
 
-.dock-item {
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: transform var(--transition-fast);
-}
+    .dock-glass {
+      background: var(--glass-dock-bg);
+      backdrop-filter: var(--blur-dock);
+      -webkit-backdrop-filter: var(--blur-dock);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-dock), var(--glass-inner-highlight);
+      border-radius: var(--dock-radius);
+      padding: clamp(10px, 1.6vw, 15px);
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 2.2vw, 24px);
+      position: relative;
+      overflow: hidden;
+    }
 
-.dock-item:active {
-  transform: scale(0.9);
-}
+    .dock-glass::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 100%);
+      border-radius: var(--dock-radius) var(--dock-radius) 0 0;
+      pointer-events: none;
+    }
 
-.home-indicator {
-  width: 132px;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 99px;
-  margin-top: 2px;
-}
+    .dock-item {
+      background: none;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
 
-/* ==========================================================================
-   LIQUID GLASS MODAL / POPOVER
-   ========================================================================== */
-.liquid-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(15, 20, 30, 0.14);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-smooth);
-}
+    .dock-item:active {
+      transform: scale(0.9);
+    }
 
-.liquid-modal-backdrop.is-active {
-  opacity: 1;
-  pointer-events: auto;
-}
+    .home-indicator {
+      width: 132px;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 99px;
+      margin-top: 2px;
+    }
 
-.liquid-modal-window {
-  width: 100%;
-  max-width: 430px;
-  background: var(--glass-modal-bg);
-  backdrop-filter: var(--blur-modal);
-  -webkit-backdrop-filter: var(--blur-modal);
-  border: 1px solid var(--glass-border);
-  border-radius: 28px;
-  box-shadow: var(--shadow-modal), var(--glass-inner-highlight);
-  padding: 24px;
-  transform: scale(0.92) translateY(18px);
-  opacity: 0;
-  transition: transform var(--transition-smooth), opacity var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
+    /* ==========================================================================
+       LIQUID GLASS MODAL / POPOVER
+       ========================================================================== */
+    .liquid-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(15, 20, 30, 0.14);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-smooth);
+    }
 
-.liquid-modal-backdrop.is-active .liquid-modal-window {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
+    .liquid-modal-backdrop.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
-.modal-specular-edge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-}
+    .liquid-modal-window {
+      width: 100%;
+      max-width: 430px;
+      background: var(--glass-modal-bg);
+      backdrop-filter: var(--blur-modal);
+      -webkit-backdrop-filter: var(--blur-modal);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow-modal), var(--glass-inner-highlight);
+      padding: 24px;
+      transform: scale(0.92) translateY(18px);
+      opacity: 0;
+      transition: transform var(--transition-smooth), opacity var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  position: relative;
-  z-index: 2;
-}
+    .liquid-modal-backdrop.is-active .liquid-modal-window {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
 
-.modal-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--accent-color);
-  background: rgba(0, 113, 227, 0.08);
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 113, 227, 0.18);
-}
+    .modal-specular-edge {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+    }
 
-.pulse-dot {
-  width: 5.5px;
-  height: 5.5px;
-  border-radius: 50%;
-  background: var(--accent-color);
-  box-shadow: 0 0 6px var(--accent-color);
-  animation: pulseDot 2s infinite ease-in-out;
-}
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
 
-@keyframes pulseDot {
-  0%, 100% { opacity: 0.4; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
+    .modal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      background: rgba(0, 113, 227, 0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 113, 227, 0.18);
+    }
 
-.modal-close-btn {
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
+    .pulse-dot {
+      width: 5.5px;
+      height: 5.5px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      box-shadow: 0 0 6px var(--accent-color);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
 
-.modal-close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--text-primary);
-}
+    @keyframes pulseDot {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
 
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-  color: var(--text-primary);
-  position: relative;
-  z-index: 2;
-}
+    .modal-close-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
 
-.modal-description {
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 2;
-}
+    .modal-close-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--text-primary);
+    }
 
-.liquid-input-container {
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 2;
-}
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+      position: relative;
+      z-index: 2;
+    }
 
-.liquid-input {
-  width: 100%;
-  border: 1px solid var(--glass-border-subtle);
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 12px 14px;
-  border-radius: 14px;
-  font-size: 0.92rem;
-  color: var(--text-primary);
-  outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: border-color var(--transition-fast), background var(--transition-fast);
-}
+    .modal-description {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
 
-.liquid-input:focus {
-  border-color: rgba(0, 113, 227, 0.4);
-  background: rgba(255, 255, 255, 0.65);
-}
+    .liquid-input-container {
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  position: relative;
-  z-index: 2;
-}
+    .liquid-input {
+      width: 100%;
+      border: 1px solid var(--glass-border-subtle);
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      outline: none;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+      transition: border-color var(--transition-fast), background var(--transition-fast);
+    }
 
-.liquid-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: 12px;
-  font-size: 0.88rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  outline: none;
-  transition: transform var(--transition-fast), background var(--transition-fast);
-}
+    .liquid-input:focus {
+      border-color: rgba(0, 113, 227, 0.4);
+      background: rgba(255, 255, 255, 0.65);
+    }
 
-.liquid-btn:active {
-  transform: scale(0.96);
-}
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
 
-.btn-secondary {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-primary);
-}
+    .liquid-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      outline: none;
+      transition: transform var(--transition-fast), background var(--transition-fast);
+    }
 
-.btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
+    .liquid-btn:active {
+      transform: scale(0.96);
+    }
 
-.btn-primary {
-  background: var(--accent-color);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
-}
+    .btn-secondary {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-primary);
+    }
 
-.btn-primary:hover {
-  background: #0077ed;
-}
-    </style>
+    .btn-secondary:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: #0077ed;
+    }
+  </style>
 </head>
 <body>
-  <!-- Ambient Atmospheric Lighting -->
+
+  <!-- Ambient Dynamic Lighting -->
   <div class="ambient-background">
     <div class="glow-orb orb-1"></div>
     <div class="glow-orb orb-2"></div>
     <div class="glow-orb orb-3"></div>
   </div>
 
-  <!-- Full-screen Desktop Viewport -->
+  <!-- Fullscreen Desktop Shell -->
   <main class="desktop-viewport">
     
     <!-- Top System Status Area -->
@@ -584,7 +594,7 @@ body {
         <span class="status-time" id="status-time">09:41</span>
       </div>
       <div class="status-right">
-        <!-- Cellular Signal -->
+        <!-- Cellular Signal (Uniform 1.35px stroke) -->
         <svg class="sys-icon" viewBox="0 0 24 24">
           <line x1="4" y1="18" x2="4" y2="18.01"/>
           <line x1="9" y1="18" x2="9" y2="14"/>
@@ -592,7 +602,7 @@ body {
           <line x1="19" y1="18" x2="19" y2="6"/>
         </svg>
 
-        <!-- Wi-Fi -->
+        <!-- Wi-Fi (Uniform 1.35px stroke) -->
         <svg class="sys-icon" viewBox="0 0 24 24">
           <circle cx="12" cy="18" r="0.8" fill="currentColor"/>
           <path d="M8 14.5a5.8 5.8 0 0 1 8 0"/>
@@ -600,18 +610,22 @@ body {
           <path d="M2 8a14.2 14.2 0 0 1 20 0"/>
         </svg>
 
-        <!-- Battery -->
-        <div class="battery-wrapper">
-          <svg class="battery-svg" viewBox="0 0 26 13">
-            <rect x="1" y="1" width="21" height="11" rx="3.2"/>
-            <line x1="4" y1="6.5" x2="15" y2="6.5"/>
-            <path d="M24 4.5v4"/>
+        <!-- Redrawn Minimalist iOS Battery: Percentage + Capsule Wireframe + Inner Fill -->
+        <div class="battery-group">
+          <span class="battery-percent" id="battery-percent">88%</span>
+          <svg class="battery-svg" viewBox="0 0 27 13" fill="none">
+            <!-- Capsule Outer Wireframe (Line thickness: 1.35px) -->
+            <rect x="0.7" y="0.7" width="22" height="11.6" rx="3.6" stroke="currentColor" stroke-width="1.35"/>
+            <!-- Interior Power Fill Block -->
+            <rect x="2.6" y="2.6" width="13.2" height="7.8" rx="2" fill="currentColor"/>
+            <!-- Terminal Cap -->
+            <path d="M24.5 4.8C25.2 5.3 25.2 7.7 24.5 8.2" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
     </header>
 
-    <!-- Intermediate Application Icon Grid -->
+    <!-- Intermediate Application Icon Grid (11 Apps + 1 Dispatch Trigger) -->
     <section class="app-grid-container">
       <div class="app-grid">
 
@@ -661,7 +675,7 @@ body {
           <span class="app-label">Reminders</span>
         </button>
 
-        <!-- 4. Memo (Notes) -->
+        <!-- 4. Notes (Memo) -->
         <button class="app-item" data-app-id="notes" data-title="Notes">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -686,7 +700,7 @@ body {
           <span class="app-label">KakaoTalk</span>
         </button>
 
-        <!-- 6. Schedule (Timeline) -->
+        <!-- 6. Schedule -->
         <button class="app-item" data-app-id="schedule" data-title="Schedule">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -711,7 +725,7 @@ body {
           <span class="app-label">Music</span>
         </button>
 
-        <!-- 8. Process Record (Workflow Log) -->
+        <!-- 8. Workflow Log (Process Record) -->
         <button class="app-item" data-app-id="workflow" data-title="Workflow Log">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -726,7 +740,7 @@ body {
           <span class="app-label">Workflow</span>
         </button>
 
-        <!-- 9. Academic Issues (Academic Notes) -->
+        <!-- 9. Academic Notes (Academic Issues) -->
         <button class="app-item" data-app-id="academic" data-title="Academic Notes">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -761,7 +775,7 @@ body {
           <span class="app-label">Settings</span>
         </button>
 
-        <!-- Dynamic Modal Action Simulator -->
+        <!-- Dynamic Action Simulator (Sending State Popover) -->
         <button class="app-item action-sender" id="btn-open-composer" data-title="Direct Send">
           <div class="icon-tile active-trigger">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -775,7 +789,7 @@ body {
       </div>
     </section>
 
-    <!-- Bottom Dock Bar -->
+    <!-- Bottom Resident Dock Bar (4 Apps) -->
     <footer class="dock-container">
       <div class="dock-glass">
 
@@ -824,7 +838,7 @@ body {
         </button>
 
       </div>
-      <!-- iOS Home Indicator -->
+      <!-- iOS Home Indicator Line -->
       <div class="home-indicator"></div>
     </footer>
 
@@ -870,135 +884,110 @@ body {
 
   </main>
 
-<script>
-        /**
- * iOS Liquid Glass Desktop Front-End Controller
- * Responsibilities:
- *  1. Status bar clock auto-synchronization
- *  2. Application invocation & Liquid Glass modal lifecycle
- *  3. Dispatch modal trigger simulation
- */
+  <script>
+    /**
+     * iOS Liquid Glass Desktop Controller
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Status Bar Clock Sync
+      const timeElement = document.getElementById("status-time");
+      const syncClock = () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        timeElement.textContent = `${hours}:${minutes}`;
+      };
+      syncClock();
+      setInterval(syncClock, 1000 * 30);
 
-document.addEventListener("DOMContentLoaded", () => {
-  // --- 1. Real-Time Status Clock ---
-  const timeElement = document.getElementById("status-time");
+      // 2. Liquid Glass Popover State Manager
+      const modalBackdrop = document.getElementById("liquid-modal");
+      const modalTitle = document.getElementById("modal-title");
+      const modalDesc = document.getElementById("modal-desc");
+      const messageInput = document.getElementById("message-input");
+      const btnClose = document.getElementById("modal-close");
+      const btnCancel = document.getElementById("btn-cancel");
+      const btnSend = document.getElementById("btn-send");
+      const btnOpenComposer = document.getElementById("btn-open-composer");
 
-  const syncClock = () => {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    timeElement.textContent = `${hours}:${minutes}`;
-  };
+      const openModal = (title, description, placeholder = "") => {
+        modalTitle.textContent = title;
+        modalDesc.textContent = description;
+        messageInput.placeholder = placeholder || "Enter instruction...";
+        messageInput.value = "";
 
-  syncClock();
-  setInterval(syncClock, 1000 * 30);
+        modalBackdrop.classList.add("is-active");
+        modalBackdrop.setAttribute("aria-hidden", "false");
 
-  // --- 2. Modal Controller & Dynamic Dispatch State ---
-  const modalBackdrop = document.getElementById("liquid-modal");
-  const modalTitle = document.getElementById("modal-title");
-  const modalDesc = document.getElementById("modal-desc");
-  const messageInput = document.getElementById("message-input");
-  const btnClose = document.getElementById("modal-close");
-  const btnCancel = document.getElementById("btn-cancel");
-  const btnSend = document.getElementById("btn-send");
-  const btnOpenComposer = document.getElementById("btn-open-composer");
+        setTimeout(() => {
+          messageInput.focus();
+        }, 120);
+      };
 
-  /**
-   * Opens the Liquid Glass Modal
-   * @param {string} title
-   * @param {string} description
-   * @param {string} placeholder
-   */
-  const openModal = (title, description, placeholder = "") => {
-    modalTitle.textContent = title;
-    modalDesc.textContent = description;
-    messageInput.placeholder = placeholder || "Enter command or message...";
-    messageInput.value = "";
+      const closeModal = () => {
+        modalBackdrop.classList.remove("is-active");
+        modalBackdrop.setAttribute("aria-hidden", "true");
+        messageInput.blur();
+      };
 
-    modalBackdrop.classList.add("is-active");
-    modalBackdrop.setAttribute("aria-hidden", "false");
+      btnClose.addEventListener("click", closeModal);
+      btnCancel.addEventListener("click", closeModal);
 
-    setTimeout(() => {
-      messageInput.focus();
-    }, 120);
-  };
+      modalBackdrop.addEventListener("click", (e) => {
+        if (e.target === modalBackdrop) closeModal();
+      });
 
-  /**
-   * Closes the Liquid Glass Modal
-   */
-  const closeModal = () => {
-    modalBackdrop.classList.remove("is-active");
-    modalBackdrop.setAttribute("aria-hidden", "true");
-    messageInput.blur();
-  };
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalBackdrop.classList.contains("is-active")) {
+          closeModal();
+        }
+      });
 
-  // Close triggers
-  btnClose.addEventListener("click", closeModal);
-  btnCancel.addEventListener("click", closeModal);
+      // 3. Active Sending Simulation Trigger
+      btnOpenComposer.addEventListener("click", () => {
+        openModal(
+          "Direct Dispatch",
+          "Active pipeline initialized. Message payload ready for broadcast.",
+          "Type payload to broadcast..."
+        );
+      });
 
-  // Dismiss on backdrop click
-  modalBackdrop.addEventListener("click", (e) => {
-    if (e.target === modalBackdrop) {
-      closeModal();
-    }
-  });
+      btnSend.addEventListener("click", () => {
+        const payload = messageInput.value.trim();
+        if (!payload) {
+          messageInput.focus();
+          return;
+        }
 
-  // Dismiss on ESC
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modalBackdrop.classList.contains("is-active")) {
-      closeModal();
-    }
-  });
+        console.log(`[Liquid System] Payload:`, payload);
+        btnSend.textContent = "Sent";
+        setTimeout(() => {
+          btnSend.innerHTML = `
+            <span>Send</span>
+            <svg class="sys-icon" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <polyline points="14,6 20,12 14,18"/>
+            </svg>
+          `;
+          closeModal();
+        }, 400);
+      });
 
-  // --- 3. Active Sending Simulation ---
-  btnOpenComposer.addEventListener("click", () => {
-    openModal(
-      "Direct Dispatch",
-      "Immediate sending pipeline initialized. State is linked to the glass core.",
-      "Type message to broadcast..."
-    );
-  });
+      // 4. Click App Icons
+      const allApps = document.querySelectorAll(".app-item:not(.action-sender), .dock-item");
+      allApps.forEach((app) => {
+        app.addEventListener("click", () => {
+          const appId = app.getAttribute("data-app-id");
+          const appTitle = app.getAttribute("data-title") || appId;
 
-  btnSend.addEventListener("click", () => {
-    const payload = messageInput.value.trim();
-    if (!payload) {
-      messageInput.focus();
-      return;
-    }
-
-    // Pipeline hook reserved for future API/Chat features
-    console.log(`[Liquid Desktop] Dispatched:`, payload);
-
-    btnSend.textContent = "Sent";
-    setTimeout(() => {
-      btnSend.innerHTML = `
-        <span>Send</span>
-        <svg class="sys-icon" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
-          <line x1="4" y1="12" x2="20" y2="12"/>
-          <polyline points="14,6 20,12 14,18"/>
-        </svg>
-      `;
-      closeModal();
-    }, 400);
-  });
-
-  // --- 4. Application Invocation ---
-  const allApps = document.querySelectorAll(".app-item:not(.action-sender), .dock-item");
-
-  allApps.forEach((app) => {
-    app.addEventListener("click", () => {
-      const appId = app.getAttribute("data-app-id");
-      const appTitle = app.getAttribute("data-title") || appId;
-
-      openModal(
-        appTitle,
-        `Liquid session started for ${appTitle}. Minimalist frame is ready for future module mounting.`,
-        `Query ${appTitle}...`
-      );
+          openModal(
+            appTitle,
+            `Liquid session started for ${appTitle}. Minimalist frame is ready for future module mounting.`,
+            `Query ${appTitle}...`
+          );
+        });
+      });
     });
-  });
-});
-    </script>
-
+  </script>
 </body>
 </html>
