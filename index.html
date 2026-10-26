@@ -4,307 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Liquid Glass Desktop</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <!-- Ambient Dynamic Lighting Layer -->
-  <div class="ambient-background">
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-    <div class="glow-orb orb-3"></div>
-  </div>
-
-  <!-- System Shell -->
-  <main class="desktop-viewport">
-    
-    <!-- Top Status Bar -->
-    <header class="status-bar">
-      <div class="status-left">
-        <span class="status-time" id="status-time">09:41</span>
-      </div>
-      <div class="status-right">
-        <!-- Cellular Signal -->
-        <svg class="status-icon" viewBox="0 0 18 12" fill="none">
-          <rect x="0" y="9" width="2.5" height="3" rx="0.8" fill="currentColor"/>
-          <rect x="4.5" y="6" width="2.5" height="6" rx="0.8" fill="currentColor"/>
-          <rect x="9" y="3" width="2.5" height="9" rx="0.8" fill="currentColor"/>
-          <rect x="13.5" y="0" width="2.5" height="12" rx="0.8" fill="currentColor"/>
-        </svg>
-
-        <!-- Wi-Fi -->
-        <svg class="status-icon" viewBox="0 0 16 12" fill="none">
-          <path d="M8 10.5C8.5 10.5 9 10.05 9 9.5C9 8.95 8.5 8.5 8 8.5C7.5 8.5 7 8.95 7 9.5C7 10.05 7.5 10.5 8 10.5Z" fill="currentColor"/>
-          <path d="M4.5 6.5C5.5 5.5 6.7 5 8 5C9.3 5 10.5 5.5 11.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          <path d="M2 3.8C3.6 2.3 5.7 1.5 8 1.5C10.3 1.5 12.4 2.3 14 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-
-        <!-- Battery -->
-        <div class="battery-wrapper">
-          <div class="battery-body">
-            <div class="battery-level"></div>
-          </div>
-          <div class="battery-cap"></div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Icon Grid (11 Apps) -->
-    <section class="app-grid-container">
-      <div class="app-grid">
-
-        <!-- 1. Weather -->
-        <button class="app-item" data-app-id="weather" data-title="Weather">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M12 4V2M12 22V20M4 12H2M22 12H20M6.3 6.3L4.9 4.9M19.1 19.1L17.7 17.7M6.3 17.7L4.9 19.1M19.1 4.9L17.7 6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M14 26C11.5 26 9.5 24.2 9.5 22C9.5 20.3 10.6 18.9 12.2 18.3C12.8 15.8 15 14 17.6 14C20.8 14 23.3 16.4 23.5 19.5C25 19.9 26 21.3 26 23C26 24.7 24.7 26 23 26H14Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Weather</span>
-        </button>
-
-        <!-- 2. Calendar -->
-        <button class="app-item" data-app-id="calendar" data-title="Calendar">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <rect x="4" y="6" width="24" height="22" rx="6" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="4" y1="13" x2="28" y2="13" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="9" y1="3" x2="9" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="23" y1="3" x2="23" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="11" cy="19" r="1.5" fill="currentColor"/>
-              <circle cx="16" cy="19" r="1.5" fill="currentColor"/>
-              <circle cx="21" cy="19" r="1.5" fill="currentColor"/>
-            </svg>
-          </div>
-          <span class="app-label">Calendar</span>
-        </button>
-
-        <!-- 3. Reminders -->
-        <button class="app-item" data-app-id="reminders" data-title="Reminders">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="7" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="13" y1="10" x2="26" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              <circle cx="7" cy="16" r="2.2" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="13" y1="16" x2="26" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              <circle cx="7" cy="22" r="2.2" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="13" y1="22" x2="26" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Reminders</span>
-        </button>
-
-        <!-- 4. Notes -->
-        <button class="app-item" data-app-id="notes" data-title="Notes">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <rect x="5" y="4" width="22" height="24" rx="4" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="9" y1="10" x2="23" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <line x1="9" y1="15" x2="23" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <line x1="9" y1="20" x2="17" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Notes</span>
-        </button>
-
-        <!-- 5. KakaoTalk -->
-        <button class="app-item" data-app-id="kakaotalk" data-title="KakaoTalk">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <path d="M16 6C9.9 6 5 10 5 15C5 18.2 7 20.9 10.1 22.5L9 26.5L14 23.8C14.6 23.9 15.3 24 16 24C22.1 24 27 20 27 15C27 10 22.1 6 16 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M11 13V18M11 15.5H14M14 13V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M18 13V18M18 15.5L21 18M18 15.5L21 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">KakaoTalk</span>
-        </button>
-
-        <!-- 6. Schedule -->
-        <button class="app-item" data-app-id="schedule" data-title="Schedule">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.8"/>
-              <polyline points="16,9 16,16 21,19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="16" y1="2" x2="16" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Schedule</span>
-        </button>
-
-        <!-- 7. Music -->
-        <button class="app-item" data-app-id="music" data-title="Music">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="10" cy="22" r="4" stroke="currentColor" stroke-width="1.8"/>
-              <circle cx="22" cy="19" r="4" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M14 22V9L26 6V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="14" y1="13" x2="26" y2="10" stroke="currentColor" stroke-width="1.8"/>
-            </svg>
-          </div>
-          <span class="app-label">Music</span>
-        </button>
-
-        <!-- 8. Workflow Log -->
-        <button class="app-item" data-app-id="workflow" data-title="Workflow Log">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <rect x="4" y="6" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
-              <rect x="21" y="6" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
-              <rect x="12.5" y="19" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M11 9.5H21M7.5 13V15.5C7.5 17 8.5 18 10 18H16M24.5 13V15.5C24.5 17 23.5 18 22 18H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Workflow</span>
-        </button>
-
-        <!-- 9. Academic Notes -->
-        <button class="app-item" data-app-id="academic" data-title="Academic Notes">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <polygon points="16,5 29,12 16,19 3,12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M7 14.5V22C7 24.5 11 27 16 27C21 27 25 24.5 25 22V14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="29" y1="12" x2="29" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Academic</span>
-        </button>
-
-        <!-- 10. Settings -->
-        <button class="app-item" data-app-id="settings" data-title="Settings">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="16" cy="16" r="4.5" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M16 3V6M16 26V29M3 16H6M26 16H29M6.8 6.8L9 9M23 23L25.2 25.2M6.8 25.2L9 23M23 9L25.2 6.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Settings</span>
-        </button>
-
-        <!-- 11. Quick Message Modal Trigger (Simulate Active Sending) -->
-        <button class="app-item action-sender" id="btn-open-composer" data-title="Quick Message">
-          <div class="icon-tile special-glow">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <path d="M5 16L27 5L18 27L14 18L5 16Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <line x1="14" y1="18" x2="21" y2="11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="app-label">Direct Send</span>
-        </button>
-
-      </div>
-    </section>
-
-    <!-- Bottom Dock Bar (4 Apps) -->
-    <footer class="dock-container">
-      <div class="dock-glass">
-        
-        <!-- 12. Browser -->
-        <button class="dock-item" data-app-id="browser" data-title="Browser">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.8"/>
-              <polygon points="19.5,8.5 13.5,13.5 12.5,23.5 18.5,18.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
-            </svg>
-          </div>
-        </button>
-
-        <!-- 13. iMessage -->
-        <button class="dock-item" data-app-id="imessage" data-title="iMessage">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <path d="M16 5C9.4 5 4 9.5 4 15C4 18.2 5.9 21.1 9 22.8V27L13.8 24.5C14.5 24.8 15.2 25 16 25C22.6 25 28 20.5 28 15C28 9.5 22.6 5 16 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="10.5" cy="15" r="1.3" fill="currentColor"/>
-              <circle cx="16" cy="15" r="1.3" fill="currentColor"/>
-              <circle cx="21.5" cy="15" r="1.3" fill="currentColor"/>
-            </svg>
-          </div>
-        </button>
-
-        <!-- 14. Mail -->
-        <button class="dock-item" data-app-id="mail" data-title="Mail">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <rect x="4" y="7" width="24" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
-              <polyline points="5,8 16,17 27,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </button>
-
-        <!-- 15. Photos -->
-        <button class="dock-item" data-app-id="photos" data-title="Photos">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <circle cx="16" cy="16" r="4.5" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M16 4C17.5 7 17.5 9 16 11.5C14.5 9 14.5 7 16 4Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M16 28C17.5 25 17.5 23 16 20.5C14.5 23 14.5 25 16 28Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M4 16C7 17.5 9 17.5 11.5 16C9 14.5 7 14.5 4 16Z" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M28 16C25 17.5 23 17.5 20.5 16C23 14.5 25 14.5 28 16Z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </div>
-        </button>
-
-        <!-- 16. Twitter -->
-        <button class="dock-item" data-app-id="twitter" data-title="Twitter">
-          <div class="icon-tile">
-            <svg viewBox="0 0 32 32" class="app-svg">
-              <path d="M6 6L15.3 19.3L6 26H8.2L16.2 20.4L22.2 26H27L17.2 12L25.8 6H23.6L16.2 11.2L10.7 6H6ZM9.5 7.8H12.2L23.5 24.2H20.8L9.5 7.8Z" fill="currentColor"/>
-            </svg>
-          </div>
-        </button>
-
-      </div>
-      <!-- Home Indicator bar -->
-      <div class="home-indicator"></div>
-    </footer>
-
-    <!-- Liquid Glass Modal / Popover (Simulate Active Sending / Notification) -->
-    <aside class="liquid-modal-backdrop" id="liquid-modal" aria-hidden="true">
-      <div class="liquid-modal-window">
-        <div class="modal-specular-edge"></div>
-        <div class="modal-header">
-          <div class="modal-badge">
-            <span class="pulse-dot"></span>
-            <span>Liquid Session</span>
-          </div>
-          <button class="modal-close-btn" id="modal-close" aria-label="Close">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <h3 class="modal-title" id="modal-title">Quick Message Dispatch</h3>
-          <p class="modal-description" id="modal-desc">
-            System ready for message dispatch. State is fully synchronized with Liquid Glass environment.
-          </p>
-          <div class="liquid-input-container">
-            <input type="text" class="liquid-input" id="message-input" placeholder="Type a message or trigger instruction..." />
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="liquid-btn btn-secondary" id="btn-cancel">Dismiss</button>
-          <button class="liquid-btn btn-primary" id="btn-send">
-            <span>Send</span>
-            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-              <line x1="3" y1="8" x2="13" y2="8"></line>
-              <polyline points="9 4 13 8 9 12"></polyline>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </aside>
-
-  </main>
-  <script src="script.js"></script>
-</body>
-</html>
-
-/* ==========================================================================
+ <style>
+        /* ==========================================================================
    CSS VARIABLES & DESIGN SYSTEM (LIQUID GLASS AESTHETIC)
    ========================================================================== */
 :root {
@@ -895,8 +596,305 @@ body {
 .btn-primary:hover {
   background: #0077ed;
 }
+    </style>
+</head>
+<body>
+  <!-- Ambient Dynamic Lighting Layer -->
+  <div class="ambient-background">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
 
-/**
+  <!-- System Shell -->
+  <main class="desktop-viewport">
+    
+    <!-- Top Status Bar -->
+    <header class="status-bar">
+      <div class="status-left">
+        <span class="status-time" id="status-time">09:41</span>
+      </div>
+      <div class="status-right">
+        <!-- Cellular Signal -->
+        <svg class="status-icon" viewBox="0 0 18 12" fill="none">
+          <rect x="0" y="9" width="2.5" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="4.5" y="6" width="2.5" height="6" rx="0.8" fill="currentColor"/>
+          <rect x="9" y="3" width="2.5" height="9" rx="0.8" fill="currentColor"/>
+          <rect x="13.5" y="0" width="2.5" height="12" rx="0.8" fill="currentColor"/>
+        </svg>
+
+        <!-- Wi-Fi -->
+        <svg class="status-icon" viewBox="0 0 16 12" fill="none">
+          <path d="M8 10.5C8.5 10.5 9 10.05 9 9.5C9 8.95 8.5 8.5 8 8.5C7.5 8.5 7 8.95 7 9.5C7 10.05 7.5 10.5 8 10.5Z" fill="currentColor"/>
+          <path d="M4.5 6.5C5.5 5.5 6.7 5 8 5C9.3 5 10.5 5.5 11.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M2 3.8C3.6 2.3 5.7 1.5 8 1.5C10.3 1.5 12.4 2.3 14 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+
+        <!-- Battery -->
+        <div class="battery-wrapper">
+          <div class="battery-body">
+            <div class="battery-level"></div>
+          </div>
+          <div class="battery-cap"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Icon Grid (11 Apps) -->
+    <section class="app-grid-container">
+      <div class="app-grid">
+
+        <!-- 1. Weather -->
+        <button class="app-item" data-app-id="weather" data-title="Weather">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M12 4V2M12 22V20M4 12H2M22 12H20M6.3 6.3L4.9 4.9M19.1 19.1L17.7 17.7M6.3 17.7L4.9 19.1M19.1 4.9L17.7 6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M14 26C11.5 26 9.5 24.2 9.5 22C9.5 20.3 10.6 18.9 12.2 18.3C12.8 15.8 15 14 17.6 14C20.8 14 23.3 16.4 23.5 19.5C25 19.9 26 21.3 26 23C26 24.7 24.7 26 23 26H14Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Weather</span>
+        </button>
+
+        <!-- 2. Calendar -->
+        <button class="app-item" data-app-id="calendar" data-title="Calendar">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <rect x="4" y="6" width="24" height="22" rx="6" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="4" y1="13" x2="28" y2="13" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="9" y1="3" x2="9" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="23" y1="3" x2="23" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="11" cy="19" r="1.5" fill="currentColor"/>
+              <circle cx="16" cy="19" r="1.5" fill="currentColor"/>
+              <circle cx="21" cy="19" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="app-label">Calendar</span>
+        </button>
+
+        <!-- 3. Reminders -->
+        <button class="app-item" data-app-id="reminders" data-title="Reminders">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="7" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="13" y1="10" x2="26" y2="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="7" cy="16" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="13" y1="16" x2="26" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="7" cy="22" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="13" y1="22" x2="26" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Reminders</span>
+        </button>
+
+        <!-- 4. Notes -->
+        <button class="app-item" data-app-id="notes" data-title="Notes">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <rect x="5" y="4" width="22" height="24" rx="4" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="9" y1="10" x2="23" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <line x1="9" y1="15" x2="23" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <line x1="9" y1="20" x2="17" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Notes</span>
+        </button>
+
+        <!-- 5. KakaoTalk -->
+        <button class="app-item" data-app-id="kakaotalk" data-title="KakaoTalk">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <path d="M16 6C9.9 6 5 10 5 15C5 18.2 7 20.9 10.1 22.5L9 26.5L14 23.8C14.6 23.9 15.3 24 16 24C22.1 24 27 20 27 15C27 10 22.1 6 16 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M11 13V18M11 15.5H14M14 13V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M18 13V18M18 15.5L21 18M18 15.5L21 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">KakaoTalk</span>
+        </button>
+
+        <!-- 6. Schedule -->
+        <button class="app-item" data-app-id="schedule" data-title="Schedule">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.8"/>
+              <polyline points="16,9 16,16 21,19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="2" x2="16" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Schedule</span>
+        </button>
+
+        <!-- 7. Music -->
+        <button class="app-item" data-app-id="music" data-title="Music">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="10" cy="22" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="22" cy="19" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M14 22V9L26 6V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="14" y1="13" x2="26" y2="10" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+          </div>
+          <span class="app-label">Music</span>
+        </button>
+
+        <!-- 8. Workflow Log -->
+        <button class="app-item" data-app-id="workflow" data-title="Workflow Log">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <rect x="4" y="6" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <rect x="21" y="6" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <rect x="12.5" y="19" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M11 9.5H21M7.5 13V15.5C7.5 17 8.5 18 10 18H16M24.5 13V15.5C24.5 17 23.5 18 22 18H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Workflow</span>
+        </button>
+
+        <!-- 9. Academic Notes -->
+        <button class="app-item" data-app-id="academic" data-title="Academic Notes">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <polygon points="16,5 29,12 16,19 3,12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M7 14.5V22C7 24.5 11 27 16 27C21 27 25 24.5 25 22V14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="29" y1="12" x2="29" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Academic</span>
+        </button>
+
+        <!-- 10. Settings -->
+        <button class="app-item" data-app-id="settings" data-title="Settings">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="16" cy="16" r="4.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M16 3V6M16 26V29M3 16H6M26 16H29M6.8 6.8L9 9M23 23L25.2 25.2M6.8 25.2L9 23M23 9L25.2 6.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Settings</span>
+        </button>
+
+        <!-- 11. Quick Message Modal Trigger (Simulate Active Sending) -->
+        <button class="app-item action-sender" id="btn-open-composer" data-title="Quick Message">
+          <div class="icon-tile special-glow">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <path d="M5 16L27 5L18 27L14 18L5 16Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <line x1="14" y1="18" x2="21" y2="11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="app-label">Direct Send</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- Bottom Dock Bar (4 Apps) -->
+    <footer class="dock-container">
+      <div class="dock-glass">
+        
+        <!-- 12. Browser -->
+        <button class="dock-item" data-app-id="browser" data-title="Browser">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="1.8"/>
+              <polygon points="19.5,8.5 13.5,13.5 12.5,23.5 18.5,18.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- 13. iMessage -->
+        <button class="dock-item" data-app-id="imessage" data-title="iMessage">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <path d="M16 5C9.4 5 4 9.5 4 15C4 18.2 5.9 21.1 9 22.8V27L13.8 24.5C14.5 24.8 15.2 25 16 25C22.6 25 28 20.5 28 15C28 9.5 22.6 5 16 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10.5" cy="15" r="1.3" fill="currentColor"/>
+              <circle cx="16" cy="15" r="1.3" fill="currentColor"/>
+              <circle cx="21.5" cy="15" r="1.3" fill="currentColor"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- 14. Mail -->
+        <button class="dock-item" data-app-id="mail" data-title="Mail">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <rect x="4" y="7" width="24" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
+              <polyline points="5,8 16,17 27,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- 15. Photos -->
+        <button class="dock-item" data-app-id="photos" data-title="Photos">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <circle cx="16" cy="16" r="4.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M16 4C17.5 7 17.5 9 16 11.5C14.5 9 14.5 7 16 4Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M16 28C17.5 25 17.5 23 16 20.5C14.5 23 14.5 25 16 28Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M4 16C7 17.5 9 17.5 11.5 16C9 14.5 7 14.5 4 16Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M28 16C25 17.5 23 17.5 20.5 16C23 14.5 25 14.5 28 16Z" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+        </button>
+
+        <!-- 16. Twitter -->
+        <button class="dock-item" data-app-id="twitter" data-title="Twitter">
+          <div class="icon-tile">
+            <svg viewBox="0 0 32 32" class="app-svg">
+              <path d="M6 6L15.3 19.3L6 26H8.2L16.2 20.4L22.2 26H27L17.2 12L25.8 6H23.6L16.2 11.2L10.7 6H6ZM9.5 7.8H12.2L23.5 24.2H20.8L9.5 7.8Z" fill="currentColor"/>
+            </svg>
+          </div>
+        </button>
+
+      </div>
+      <!-- Home Indicator bar -->
+      <div class="home-indicator"></div>
+    </footer>
+
+    <!-- Liquid Glass Modal / Popover (Simulate Active Sending / Notification) -->
+    <aside class="liquid-modal-backdrop" id="liquid-modal" aria-hidden="true">
+      <div class="liquid-modal-window">
+        <div class="modal-specular-edge"></div>
+        <div class="modal-header">
+          <div class="modal-badge">
+            <span class="pulse-dot"></span>
+            <span>Liquid Session</span>
+          </div>
+          <button class="modal-close-btn" id="modal-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <h3 class="modal-title" id="modal-title">Quick Message Dispatch</h3>
+          <p class="modal-description" id="modal-desc">
+            System ready for message dispatch. State is fully synchronized with Liquid Glass environment.
+          </p>
+          <div class="liquid-input-container">
+            <input type="text" class="liquid-input" id="message-input" placeholder="Type a message or trigger instruction..." />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="liquid-btn btn-secondary" id="btn-cancel">Dismiss</button>
+          <button class="liquid-btn btn-primary" id="btn-send">
+            <span>Send</span>
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <line x1="3" y1="8" x2="13" y2="8"></line>
+              <polyline points="9 4 13 8 9 12"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+<script>
+        /**
  * iOS Liquid Glass System Desktop Front-End Controller
  * Responsibilities:
  *  1. Live status bar clock synchronization
@@ -1027,3 +1025,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+    </script>
+</body>
+</html>
