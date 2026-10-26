@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Glass - Twitter</title>
+  <style>
+    /* ----------------------------------------------------
+       3.1 CSS Variables (Mandatory tokens)
+       ---------------------------------------------------- */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-bg-elevated: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%);
+      --glass-blur: blur(40px) saturate(180%);
+      --glass-blur-heavy: blur(60px) saturate(200%);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --radius-full: 9999px;
+      --shadow-glass-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-glass-md: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.16);
+      --ease-liquid: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 200ms;
+      --duration-normal: 350ms;
+      --duration-slow: 500ms;
+      --text-primary: rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --accent-blue: #007AFF;
+      --accent-pink: #FF2D55;
+      --accent-green: #34C759;
+    }
+
+    /* ----------------------------------------------------
+       Base & Wallpaper Stage
+       ---------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-primary);
+      background-color: #0b0f19;
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(0, 122, 255, 0.35) 0px, transparent 50%),
+        radial-gradient(at 90% 15%, rgba(255, 45, 85, 0.25) 0px, transparent 45%),
+        radial-gradient(at 50% 85%, rgba(52, 199, 89, 0.2) 0px, transparent 55%),
+        radial-gradient(at 80% 80%, rgba(120, 60, 220, 0.3) 0px, transparent 50%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Liquid Glass Panel Standard Template */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-glass-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: var(--glass-highlight);
+      pointer-events: none;
+      border-radius: inherit;
+      z-index: 1;
+    }
+
+    /* ----------------------------------------------------
+       App Container & Layout
+       ---------------------------------------------------- */
+    .app-viewport {
+      width: 100%;
+      max-width: 440px;
+      height: 100vh;
+      max-height: 920px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-glass-lg);
+      border: 1px solid var(--glass-border);
+      background: rgba(15, 20, 30, 0.45);
+      backdrop-filter: var(--glass-blur-heavy);
+      -webkit-backdrop-filter: var(--glass-blur-heavy);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .app-viewport {
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+    }
+
+    /* System Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .status-bar__icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Top Header Bar */
+    .app-header {
+      position: relative;
+      z-index: 10;
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      flex-shrink: 0;
+    }
+
+    .app-header__main {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg-elevated);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform var(--duration-fast) var(--ease-liquid), border-color var(--duration-fast) var(--ease-liquid);
+    }
+
+    .avatar-btn:hover {
+      transform: scale(1.04);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .header-logo {
+      width: 26px;
+      height: 26px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-liquid), transform var(--duration-fast) var(--ease-liquid);
+    }
+
+    .icon-btn:hover {
+      background: var(--glass-bg-elevated);
+    }
+
+    .icon-btn:focus-visible,
+    .avatar-btn:focus-visible,
+    .nav-item:focus-visible,
+    .tab-button:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 2px;
+    }
+
+    /* Sub Tabs (For you / Following) */
+    .tabs-nav {
+      display: flex;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-button {
+      flex: 1;
+      height: 46px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--duration-fast) var(--ease-liquid);
+    }
+
+    .tab-button--active {
+      color: var(--text-primary);
+    }
+
+    .tab-button--active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 56px;
+      height: 3px;
+      background: var(--accent-blue);
+      border-radius: var(--radius-full);
+    }
+
+    /* ----------------------------------------------------
+       Tweet Stream (Scrollable Main Content)
+       ---------------------------------------------------- */
+    .feed-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px 14px 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--glass-border) transparent;
+    }
+
+    .feed-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .feed-container::-webkit-scrollbar-thumb {
+      background: var(--glass-border);
+      border-radius: var(--radius-full);
+    }
+
+    .tweet-card {
+      padding: 16px;
+      transition: transform var(--duration-normal) var(--ease-liquid), background-color var(--duration-normal) var(--ease-liquid), border-color var(--duration-normal) var(--ease-liquid);
+    }
+
+    .tweet-card:hover {
+      background: var(--glass-bg-elevated);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .tweet-card__inner {
+      display: flex;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tweet-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .tweet-avatar--ai {
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.45), rgba(255, 45, 85, 0.45));
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .tweet-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tweet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .tweet-header__author {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .tweet-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-primary);
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .tweet-badge {
+      display: inline-flex;
+      color: var(--accent-blue);
+      flex-shrink: 0;
+    }
+
+    .tweet-handle,
+    .tweet-time {
+      font-size: 14px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .tweet-more-btn {
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      transition: color var(--duration-fast) var(--ease-liquid);
+    }
+
+    .tweet-more-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tweet-text {
+      font-size: 14.5px;
+      line-height: 1.45;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .tweet-tag {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Embedded media panel */
+    .tweet-media {
+      margin-top: 10px;
+      margin-bottom: 12px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .media-placeholder {
+      height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.15), rgba(52, 199, 89, 0.1));
+    }
+
+    .media-placeholder span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Interaction actions bar */
+    .tweet-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 320px;
+      margin-top: 6px;
+    }
+
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      cursor: pointer;
+      border-radius: var(--radius-full);
+      padding: 6px;
+      transition: color var(--duration-fast) var(--ease-liquid), transform var(--duration-fast) var(--ease-liquid);
+    }
+
+    .action-button:hover {
+      color: var(--accent-blue);
+      transform: scale(1.05);
+    }
+
+    .action-button--repost:hover {
+      color: var(--accent-green);
+    }
+
+    .action-button--like:hover,
+    .action-button--like.active {
+      color: var(--accent-pink);
+    }
+
+    .action-button--like.active svg {
+      fill: var(--accent-pink);
+      stroke: var(--accent-pink);
+    }
+
+    /* ----------------------------------------------------
+       Floating Action Button (New Tweet FAB)
+       ---------------------------------------------------- */
+    .fab-compose {
+      position: absolute;
+      right: 20px;
+      bottom: 74px;
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--accent-blue), #2a9df4);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: transform var(--duration-fast) var(--ease-liquid), box-shadow var(--duration-fast) var(--ease-liquid);
+    }
+
+    .fab-compose:hover {
+      transform: scale(1.08) translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 122, 255, 0.55);
+    }
+
+    .fab-compose:active {
+      transform: scale(0.96);
+    }
+
+    /* ----------------------------------------------------
+       Bottom Dock Navigation
+       ---------------------------------------------------- */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 16px;
+      z-index: 15;
+    }
+
+    .nav-item {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: color var(--duration-fast) var(--ease-liquid), transform var(--duration-fast) var(--ease-liquid);
+    }
+
+    .nav-item:hover {
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .nav-item--active {
+      color: var(--text-primary);
+    }
+
+    .nav-item--active::after {
+      content: '';
+      position: absolute;
+      bottom: 6px;
+      width: 4px;
+      height: 4px;
+      border-radius: var(--radius-full);
+      background: var(--text-primary);
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 7px;
+      height: 7px;
+      background: var(--accent-pink);
+      border-radius: var(--radius-full);
+      border: 1.5px solid #0b0f19;
+    }
+
+    /* Common Icon size */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.75;
+      stroke: currentColor;
+      fill: none;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Liquid Glass App Viewport -->
+  <div class="app-viewport">
+
+    <!-- Top Status Bar (Immersion Environment) -->
+    <header class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar__icons" aria-label="System status">
+        <!-- Signal -->
+        <svg class="svg-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24">
+          <path d="M2 20h20L12 4 2 20z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <!-- Wifi -->
+        <svg class="svg-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <!-- Battery -->
+        <svg class="svg-icon" style="width: 17px; height: 17px;" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="16" height="10" rx="2" ry="2"/>
+          <line x1="22" y1="11" x2="22" y2="13"/>
+        </svg>
+      </div>
+    </header>
+
+    <!-- App Header & Timeline Tabs -->
+    <header class="app-header">
+      <div class="app-header__main">
+        <button class="avatar-btn" aria-label="Open profile menu">
+          <span>AI</span>
+        </button>
+        <div class="header-logo" aria-hidden="true">
+          <!-- Minimalist X / Feather Style Logo -->
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
+            <path d="M4 4l16 16M4 20L20 4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <button class="icon-btn" aria-label="Timeline settings">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M12 3v2m0 14v2M3 12h2m14 0h2m-3.5-6.5l-1.5 1.5m-10 10l-1.5 1.5m13 0l-1.5-1.5m-10-10l-1.5-1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="tabs-nav" aria-label="Timeline selection">
+        <button class="tab-button tab-button--active" id="tabForYou">For you</button>
+        <button class="tab-button" id="tabFollowing">Following</button>
+      </nav>
+    </header>
+
+    <!-- Middle Tweet Stream -->
+    <main class="feed-container" id="feedContainer">
+
+      <!-- Tweet Card 1 (Liquid Glass AI Companion active status) -->
+      <article class="glass-panel tweet-card">
+        <div class="tweet-card__inner">
+          <div class="tweet-avatar tweet-avatar--ai" aria-hidden="true">LG</div>
+          <div class="tweet-content">
+            <div class="tweet-header">
+              <div class="tweet-author">
+                <span class="tweet-name">Liquid Assistant</span>
+                <span class="tweet-badge" title="Verified Assistant">
+                  <svg viewBox="0 0 24 24" class="svg-icon" style="width: 14px; height: 14px;">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                  </svg>
+                </span>
+                <span class="tweet-handle">@glass_ai</span>
+                <span class="tweet-time">· 2m</span>
+              </div>
+              <button class="tweet-more-btn" aria-label="More options">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <circle cx="5" cy="12" r="1.5"/>
+                  <circle cx="12" cy="12" r="1.5"/>
+                  <circle cx="19" cy="12" r="1.5"/>
+                </svg>
+              </button>
+            </div>
+            <p class="tweet-text">
+              Good morning! The atmospheric pressure is smooth and optimal today. Remember to stay hydrated while you're focused on building the project. <span class="tweet-tag">#LiquidGlass</span>
+            </p>
+            <div class="tweet-actions">
+              <button class="action-button" aria-label="Reply">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>5</span>
+              </button>
+              <button class="action-button action-button--repost" aria-label="Repost">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4m14-2v2a4 4 0 0 1-4 4H3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>12</span>
+              </button>
+              <button class="action-button action-button--like" aria-label="Like tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>88</span>
+              </button>
+              <button class="action-button" aria-label="Share tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Tweet Card 2 (With Frosted Media Card) -->
+      <article class="glass-panel tweet-card">
+        <div class="tweet-card__inner">
+          <div class="tweet-avatar" aria-hidden="true">SD</div>
+          <div class="tweet-content">
+            <div class="tweet-header">
+              <div class="tweet-author">
+                <span class="tweet-name">Surface Design</span>
+                <span class="tweet-handle">@surfacedesign</span>
+                <span class="tweet-time">· 45m</span>
+              </div>
+              <button class="tweet-more-btn" aria-label="More options">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <circle cx="5" cy="12" r="1.5"/>
+                  <circle cx="12" cy="12" r="1.5"/>
+                  <circle cx="19" cy="12" r="1.5"/>
+                </svg>
+              </button>
+            </div>
+            <p class="tweet-text">
+              The physics of simulated glass refraction combined with backdrop filters creates subtle elegance. Notice how colors from background layers bleed gently into UI elements.
+            </p>
+            <div class="tweet-media">
+              <div class="media-placeholder">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 32px; height: 32px; opacity: 0.7;">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span>Refraction Study v2.4</span>
+              </div>
+            </div>
+            <div class="tweet-actions">
+              <button class="action-button" aria-label="Reply">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>18</span>
+              </button>
+              <button class="action-button action-button--repost" aria-label="Repost">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4m14-2v2a4 4 0 0 1-4 4H3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>142</span>
+              </button>
+              <button class="action-button action-button--like" aria-label="Like tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>530</span>
+              </button>
+              <button class="action-button" aria-label="Share tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Tweet Card 3 (Minimal conversational tweet) -->
+      <article class="glass-panel tweet-card">
+        <div class="tweet-card__inner">
+          <div class="tweet-avatar" aria-hidden="true">KX</div>
+          <div class="tweet-content">
+            <div class="tweet-header">
+              <div class="tweet-author">
+                <span class="tweet-name">Kenji Takahashi</span>
+                <span class="tweet-handle">@kenji_ux</span>
+                <span class="tweet-time">· 2h</span>
+              </div>
+              <button class="tweet-more-btn" aria-label="More options">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <circle cx="5" cy="12" r="1.5"/>
+                  <circle cx="12" cy="12" r="1.5"/>
+                  <circle cx="19" cy="12" r="1.5"/>
+                </svg>
+              </button>
+            </div>
+            <p class="tweet-text">
+              Testing native CSS backdrop-filter performance: keeping nested blur layers strictly capped at 2 preserves high 60fps scrolling on handheld displays.
+            </p>
+            <div class="tweet-actions">
+              <button class="action-button" aria-label="Reply">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>3</span>
+              </button>
+              <button class="action-button action-button--repost" aria-label="Repost">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4m14-2v2a4 4 0 0 1-4 4H3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>9</span>
+              </button>
+              <button class="action-button action-button--like" aria-label="Like tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>74</span>
+              </button>
+              <button class="action-button" aria-label="Share tweet">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px;">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </main>
+
+    <!-- Floating Compose Button (FAB) -->
+    <button class="fab-compose" id="composeButton" aria-label="Compose new tweet">
+      <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px; stroke: #ffffff;">
+        <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- Bottom Dock Navigation Bar -->
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button class="nav-item nav-item--active" aria-label="Home timeline">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
+
+      <button class="nav-item" aria-label="Explore and search">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <button class="nav-item" aria-label="Notifications">
+        <span class="notification-dot" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button class="nav-item" aria-label="Direct messages">
+        <svg viewBox="0 0 24 24" class="svg-icon">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="22,6 12,13 2,6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Native ES6+ Module Interaction Logic -->
+  <script type="module">
+    // Bind interaction logic adhering to Section 4 (no inline JS, addEventListener)
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Tab switching micro-interactions
+      const tabForYou = document.getElementById('tabForYou');
+      const tabFollowing = document.getElementById('tabFollowing');
+
+      const selectTab = (activeTab, inactiveTab) => {
+        activeTab.classList.add('tab-button--active');
+        inactiveTab.classList.remove('tab-button--active');
+      };
+
+      if (tabForYou && tabFollowing) {
+        tabForYou.addEventListener('click', () => selectTab(tabForYou, tabFollowing));
+        tabFollowing.addEventListener('click', () => selectTab(tabFollowing, tabForYou));
+      }
+
+      // 2. Interactive Like buttons (Pure UI micro-interaction for testing)
+      const likeButtons = document.querySelectorAll('.action-button--like');
+      likeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const countSpan = btn.querySelector('span');
+          const isLiked = btn.classList.toggle('active');
+          
+          if (countSpan) {
+            const currentCount = parseInt(countSpan.textContent, 10) || 0;
+            countSpan.textContent = isLiked ? (currentCount + 1) : (currentCount - 1);
+          }
+        });
+      });
+
+      // 3. Navigation Bar Active States
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          navItems.forEach((nav) => nav.classList.remove('nav-item--active'));
+          item.classList.add('nav-item--active');
+        });
+      });
+
+      // 4. Compose FAB Button Ripple feedback
+      const composeBtn = document.getElementById('composeButton');
+      if (composeBtn) {
+        composeBtn.addEventListener('click', () => {
+          console.log('[Liquid Glass UI] Compose FAB tapped - static view preview mode.');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
