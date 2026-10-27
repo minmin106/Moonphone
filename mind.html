@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Reminders</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple Reminders Tokens & Liquid Glass Visuals
+       ---------------------------------------------------- */
+    :root {
+      /* Native Reminders Palette */
+      --reminders-bg: #000000;
+      --reminders-surface: #1c1c1e;
+      --reminders-surface-hover: #2c2c2e;
+      --reminders-border: #2c2c2e;
+      --reminders-separator: rgba(84, 84, 88, 0.4);
+
+      /* Category Classification Dot Colors */
+      --color-blue: #007aff;
+      --color-red: #ff3b30;
+      --color-green: #34c759;
+      --color-orange: #ff9500;
+
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+
+      /* Liquid Glass Notification Tokens (Mandatory) */
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-bg-elevated: rgba(30, 30, 35, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 50%);
+      --glass-blur: blur(40px) saturate(180%);
+      --shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+
+      --ease-liquid: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --duration-fast: 160ms;
+      --duration-normal: 300ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--reminders-bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .reminders-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--reminders-bg);
+      border-left: 1px solid var(--reminders-border);
+      border-right: 1px solid var(--reminders-border);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .reminders-shell {
+        border: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       Top Header Navigation
+       ---------------------------------------------------- */
+    .app-header {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--reminders-separator);
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-blue);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .nav-btn:active {
+      opacity: 0.5;
+    }
+
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-blue);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios), transform var(--duration-fast) var(--ease-ios);
+    }
+
+    .icon-btn:hover {
+      background-color: rgba(0, 122, 255, 0.12);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* AI Simulate Reminder Button */
+    .btn-ai-prompt {
+      background-color: rgba(255, 149, 0, 0.15);
+      border: 1px solid rgba(255, 149, 0, 0.35);
+      color: var(--color-orange);
+    }
+
+    .btn-ai-prompt:hover {
+      background-color: rgba(255, 149, 0, 0.25);
+    }
+
+    /* ----------------------------------------------------
+       Scrollable Main Body
+       ---------------------------------------------------- */
+    .reminders-content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 16px 80px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--reminders-border) transparent;
+    }
+
+    .reminders-content-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .reminders-content-scroll::-webkit-scrollbar-thumb {
+      background-color: var(--reminders-border);
+      border-radius: var(--radius-pill);
+    }
+
+    .title-large {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      margin: 8px 0 14px;
+    }
+
+    /* Search Box */
+    .search-box {
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background-color: var(--reminders-surface);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14.5px;
+      outline: none;
+      width: 100%;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* iOS Summary Filter Cards Grid (Today, Scheduled, All, Flagged) */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background-color: var(--reminders-surface);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 82px;
+      cursor: pointer;
+      border: 1px solid var(--reminders-border);
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .summary-card:hover {
+      background-color: var(--reminders-surface-hover);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-icon-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .card-icon-bubble--blue { background-color: var(--color-blue); }
+    .card-icon-bubble--red { background-color: var(--color-red); }
+    .card-icon-bubble--gray { background-color: #545458; }
+    .card-icon-bubble--orange { background-color: var(--color-orange); }
+
+    .card-counter {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .card-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ----------------------------------------------------
+       Classification Lists with Colored Dots
+       ---------------------------------------------------- */
+    .section-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .section-heading-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    /* Classification Dot Tabs */
+    .categories-pills-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .category-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--reminders-surface);
+      border: 1px solid var(--reminders-border);
+      border-radius: var(--radius-pill);
+      padding: 6px 12px;
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .category-pill-btn:hover {
+      background-color: var(--reminders-surface-hover);
+    }
+
+    .category-pill-btn--active {
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: var(--reminders-surface-hover);
+    }
+
+    .dot-badge {
+      width: 9px;
+      height: 9px;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+    }
+
+    .dot--blue { background-color: var(--color-blue); box-shadow: 0 0 6px rgba(0, 122, 255, 0.6); }
+    .dot--red { background-color: var(--color-red); box-shadow: 0 0 6px rgba(255, 59, 48, 0.6); }
+    .dot--green { background-color: var(--color-green); box-shadow: 0 0 6px rgba(52, 199, 89, 0.6); }
+
+    /* ----------------------------------------------------
+       Interactive Reminder To-Do Items
+       ---------------------------------------------------- */
+    .reminders-group-card {
+      background-color: var(--reminders-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--reminders-border);
+      overflow: hidden;
+    }
+
+    .reminder-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--reminders-separator);
+      transition: background-color var(--duration-fast) var(--ease-ios);
+      animation: itemFadeIn var(--duration-normal) var(--ease-ios);
+    }
+
+    @keyframes itemFadeIn {
+      0% { opacity: 0; transform: translateY(-8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .reminder-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Circle Checkbox */
+    .todo-check-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--radius-pill);
+      border: 2px solid var(--color-blue);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: #ffffff;
+      transition: background-color var(--duration-fast) var(--ease-ios), border-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .todo-check-btn--red { border-color: var(--color-red); }
+    .todo-check-btn--green { border-color: var(--color-green); }
+
+    /* Checked Completed State */
+    .reminder-item.is-completed .todo-check-btn {
+      background-color: var(--color-blue);
+      border-color: var(--color-blue);
+    }
+    .reminder-item.is-completed .todo-check-btn--red {
+      background-color: var(--color-red);
+      border-color: var(--color-red);
+    }
+    .reminder-item.is-completed .todo-check-btn--green {
+      background-color: var(--color-green);
+      border-color: var(--color-green);
+    }
+
+    .todo-check-btn svg {
+      display: none;
+    }
+
+    .reminder-item.is-completed .todo-check-btn svg {
+      display: block;
+    }
+
+    .reminder-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .reminder-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.35;
+      word-break: break-word;
+      transition: color var(--duration-fast) var(--ease-ios);
+    }
+
+    /* Strikethrough Effect */
+    .reminder-item.is-completed .reminder-title {
+      text-decoration: line-through;
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .reminder-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .reminder-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag--blue { color: var(--color-blue); }
+    .tag--red { color: var(--color-red); }
+    .tag--green { color: var(--color-green); }
+
+    .ai-spark-tag {
+      background-color: rgba(255, 149, 0, 0.15);
+      border: 1px solid rgba(255, 149, 0, 0.35);
+      color: var(--color-orange);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 0 5px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ----------------------------------------------------
+       Liquid Glass Notification Banner (Simulated AI Remind)
+       ---------------------------------------------------- */
+    .glass-notification {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      background: var(--glass-bg-elevated);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-glass-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      transform: translateY(-130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--duration-normal) var(--ease-liquid), opacity var(--duration-normal) var(--ease-liquid);
+      overflow: hidden;
+    }
+
+    /* Liquid Glass top highlight reflection */
+    .glass-notification::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: var(--glass-highlight);
+      pointer-events: none;
+    }
+
+    .glass-notification.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .notif-app-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #ff9500, #ff3b30);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255, 149, 0, 0.4);
+    }
+
+    .notif-text-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .notif-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .notif-app-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .notif-timestamp {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .notif-message-body {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    /* Bottom New Reminder Bar */
+    .bottom-new-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background-color: rgba(28, 28, 30, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--reminders-separator);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 25;
+    }
+
+    .btn-new-item-cta {
+      background: transparent;
+      border: none;
+      color: var(--color-blue);
+      font-size: 16px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .btn-new-item-cta:active {
+      opacity: 0.5;
+    }
+
+    /* Universal Home Toast */
+    .home-toast-alert {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: var(--reminders-surface-hover);
+      color: #ffffff;
+      border: 1px solid var(--reminders-border);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .home-toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--color-blue);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="reminders-shell">
+
+    <!-- Universal Home Return Toast -->
+    <div class="home-toast-alert" id="homeToast">Returning to Home Screen...</div>
+
+    <!-- Liquid Glass Top Notification Banner (Simulated AI Remind) -->
+    <aside class="glass-notification" id="aiGlassNotification" aria-live="polite">
+      <div class="notif-app-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px; stroke: #ffffff;">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </div>
+      <div class="notif-text-col">
+        <div class="notif-header-line">
+          <span class="notif-app-title">Reminders · AI Companion</span>
+          <span class="notif-timestamp">Now</span>
+        </div>
+        <p class="notif-message-body" id="notifMessageText">
+          AI reminder: Remember to drink water at 3 p.m. today.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <!-- Return to Home Screen (< Home) -->
+      <button class="nav-btn" id="btnBackHome" aria-label="Return to home screen">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Home</span>
+      </button>
+
+      <div class="header-actions-right">
+        <!-- Simulate AI Reminder (💡) -->
+        <button class="icon-btn btn-ai-prompt" id="btnSimulateAiReminder" aria-label="Simulate AI scheduled reminder notification" title="Simulate AI Reminder">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 19px; height: 19px;">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+
+        <!-- New Item (+) Button -->
+        <button class="icon-btn" id="btnQuickAddReminder" aria-label="Add new reminder">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Content -->
+    <main class="reminders-content-scroll">
+      
+      <h1 class="title-large">Reminders</h1>
+
+      <!-- Search Input Box -->
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px; color: var(--text-secondary);">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search" aria-label="Search reminders">
+      </div>
+
+      <!-- iOS Summary Filter Grid Cards -->
+      <section class="summary-grid" aria-label="Summary filters">
+        
+        <!-- Today (Blue) -->
+        <div class="summary-card">
+          <div class="card-top-row">
+            <div class="card-icon-bubble card-icon-bubble--blue">
+              <span style="font-size: 13px; font-weight: 700;">27</span>
+            </div>
+            <span class="card-counter" id="countToday">2</span>
+          </div>
+          <span class="card-label">Today</span>
+        </div>
+
+        <!-- Scheduled (Red) -->
+        <div class="summary-card">
+          <div class="card-top-row">
+            <div class="card-icon-bubble card-icon-bubble--red">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 17px; height: 17px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <span class="card-counter">4</span>
+          </div>
+          <span class="card-label">Scheduled</span>
+        </div>
+
+        <!-- All (Gray) -->
+        <div class="summary-card">
+          <div class="card-top-row">
+            <div class="card-icon-bubble card-icon-bubble--gray">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 17px; height: 17px;">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+              </svg>
+            </div>
+            <span class="card-counter" id="countAll">5</span>
+          </div>
+          <span class="card-label">All</span>
+        </div>
+
+        <!-- Flagged (Orange) -->
+        <div class="summary-card">
+          <div class="card-top-row">
+            <div class="card-icon-bubble card-icon-bubble--orange">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 17px; height: 17px;">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                <line x1="4" y1="22" x2="4" y2="15"></line>
+              </svg>
+            </div>
+            <span class="card-counter">1</span>
+          </div>
+          <span class="card-label">Flagged</span>
+        </div>
+
+      </section>
+
+      <!-- Classification Lists with Colored Dots -->
+      <section aria-labelledby="headingMyLists">
+        
+        <div class="section-heading-row">
+          <h2 class="section-heading-title" id="headingMyLists">My Lists</h2>
+        </div>
+
+        <!-- Colored Dot Filter Pills -->
+        <div class="categories-pills-row" role="tablist">
+          <button class="category-pill-btn category-pill-btn--active" data-filter="all">
+            <span>All Items</span>
+          </button>
+          
+          <!-- Daily Life (Blue Dot) -->
+          <button class="category-pill-btn" data-filter="daily">
+            <span class="dot-badge dot--blue"></span>
+            <span>Daily Life</span>
+          </button>
+
+          <!-- Work (Red Dot) -->
+          <button class="category-pill-btn" data-filter="work">
+            <span class="dot-badge dot--red"></span>
+            <span>Work</span>
+          </button>
+
+          <!-- Shopping (Green Dot) -->
+          <button class="category-pill-btn" data-filter="shopping">
+            <span class="dot-badge dot--green"></span>
+            <span>Shopping</span>
+          </button>
+        </div>
+
+        <!-- Interactive To-Do Grouped Card List -->
+        <div class="reminders-group-card" id="remindersCardGroup">
+
+          <!-- To-Do Item 1: Work (Red Dot) -->
+          <div class="reminder-item" data-category="work">
+            <button class="todo-check-btn todo-check-btn--red" aria-label="Toggle completion">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <div class="reminder-body">
+              <span class="reminder-title">Review Liquid Glass Phase 1 deliverables & code specs</span>
+              <div class="reminder-meta-row">
+                <span class="reminder-tag-badge tag--red">● Work</span>
+                <span>· 2:00 PM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- To-Do Item 2: Shopping (Green Dot) -->
+          <div class="reminder-item" data-category="shopping">
+            <button class="todo-check-btn todo-check-btn--green" aria-label="Toggle completion">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <div class="reminder-body">
+              <span class="reminder-title">Pick up pour-over coffee beans & oat milk</span>
+              <div class="reminder-meta-row">
+                <span class="reminder-tag-badge tag--green">● Shopping</span>
+                <span>· Grocery Market</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- To-Do Item 3: Daily Life (Blue Dot) -->
+          <div class="reminder-item" data-category="daily">
+            <button class="todo-check-btn" aria-label="Toggle completion">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <div class="reminder-body">
+              <span class="reminder-title">Evening 30-minute posture stretch & brisk walk</span>
+              <div class="reminder-meta-row">
+                <span class="reminder-tag-badge tag--blue">● Daily Life</span>
+                <span>· 6:30 PM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- To-Do Item 4: Daily Life (Blue Dot) - Completed Example -->
+          <div class="reminder-item is-completed" data-category="daily">
+            <button class="todo-check-btn" aria-label="Toggle completion">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <div class="reminder-body">
+              <span class="reminder-title">Morning companion status synchronization</span>
+              <div class="reminder-meta-row">
+                <span class="reminder-tag-badge tag--blue">● Daily Life</span>
+                <span>· Completed 9:41 AM</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom New Reminder Bar -->
+    <footer class="bottom-new-bar">
+      <button class="btn-new-item-cta" id="btnBottomNewReminder">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <span>New Reminder</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnBackHome = document.getElementById('btnBackHome');
+      const homeToast = document.getElementById('homeToast');
+      const aiGlassNotification = document.getElementById('aiGlassNotification');
+      const notifMessageText = document.getElementById('notifMessageText');
+      const btnSimulateAiReminder = document.getElementById('btnSimulateAiReminder');
+      const remindersCardGroup = document.getElementById('remindersCardGroup');
+      const btnQuickAddReminder = document.getElementById('btnQuickAddReminder');
+      const btnBottomNewReminder = document.getElementById('btnBottomNewReminder');
+
+      let notificationTimer = null;
+
+      // ----------------------------------------------------
+      // 1. Return to Home Screen (< Home)
+      // ----------------------------------------------------
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          homeToast.classList.add('show');
+          setTimeout(() => homeToast.classList.remove('show'), 1800);
+          console.log('[Reminders App] Navigating to Home screen.');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => window.history.back(), 300);
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 2. Interactive Circle Checkbox (Ticking & Strikethrough)
+      // ----------------------------------------------------
+      remindersCardGroup.addEventListener('click', (e) => {
+        const checkBtn = e.target.closest('.todo-check-btn');
+        if (!checkBtn) return;
+
+        const reminderItem = checkBtn.closest('.reminder-item');
+        if (reminderItem) {
+          const isDone = reminderItem.classList.toggle('is-completed');
+          console.log(`[Reminders] Item toggled: ${isDone ? 'Checked (Strikethrough)' : 'Unchecked'}`);
+        }
+      });
+
+      // ----------------------------------------------------
+      // 3. Category Filter Buttons (Colored Dots Filter)
+      // ----------------------------------------------------
+      const categoryPills = document.querySelectorAll('.category-pill-btn');
+      categoryPills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          categoryPills.forEach((p) => p.classList.remove('category-pill-btn--active'));
+          pill.classList.add('category-pill-btn--active');
+
+          const filter = pill.getAttribute('data-filter');
+          const items = remindersCardGroup.querySelectorAll('.reminder-item');
+
+          items.forEach((item) => {
+            if (filter === 'all' || item.getAttribute('data-category') === filter) {
+              item.style.display = 'flex';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // ----------------------------------------------------
+      // 4. Simulated AI Scheduled Reminder (💡 Button)
+      // ----------------------------------------------------
+      const aiReminderPool = [
+        "AI reminder: Remember to drink water at 3 p.m. today.",
+        "AI reminder: Stand up and look 20 feet away for 20 seconds.",
+        "AI reminder: Review today's schedule before your 4:30 PM call."
+      ];
+      let aiIndex = 0;
+
+      const triggerAiReminderBanner = () => {
+        const message = aiReminderPool[aiIndex % aiReminderPool.length];
+        aiIndex++;
+
+        notifMessageText.textContent = message;
+
+        // Slide in from top (Liquid Glass Notification Banner)
+        aiGlassNotification.classList.add('active');
+
+        if (notificationTimer) clearTimeout(notificationTimer);
+
+        // Slide out automatically after 4 seconds
+        notificationTimer = setTimeout(() => {
+          aiGlassNotification.classList.remove('active');
+        }, 4000);
+
+        // Also add the corresponding AI to-do item into the list as a reminder suggestion
+        appendAiReminderItem("Drink warm water & adjust posture", "3:00 PM");
+      };
+
+      const appendAiReminderItem = (titleText, timeText) => {
+        const item = document.createElement('div');
+        item.className = 'reminder-item';
+        item.setAttribute('data-category', 'daily');
+
+        item.innerHTML = `
+          <button class="todo-check-btn" aria-label="Toggle completion">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </button>
+          <div class="reminder-body">
+            <span class="reminder-title">${titleText}</span>
+            <div class="reminder-meta-row">
+              <span class="reminder-tag-badge tag--blue">● Daily Life</span>
+              <span>· ${timeText}</span>
+              <span class="ai-spark-tag">AI Scheduled</span>
+            </div>
+          </div>
+        `;
+
+        remindersCardGroup.prepend(item);
+      };
+
+      if (btnSimulateAiReminder) {
+        btnSimulateAiReminder.addEventListener('click', triggerAiReminderBanner);
+      }
+
+      // ----------------------------------------------------
+      // 5. Add New Reminder Quick Action
+      // ----------------------------------------------------
+      const handleAddNewReminder = () => {
+        const title = prompt("Enter a new reminder:", "Check daily companion updates");
+        if (!title || !title.trim()) return;
+
+        const item = document.createElement('div');
+        item.className = 'reminder-item';
+        item.setAttribute('data-category', 'daily');
+
+        item.innerHTML = `
+          <button class="todo-check-btn" aria-label="Toggle completion">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 13px; height: 13px; stroke-width: 3;">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </button>
+          <div class="reminder-body">
+            <span class="reminder-title">${title.trim()}</span>
+            <div class="reminder-meta-row">
+              <span class="reminder-tag-badge tag--blue">● Daily Life</span>
+              <span>· Today</span>
+            </div>
+          </div>
+        `;
+
+        remindersCardGroup.prepend(item);
+      };
+
+      if (btnQuickAddReminder) btnQuickAddReminder.addEventListener('click', handleAddNewReminder);
+      if (btnBottomNewReminder) btnBottomNewReminder.addEventListener('click', handleAddNewReminder);
+    });
+  </script>
+</body>
+</html>
