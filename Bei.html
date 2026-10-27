@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Notes</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple Notes Design Tokens (Dark Mode)
+       ---------------------------------------------------- */
+    :root {
+      /* Signature Apple Notes Yellow Palette */
+      --notes-yellow: #eab308;
+      --notes-yellow-dim: rgba(234, 179, 8, 0.16);
+      --notes-yellow-hover: #ca8a04;
+
+      /* System Dark Mode */
+      --notes-bg: #000000;
+      --notes-surface: #1c1c1e;
+      --notes-surface-hover: #262629;
+      --notes-surface-active: #2c2c2e;
+      --notes-border: #2c2c2e;
+      --notes-separator: rgba(84, 84, 88, 0.45);
+
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+
+      --glass-bg: rgba(28, 28, 30, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.16);
+      --glass-blur: blur(20px);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-pill: 9999px;
+
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --duration-fast: 160ms;
+      --duration-normal: 280ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--notes-bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .notes-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--notes-bg);
+      border-left: 1px solid var(--notes-border);
+      border-right: 1px solid var(--notes-border);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .notes-shell {
+        border: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       View Manager
+       ---------------------------------------------------- */
+    .view-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: inherit;
+      transition: transform var(--duration-normal) var(--ease-ios), opacity var(--duration-normal) var(--ease-ios);
+    }
+
+    .view-screen--active {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .view-screen--inactive-left {
+      transform: translateX(-24%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .view-screen--inactive-right {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* ----------------------------------------------------
+       Top Bar & Action Buttons
+       ---------------------------------------------------- */
+    .app-header {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--notes-separator);
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--notes-yellow);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .nav-btn:active {
+      opacity: 0.5;
+    }
+
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn-yellow {
+      background: transparent;
+      border: none;
+      color: var(--notes-yellow);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios), transform var(--duration-fast) var(--ease-ios);
+    }
+
+    .icon-btn-yellow:hover {
+      background-color: var(--notes-yellow-dim);
+    }
+
+    .icon-btn-yellow:active {
+      transform: scale(0.92);
+    }
+
+    /* AI Simulate Addition Button Special Style */
+    .btn-ai-spark {
+      background-color: var(--notes-yellow-dim);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+
+    /* ----------------------------------------------------
+       VIEW 1: Notes List Page
+       ---------------------------------------------------- */
+    .notes-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--notes-border) transparent;
+    }
+
+    .notes-list-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .notes-list-scroll::-webkit-scrollbar-thumb {
+      background-color: var(--notes-border);
+      border-radius: var(--radius-pill);
+    }
+
+    /* Large Header Title */
+    .title-large-block {
+      padding: 12px 16px 8px;
+    }
+
+    .title-large {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    /* Search Input Pill */
+    .search-box-wrap {
+      margin: 4px 16px 14px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background-color: var(--notes-surface);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+    }
+
+    .search-icon {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14.5px;
+      outline: none;
+      width: 100%;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Grouped Note Rows */
+    .notes-card-group {
+      margin: 0 16px;
+      background-color: var(--notes-surface);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--notes-border);
+    }
+
+    .note-row-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--notes-separator);
+      cursor: pointer;
+      background: transparent;
+      width: 100%;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      text-align: left;
+      transition: background-color var(--duration-fast) var(--ease-ios);
+      animation: noteFadeIn var(--duration-normal) var(--ease-ios);
+    }
+
+    @keyframes noteFadeIn {
+      0% { opacity: 0; transform: translateY(-8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .note-row-item:last-child {
+      border-bottom: none;
+    }
+
+    .note-row-item:hover {
+      background-color: var(--notes-surface-hover);
+    }
+
+    .note-row-item:active {
+      background-color: var(--notes-surface-active);
+    }
+
+    .note-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .note-title-text {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ai-tag-pill {
+      background-color: var(--notes-yellow-dim);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      color: var(--notes-yellow);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .note-snippet-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 13.5px;
+      line-height: 1.35;
+    }
+
+    .note-timestamp {
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .note-snippet-text {
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Bottom Count Bar */
+    .notes-bottom-counter {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background-color: rgba(28, 28, 30, 0.95);
+      backdrop-filter: var(--glass-blur);
+      border-top: 1px solid var(--notes-separator);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      z-index: 25;
+    }
+
+    /* ----------------------------------------------------
+       VIEW 2: Note Editing / Details Page
+       ---------------------------------------------------- */
+    .editor-view-container {
+      background-color: var(--notes-bg);
+    }
+
+    .editor-content-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .editor-date-stamp {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .editor-title-input {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: transparent;
+      border: none;
+      outline: none;
+      line-height: 1.25;
+      width: 100%;
+    }
+
+    .editor-title-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .editor-body-textarea {
+      flex: 1;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      min-height: 360px;
+      font-family: inherit;
+    }
+
+    .editor-body-textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    /* Bottom Notes Formatting Toolbar */
+    .editor-bottom-toolbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background-color: rgba(28, 28, 30, 0.95);
+      backdrop-filter: var(--glass-blur);
+      border-top: 1px solid var(--notes-separator);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 12px;
+      z-index: 30;
+    }
+
+    .tool-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--notes-yellow);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .tool-icon-btn:hover {
+      background-color: var(--notes-yellow-dim);
+    }
+
+    .tool-icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* ----------------------------------------------------
+       Simulated AI Toast / Notification Banner
+       ---------------------------------------------------- */
+    .ai-banner-toast {
+      position: absolute;
+      top: 60px;
+      left: 16px;
+      right: 16px;
+      background-color: rgba(30, 30, 34, 0.96);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      backdrop-filter: blur(24px);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transform: translateY(-24px);
+      pointer-events: none;
+      z-index: 100;
+      transition: opacity var(--duration-normal) var(--ease-ios), transform var(--duration-normal) var(--ease-ios);
+    }
+
+    .ai-banner-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .ai-toast-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      background-color: var(--notes-yellow-dim);
+      color: var(--notes-yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ai-toast-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ai-toast-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--notes-yellow);
+    }
+
+    .ai-toast-desc {
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    /* Universal Home Toast */
+    .home-toast-alert {
+      position: absolute;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: var(--notes-surface-active);
+      color: #ffffff;
+      border: 1px solid var(--notes-border);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .home-toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--notes-yellow);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="notes-shell">
+
+    <!-- Universal Home Return Toast -->
+    <div class="home-toast-alert" id="homeToast">Returning to Home Screen...</div>
+
+    <!-- AI Addition Notification Banner -->
+    <div class="ai-banner-toast" id="aiToastBanner">
+      <div class="ai-toast-icon">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 18px; height: 18px;">
+          <path d="M9 18h6"></path>
+          <path d="M10 22h4"></path>
+          <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+        </svg>
+      </div>
+      <div class="ai-toast-content">
+        <span class="ai-toast-title">AI Suggestion Added</span>
+        <span class="ai-toast-desc" id="aiToastText">AI has added a new memo for you.</span>
+      </div>
+    </div>
+
+    <!-- ====================================================
+         VIEW 1: Notes List Page
+         ==================================================== -->
+    <section class="view-screen view-screen--active" id="viewNotesList" aria-label="Notes list">
+      
+      <!-- Top Navigation Bar -->
+      <header class="app-header">
+        <!-- Return to Home Screen (< Home) -->
+        <button class="nav-btn" id="btnBackHome" aria-label="Return to home screen">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <div class="header-actions-right">
+          <!-- Simulate AI Addition Button (💡) -->
+          <button class="icon-btn-yellow btn-ai-spark" id="btnSimulateAiNote" aria-label="Simulate AI Memo Addition" title="AI Add Memo">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 19px; height: 19px;">
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+              <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+            </svg>
+          </button>
+
+          <!-- Create New Note (+) Button -->
+          <button class="icon-btn-yellow" id="btnCreateNewNote" aria-label="Create new memo">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable List Body -->
+      <main class="notes-list-scroll">
+
+        <div class="title-large-block">
+          <h1 class="title-large">Notes</h1>
+        </div>
+
+        <!-- Search Input Box -->
+        <div class="search-box-wrap">
+          <svg viewBox="0 0 24 24" class="svg-icon search-icon" style="width: 16px; height: 16px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" class="search-input" id="searchNotesInput" placeholder="Search" aria-label="Search notes">
+        </div>
+
+        <!-- Notes Card List -->
+        <div class="notes-card-group" id="notesListContainer">
+
+          <!-- Note 1 -->
+          <button class="note-row-item" data-id="1">
+            <div class="note-row-top">
+              <span class="note-title-text">Liquid Glass Visual Spec</span>
+            </div>
+            <div class="note-snippet-row">
+              <span class="note-timestamp">10:15 AM</span>
+              <span class="note-snippet-text">Hierarchy: 40px blur, 180% saturation, linear highlight gradient.</span>
+            </div>
+          </button>
+
+          <!-- Note 2 -->
+          <button class="note-row-item" data-id="2">
+            <div class="note-row-top">
+              <span class="note-title-text">Studio & Hardware Checklist</span>
+            </div>
+            <div class="note-snippet-row">
+              <span class="note-timestamp">Yesterday</span>
+              <span class="note-snippet-text">Oat milk, pour-over dripper, dual-display cable, sketchbook.</span>
+            </div>
+          </button>
+
+          <!-- Note 3 -->
+          <button class="note-row-item" data-id="3">
+            <div class="note-row-top">
+              <span class="note-title-text">Tokyo Architecture Tour</span>
+            </div>
+            <div class="note-snippet-row">
+              <span class="note-timestamp">Oct 24</span>
+              <span class="note-snippet-text">Meiji Jingu Ginko Avenue, Daikanyama T-Site, Omotesando Hills.</span>
+            </div>
+          </button>
+
+        </div>
+
+      </main>
+
+      <!-- Bottom Notes Count -->
+      <footer class="notes-bottom-counter" id="notesCountLabel">
+        3 Notes
+      </footer>
+
+    </section>
+
+    <!-- ====================================================
+         VIEW 2: Note Editing / Details Page
+         ==================================================== -->
+    <section class="view-screen view-screen--inactive-right editor-view-container" id="viewNoteEditor" aria-label="Note detail editor">
+      
+      <!-- Editor Top Bar -->
+      <header class="app-header">
+        <!-- Return to Notes List (< Notes) -->
+        <button class="nav-btn" id="btnBackToList" aria-label="Back to notes list">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Notes</span>
+        </button>
+
+        <div class="header-actions-right">
+          <!-- Share -->
+          <button class="icon-btn-yellow" aria-label="Share note">
+            <svg viewBox="0 0 24 24" class="svg-icon">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+          </button>
+
+          <!-- Done Button -->
+          <button class="nav-btn" id="btnDoneEdit" aria-label="Done editing">Done</button>
+        </div>
+      </header>
+
+      <!-- Editor Content Area -->
+      <main class="editor-content-body">
+        <span class="editor-date-stamp" id="editorDateStamp">October 27, 2026 at 10:15 AM</span>
+        <input type="text" class="editor-title-input" id="editorTitleInput" placeholder="Title" aria-label="Note title">
+        <textarea class="editor-body-textarea" id="editorBodyInput" placeholder="Type note here..." aria-label="Note body text"></textarea>
+      </main>
+
+      <!-- Notes Formatting Toolbar -->
+      <footer class="editor-bottom-toolbar">
+        <!-- Checklist -->
+        <button class="tool-icon-btn" aria-label="Checklist">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M9 11l3 3L22 4"></path>
+            <circle cx="12" cy="12" r="9"></circle>
+          </svg>
+        </button>
+
+        <!-- Camera / Media -->
+        <button class="tool-icon-btn" aria-label="Attach photo">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+        </button>
+
+        <!-- Markup / Pen -->
+        <button class="tool-icon-btn" aria-label="Markup tool">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.586 7.586"></path>
+            <circle cx="11" cy="11" r="2"></circle>
+          </svg>
+        </button>
+
+        <!-- Voice Memo -->
+        <button class="tool-icon-btn" aria-label="Audio memo">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
+
+        <!-- Compose New -->
+        <button class="tool-icon-btn" id="btnEditorNewNote" aria-label="New Note">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </button>
+      </footer>
+
+    </section>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Data Store
+      const notesData = [
+        {
+          id: 1,
+          title: "Liquid Glass Visual Spec",
+          snippet: "Hierarchy: 40px blur, 180% saturation, linear highlight gradient.",
+          date: "10:15 AM",
+          fullDate: "October 27, 2026 at 10:15 AM",
+          body: "Key visual parameters:\n- Backdrop Blur: 40px saturate(180%)\n- Panel Highlight: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%)\n- Nesting limit: 2 layers for GPU 60fps.",
+          isAi: false
+        },
+        {
+          id: 2,
+          title: "Studio & Hardware Checklist",
+          snippet: "Oat milk, pour-over dripper, dual-display cable, sketchbook.",
+          date: "Yesterday",
+          fullDate: "October 26, 2026 at 18:22 PM",
+          body: "1. Oat milk & pour-over filters\n2. Dual-display USB-C braided cable\n3. Hardcover dot sketchbook\n4. Ergonomic arm adjustment tool",
+          isAi: false
+        },
+        {
+          id: 3,
+          title: "Tokyo Architecture Tour",
+          snippet: "Meiji Jingu Ginko Avenue, Daikanyama T-Site, Omotesando Hills.",
+          date: "Oct 24",
+          fullDate: "October 24, 2026 at 14:10 PM",
+          body: "Planned stops:\n- Meiji Jingu Gaien for the golden ginkgo trees\n- Daikanyama T-Site for rare industrial design prints\n- Omotesando Hills concrete & glass stairwell study",
+          isAi: false
+        }
+      ];
+
+      // Simulated AI suggestions pool
+      const aiSuggestionsPool = [
+        {
+          title: "Ergonomics & Hydration Pause",
+          snippet: "Reminder to stretch your spine and drink warm water.",
+          body: "I noticed you've been focused at the screen for a prolonged sprint. A 5-minute shoulder stretch and warm water break is warmly recommended. 💧"
+        },
+        {
+          title: "Phase 1 UI Milestones Review",
+          snippet: "All core apps Twitter, Safari, iMessage, KakaoTalk, Photos synced.",
+          body: "System Status:\n✓ Twitter (Pitch Black)\n✓ Safari (iOS Reader & History)\n✓ iMessage (Dual-view & Custom Panel)\n✓ KakaoTalk (Yellow & Voice Call)\n✓ Photos (Memories with AI)\n✓ Notes (In progress)"
+        },
+        {
+          title: "Evening Wind-Down Schedule",
+          snippet: "Recommended relaxation flow for after 9:00 PM.",
+          body: "Suggested evening routine:\n- Dim ambient lighting to 2700K\n- Listen to acoustic piano stream\n- Prepare task queue for tomorrow morning"
+        }
+      ];
+      let aiPoolIdx = 0;
+      let currentEditingNoteId = null;
+
+      // View Elements
+      const viewNotesList = document.getElementById('viewNotesList');
+      const viewNoteEditor = document.getElementById('viewNoteEditor');
+      const btnBackHome = document.getElementById('btnBackHome');
+      const btnBackToList = document.getElementById('btnBackToList');
+      const btnDoneEdit = document.getElementById('btnDoneEdit');
+      const btnCreateNewNote = document.getElementById('btnCreateNewNote');
+      const btnEditorNewNote = document.getElementById('btnEditorNewNote');
+      const btnSimulateAiNote = document.getElementById('btnSimulateAiNote');
+
+      const notesListContainer = document.getElementById('notesListContainer');
+      const notesCountLabel = document.getElementById('notesCountLabel');
+      const editorDateStamp = document.getElementById('editorDateStamp');
+      const editorTitleInput = document.getElementById('editorTitleInput');
+      const editorBodyInput = document.getElementById('editorBodyInput');
+      const homeToast = document.getElementById('homeToast');
+      const aiToastBanner = document.getElementById('aiToastBanner');
+      const aiToastText = document.getElementById('aiToastText');
+
+      // ----------------------------------------------------
+      // 1. Render Note List
+      // ----------------------------------------------------
+      const renderNotesList = () => {
+        notesListContainer.innerHTML = '';
+        notesData.forEach((note) => {
+          const row = document.createElement('button');
+          row.className = 'note-row-item';
+          row.setAttribute('data-id', note.id);
+
+          const topRow = document.createElement('div');
+          topRow.className = 'note-row-top';
+
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'note-title-text';
+          titleSpan.textContent = note.title;
+          topRow.appendChild(titleSpan);
+
+          if (note.isAi) {
+            const aiTag = document.createElement('span');
+            aiTag.className = 'ai-tag-pill';
+            aiTag.textContent = 'AI Suggestion';
+            topRow.appendChild(aiTag);
+          }
+
+          const snippetRow = document.createElement('div');
+          snippetRow.className = 'note-snippet-row';
+
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'note-timestamp';
+          timeSpan.textContent = note.date;
+
+          const snippetSpan = document.createElement('span');
+          snippetSpan.className = 'note-snippet-text';
+          snippetSpan.textContent = note.snippet;
+
+          snippetRow.appendChild(timeSpan);
+          snippetRow.appendChild(snippetSpan);
+
+          row.appendChild(topRow);
+          row.appendChild(snippetRow);
+
+          row.addEventListener('click', () => openNoteDetail(note.id));
+          notesListContainer.appendChild(row);
+        });
+
+        notesCountLabel.textContent = `${notesData.length} Notes`;
+      };
+
+      // ----------------------------------------------------
+      // 2. View Switching & Note Editor
+      // ----------------------------------------------------
+      const openNoteDetail = (noteId) => {
+        currentEditingNoteId = noteId;
+        const note = notesData.find((n) => n.id === noteId);
+
+        if (note) {
+          editorDateStamp.textContent = note.fullDate;
+          editorTitleInput.value = note.title;
+          editorBodyInput.value = note.body;
+        } else {
+          // New Note Mode
+          currentEditingNoteId = null;
+          const nowStr = 'Today at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          editorDateStamp.textContent = nowStr;
+          editorTitleInput.value = '';
+          editorBodyInput.value = '';
+        }
+
+        viewNotesList.className = 'view-screen view-screen--inactive-left';
+        viewNoteEditor.className = 'view-screen view-screen--active';
+        setTimeout(() => editorTitleInput.focus(), 200);
+      };
+
+      const saveCurrentNoteAndReturn = () => {
+        const title = editorTitleInput.value.trim() || 'New Note';
+        const body = editorBodyInput.value.trim();
+        const snippet = body ? body.split('\n')[0] : 'No additional text';
+
+        if (currentEditingNoteId) {
+          // Update existing
+          const note = notesData.find((n) => n.id === currentEditingNoteId);
+          if (note) {
+            note.title = title;
+            note.body = body;
+            note.snippet = snippet;
+          }
+        } else if (title !== 'New Note' || body) {
+          // Save new note
+          const newId = Date.now();
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          notesData.unshift({
+            id: newId,
+            title,
+            snippet,
+            date: timeStr,
+            fullDate: 'Today at ' + timeStr,
+            body,
+            isAi: false
+          });
+        }
+
+        renderNotesList();
+        viewNotesList.className = 'view-screen view-screen--active';
+        viewNoteEditor.className = 'view-screen view-screen--inactive-right';
+      };
+
+      btnBackToList.addEventListener('click', saveCurrentNoteAndReturn);
+      btnDoneEdit.addEventListener('click', saveCurrentNoteAndReturn);
+      btnCreateNewNote.addEventListener('click', () => openNoteDetail(null));
+      btnEditorNewNote.addEventListener('click', () => openNoteDetail(null));
+
+      // ----------------------------------------------------
+      // 3. Return to Home Screen (< Home)
+      // ----------------------------------------------------
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          homeToast.classList.add('show');
+          setTimeout(() => homeToast.classList.remove('show'), 1800);
+          console.log('[Notes App] Navigating to Home screen.');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => window.history.back(), 300);
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 4. Simulated AI Note Addition (💡 Button)
+      // ----------------------------------------------------
+      if (btnSimulateAiNote) {
+        btnSimulateAiNote.addEventListener('click', () => {
+          const aiSample = aiSuggestionsPool[aiPoolIdx % aiSuggestionsPool.length];
+          aiPoolIdx++;
+
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          const newAiNote = {
+            id: Date.now(),
+            title: `[AI Suggestion] ${aiSample.title}`,
+            snippet: aiSample.snippet,
+            date: timeStr,
+            fullDate: 'Today at ' + timeStr,
+            body: aiSample.body,
+            isAi: true
+          };
+
+          // Prepend to list
+          notesData.unshift(newAiNote);
+          renderNotesList();
+
+          // Show Notification Banner
+          aiToastText.textContent = `AI has added: "${aiSample.title}"`;
+          aiToastBanner.classList.add('show');
+          setTimeout(() => aiToastBanner.classList.remove('show'), 3500);
+
+          console.log('[AI Whitelist Action] Added memo suggestion:', newAiNote.title);
+        });
+      }
+
+      // Initial list render
+      renderNotesList();
+    });
+  </script>
+</body>
+</html>
