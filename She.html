@@ -5,39 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Settings</title>
   <style>
-    /* ---------------- CSS Variables (iOS System Colors) ---------------- */
+    /* ---------------- CSS Variables (Apple iOS System Colors) ---------------- */
     :root {
       --bg-system: #000000;
       --bg-grouped: #1c1c1e;
       --bg-active: #2c2c2e;
-      --bg-disabled: #161618;
+      --bg-input: transparent;
       
       --text-primary: #ffffff;
       --text-secondary: #8e8e93;
       --text-tertiary: #636366;
+      --text-placeholder: #48484a;
       --text-disabled: #545458;
       
-      --separator: rgba(84, 84, 88, 0.4);
+      --separator: rgba(84, 84, 88, 0.42);
       --chevron-color: #8e8e93;
       
-      /* Apple System Accent Colors for Icon Badges */
-      --badge-blue: #0a84ff;
-      --badge-red: #ff453a;
-      --badge-green: #30d158;
-      --badge-yellow: #ffd60a;
+      /* Apple System Accent Colors */
+      --accent-blue: #0a84ff;
+      --accent-green: #34c759;
+      --accent-red: #ff453a;
+      --accent-yellow: #ffd60a;
       --badge-teal: #64d2ff;
       --badge-purple: #bf5af2;
-      --badge-gray: #48484a;
+      --badge-indigo: #5e5ce6;
+      --badge-gray: #3a3a3c;
 
-      /* iOS Switch Colors */
+      /* iOS Sliding Switch */
       --switch-on: #34c759;
       --switch-off: #39393d;
-      --switch-thumb: #ffffff;
+      --switch-knob: #ffffff;
 
       /* Radiuses */
       --radius-grouped: 12px;
       --radius-icon: 7px;
       --radius-switch: 16px;
+      --radius-btn: 12px;
       
       --transition-tap: background-color 0.15s ease;
     }
@@ -63,14 +66,14 @@
 
     .settings-container {
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: 48px;
+      padding-bottom: 56px;
     }
 
-    /* ---------------- Navigation Bar ---------------- */
+    /* ---------------- Top Navigation Bar ---------------- */
     .nav-bar {
       position: sticky;
       top: 0;
@@ -80,7 +83,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      background-color: rgba(0, 0, 0, 0.85);
+      background-color: rgba(0, 0, 0, 0.82);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
     }
@@ -88,11 +91,9 @@
     .nav-back-btn {
       display: flex;
       align-items: center;
-      gap: 4px;
       background: none;
       border: none;
-      color: var(--badge-blue);
-      font-size: 17px;
+      color: var(--accent-blue);
       cursor: pointer;
       padding: 6px 0;
       transition: opacity 0.2s;
@@ -107,10 +108,10 @@
       font-weight: 600;
       text-align: center;
       flex: 1;
-      margin-right: 32px; /* Balance left back icon width */
+      margin-right: 28px; /* Balance left chevron width */
     }
 
-    /* ---------------- iOS Grouped Sections ---------------- */
+    /* ---------------- Grouped List Layout ---------------- */
     .section-header {
       font-size: 13px;
       font-weight: 400;
@@ -139,12 +140,12 @@
       user-select: none;
     }
 
-    /* Slight pressing feedback */
+    /* Pressing feedback */
     .setting-item:active {
       background-color: var(--bg-active);
     }
 
-    /* Inset separator (starts after icon) */
+    /* iOS Inset separator */
     .setting-item:not(:last-child)::after {
       content: "";
       position: absolute;
@@ -155,7 +156,7 @@
       background-color: var(--separator);
     }
 
-    /* Icon Badge (Minimalist Linear SVG inside Apple Squircle) */
+    /* Icon Badge with Minimalist Linear SVG */
     .item-icon-badge {
       width: 28px;
       height: 28px;
@@ -168,14 +169,17 @@
       color: #ffffff;
     }
 
-    /* Badge Color Themes */
+    /* Icon Badge Background Themes */
     .badge-wallpaper { background-color: var(--badge-teal); }
-    .badge-sound     { background-color: var(--badge-red); }
-    .badge-imessage  { background-color: var(--badge-green); }
-    .badge-kakao     { background-color: var(--badge-yellow); color: #000000; }
-    .badge-weather   { background-color: var(--badge-blue); }
-    .badge-calendar  { background-color: var(--badge-purple); }
-    .badge-pending   { background-color: var(--badge-gray); }
+    .badge-sound     { background-color: var(--accent-red); }
+    .badge-imessage  { background-color: var(--accent-green); }
+    .badge-kakao     { background-color: var(--accent-yellow); color: #000000; }
+    .badge-weather   { background-color: var(--accent-blue); }
+    .badge-schedule  { background-color: var(--badge-purple); }
+    .badge-ai-url    { background-color: var(--badge-indigo); }
+    .badge-ai-key    { background-color: #ff9f0a; }
+    .badge-ai-model  { background-color: #30d158; }
+    .badge-about     { background-color: var(--badge-gray); }
 
     .item-label {
       font-size: 16px;
@@ -204,6 +208,10 @@
     }
 
     /* ---------------- Native iOS Sliding Switch (Toggle) ---------------- */
+    .switch-row {
+      cursor: default;
+    }
+
     .ios-switch {
       position: relative;
       display: inline-block;
@@ -234,9 +242,9 @@
       width: 27px;
       left: 2px;
       bottom: 2px;
-      background-color: var(--switch-thumb);
+      background-color: var(--switch-knob);
       border-radius: 50%;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.16);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.16);
       transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
@@ -248,29 +256,83 @@
       transform: translateX(20px);
     }
 
-    /* Prevent switch container row active color conflict on toggle click */
-    .switch-row {
+    /* ---------------- AI Configuration Input Fields ---------------- */
+    .input-row {
+      cursor: text;
+    }
+
+    .input-row .item-label {
+      flex: 0 0 95px;
+    }
+
+    .ios-field-input, .ios-field-select {
+      flex: 1;
+      width: 100%;
+      background: var(--bg-input);
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: var(--text-primary);
+      text-align: right;
+      letter-spacing: -0.2px;
+    }
+
+    .ios-field-input::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    .ios-field-select {
+      cursor: pointer;
+      direction: rtl;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .ios-field-select option {
+      background-color: #242426;
+      color: #ffffff;
+      direction: ltr;
+    }
+
+    /* Save Configuration Action Button */
+    .save-btn-container {
+      margin: 16px 16px 0 16px;
+    }
+
+    .btn-save-config {
+      width: 100%;
+      height: 48px;
+      background-color: var(--accent-blue);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.18s ease, transform 0.1s ease;
+    }
+
+    .btn-save-config:active {
+      opacity: 0.75;
+      transform: scale(0.985);
+    }
+
+    /* ---------------- Part IV: About & Disabled Item ---------------- */
+    .setting-item.disabled-item {
       cursor: default;
     }
 
-    /* ---------------- Disabled / Coming Soon Item ---------------- */
-    .setting-item.disabled-item {
-      cursor: not-allowed;
-    }
-
     .setting-item.disabled-item:active {
-      background-color: var(--bg-grouped); /* No active flash */
+      background-color: var(--bg-grouped); /* No active flash for disabled */
     }
 
     .setting-item.disabled-item .item-label {
       color: var(--text-disabled);
-    }
-
-    .section-footer {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin: 8px 16px 0 16px;
-      line-height: 1.4;
     }
   </style>
 </head>
@@ -279,8 +341,8 @@
   <div class="settings-container">
     <!-- Top Navigation Bar -->
     <header class="nav-bar">
+      <!-- Return Button (<) -->
       <button class="nav-back-btn" onclick="handleBackAction()" aria-label="Go Back">
-        <!-- Minimal Linear SVG: Back Chevron (<) -->
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
@@ -288,14 +350,13 @@
       <h1 class="nav-title">Settings</h1>
     </header>
 
-    <!-- Group 1: Core Customization Items -->
+    <!-- Part I: Personalized Settings -->
     <section>
-      <div class="section-header">Appearance & Sound</div>
+      <div class="section-header">Personalized Settings</div>
       <div class="grouped-card">
-        <!-- Wallpaper Item -->
+        <!-- Wallpaper -->
         <div class="setting-item" onclick="handleItemClick('Wallpaper')">
           <div class="item-icon-badge badge-wallpaper">
-            <!-- Minimal Linear Wallpaper/Image SVG -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -304,9 +365,8 @@
           </div>
           <span class="item-label">Wallpaper</span>
           <div class="item-right">
-            <span class="item-detail-text">Current wallpaper</span>
+            <span class="item-detail-text">Current Wallpaper</span>
             <span class="chevron-icon">
-              <!-- Minimal Linear SVG: Chevron Right (>) -->
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
@@ -314,10 +374,9 @@
           </div>
         </div>
 
-        <!-- Reminder Sound Item -->
+        <!-- Reminder sound -->
         <div class="setting-item" onclick="handleItemClick('Reminder sound')">
           <div class="item-icon-badge badge-sound">
-            <!-- Minimal Linear Bell SVG -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -336,44 +395,41 @@
       </div>
     </section>
 
-    <!-- Group 2: Reminder Switches -->
+    <!-- Part II: System and Reminder -->
     <section>
-      <div class="section-header">Reminder Notifications</div>
+      <div class="section-header">System and Reminder</div>
       <div class="grouped-card">
-        <!-- iMessage Reminder -->
+        <!-- iMessage reminder -->
         <div class="setting-item switch-row">
           <div class="item-icon-badge badge-imessage">
-            <!-- Minimal Linear Chat Bubble SVG -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
             </svg>
           </div>
           <span class="item-label">iMessage reminder</span>
           <label class="ios-switch">
-            <input type="checkbox" id="toggle-imessage" checked onchange="handleToggleChange('iMessage', this.checked)">
+            <input type="checkbox" checked onchange="handleToggleChange('iMessage', this.checked)">
             <span class="slider"></span>
           </label>
         </div>
 
-        <!-- KakaoTalk Reminder -->
+        <!-- KakaoTalk reminder -->
         <div class="setting-item switch-row">
           <div class="item-icon-badge badge-kakao">
-            <!-- Minimal Linear Speech Box SVG -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
           </div>
           <span class="item-label">KakaoTalk reminder</span>
           <label class="ios-switch">
-            <input type="checkbox" id="toggle-kakao" checked onchange="handleToggleChange('KakaoTalk', this.checked)">
+            <input type="checkbox" checked onchange="handleToggleChange('KakaoTalk', this.checked)">
             <span class="slider"></span>
           </label>
         </div>
 
-        <!-- Weather Reminder -->
+        <!-- Weather reminder -->
         <div class="setting-item switch-row">
           <div class="item-icon-badge badge-weather">
-            <!-- Minimal Linear Cloud & Sun SVG -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M17.66 17.66l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41"></path>
               <path d="M17.5 17.5A5 5 0 1 0 9 12a5 5 0 0 0 0 6h8.5a3.5 3.5 0 0 0 0-7h-.5"></path>
@@ -381,15 +437,14 @@
           </div>
           <span class="item-label">Weather reminder</span>
           <label class="ios-switch">
-            <input type="checkbox" id="toggle-weather" onchange="handleToggleChange('Weather', this.checked)">
+            <input type="checkbox" onchange="handleToggleChange('Weather', this.checked)">
             <span class="slider"></span>
           </label>
         </div>
 
-        <!-- Schedule Reminder -->
+        <!-- Schedule reminder -->
         <div class="setting-item switch-row">
-          <div class="item-icon-badge badge-calendar">
-            <!-- Minimal Linear Calendar SVG -->
+          <div class="item-icon-badge badge-schedule">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -399,51 +454,126 @@
           </div>
           <span class="item-label">Schedule reminder</span>
           <label class="ios-switch">
-            <input type="checkbox" id="toggle-schedule" checked onchange="handleToggleChange('Schedule', this.checked)">
+            <input type="checkbox" checked onchange="handleToggleChange('Schedule', this.checked)">
             <span class="slider"></span>
           </label>
         </div>
       </div>
     </section>
 
-    <!-- Group 3: To Be Developed -->
+    <!-- Part III: AI Core Configuration (Key Points) -->
     <section>
-      <div class="section-header">Upcoming</div>
+      <div class="section-header">AI Core Configuration</div>
+      <div class="grouped-card">
+        <!-- API URL -->
+        <div class="setting-item input-row">
+          <div class="item-icon-badge badge-ai-url">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </div>
+          <span class="item-label">API URL</span>
+          <input type="url" class="ios-field-input" id="apiUrlInput" placeholder="https://api.openai.com/v1...">
+        </div>
+
+        <!-- API Key -->
+        <div class="setting-item input-row">
+          <div class="item-icon-badge badge-ai-key">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9l-1.5-1.5L2 12l5 5 12-12-1.5-1.5z"></path>
+              <circle cx="7.5" cy="16.5" r="1.5"></circle>
+            </svg>
+          </div>
+          <span class="item-label">API Key</span>
+          <input type="password" class="ios-field-input" id="apiKeyInput" placeholder="••••••••••••••••">
+        </div>
+
+        <!-- Model Selection -->
+        <div class="setting-item">
+          <div class="item-icon-badge badge-ai-model">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+          </div>
+          <span class="item-label">Model</span>
+          <div class="item-right" style="flex: 1; justify-content: flex-end;">
+            <select class="ios-field-select" id="modelSelect">
+              <option value="gpt-4o" selected>gpt-4o</option>
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="o1">o1</option>
+              <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
+              <option value="deepseek-r1">deepseek-r1</option>
+            </select>
+            <span class="chevron-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Configuration Button -->
+      <div class="save-btn-container">
+        <button class="btn-save-config" onclick="saveConfiguration()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Configuration
+        </button>
+      </div>
+    </section>
+
+    <!-- Part IV: About -->
+    <section>
+      <div class="section-header">About</div>
       <div class="grouped-card">
         <div class="setting-item disabled-item">
-          <div class="item-icon-badge badge-pending">
-            <!-- Minimal Linear Sparkles / Feature SVG -->
+          <div class="item-icon-badge badge-about">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
           </div>
           <span class="item-label">More advanced functions, please look forward to it</span>
         </div>
       </div>
-      <p class="section-footer">Experimental preferences and cloud sync configurations will be available in future releases.</p>
     </section>
   </div>
 
   <script>
     /* ---------------- Navigation Back Feedback ---------------- */
     function handleBackAction() {
-      // Simulate native back navigation
       if (window.history.length > 1) {
         window.history.back();
       } else {
-        alert("Returning to Home...");
+        alert("Returning to Home Screen...");
       }
     }
 
-    /* ---------------- Core List Item Interaction ---------------- */
+    /* ---------------- List Item Interaction ---------------- */
     function handleItemClick(title) {
-      alert(`Opening ${title} settings...`);
+      alert(`Opening ${title}...`);
     }
 
-    /* ---------------- iOS Switch Toggle Interaction ---------------- */
-    function handleToggleChange(serviceName, isEnabled) {
-      const state = isEnabled ? "enabled" : "disabled";
-      console.log(`[Settings] ${serviceName} reminder is now ${state}.`);
+    /* ---------------- Switch Toggle Handler ---------------- */
+    function handleToggleChange(name, isChecked) {
+      console.log(`[Setting] ${name} reminder set to: ${isChecked ? 'ON' : 'OFF'}`);
+    }
+
+    /* ---------------- Save AI Configuration ---------------- */
+    function saveConfiguration() {
+      const apiUrl = document.getElementById('apiUrlInput').value;
+      const apiKey = document.getElementById('apiKeyInput').value;
+      const model = document.getElementById('modelSelect').value;
+
+      console.log('Saved Configuration:', { apiUrl, hasApiKey: Boolean(apiKey), model });
+      alert('configuration has been saved!');
     }
   </script>
 </body>
