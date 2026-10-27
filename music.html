@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Music - iOS Liquid Glass</title>
+  <style>
+    /* ==========================================================================
+       1. CSS Variables (:root) for Dynamic Theming & Liquid Glass Aesthetics
+       ========================================================================== */
+    :root {
+      /* Backgrounds & Canvas */
+      --bg-gradient: linear-gradient(145deg, #180d2a 0%, #0d1224 45%, #1b091f 100%);
+      --mesh-color-1: rgba(236, 72, 153, 0.35);
+      --mesh-color-2: rgba(99, 102, 241, 0.4);
+      --mesh-color-3: rgba(168, 85, 247, 0.3);
+
+      /* Liquid Glass Layering */
+      --glass-nav-bg: rgba(255, 255, 255, 0.08);
+      --glass-card-bg: rgba(255, 255, 255, 0.07);
+      --glass-card-hover: rgba(255, 255, 255, 0.14);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-border-light: rgba(255, 255, 255, 0.3);
+      --glass-blur: blur(28px) saturate(190%);
+      --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      --glass-glow: 0 0 35px rgba(255, 45, 85, 0.28);
+
+      /* Typography & Accents */
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.65);
+      --text-tertiary: rgba(255, 255, 255, 0.4);
+      --accent-apple-music: #ff2d55;
+      --accent-gradient: linear-gradient(135deg, #ff2d55 0%, #ff5e3a 100%);
+
+      /* Rounded Corners */
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
+      --radius-xl: 34px;
+      --radius-pill: 9999px;
+
+      /* UI Transitions */
+      --transition-spring: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ==========================================================================
+       2. Global Resets & Base Styles
+       ========================================================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Liquid Lights for authentic glass refraction */
+    .ambient-mesh {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .ambient-mesh .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.7;
+      animation: float 14s infinite alternate ease-in-out;
+    }
+
+    .orb-1 { width: 380px; height: 380px; background: var(--mesh-color-1); top: -10%; left: 10%; }
+    .orb-2 { width: 420px; height: 420px; background: var(--mesh-color-2); bottom: 5%; right: -5%; animation-duration: 18s; }
+    .orb-3 { width: 300px; height: 300px; background: var(--mesh-color-3); top: 40%; left: 30%; animation-duration: 12s; }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.15); }
+    }
+
+    /* Phone / Viewport Frame Container */
+    .app-frame {
+      width: 100%;
+      max-width: 420px;
+      height: 90vh;
+      max-height: 860px;
+      border-radius: var(--radius-xl);
+      background: rgba(18, 18, 28, 0.4);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       3. Liquid Glass Top Navigation
+       ========================================================================== */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: var(--glass-nav-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+      transition: var(--transition-spring);
+    }
+
+    .nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-spring);
+    }
+
+    .nav-btn:hover {
+      background: var(--glass-card-hover);
+      border-color: var(--glass-border-light);
+      transform: scale(1.05);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    .nav-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .nav-right-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ai-btn {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 140, 0, 0.08));
+      border: 1px solid rgba(255, 215, 0, 0.35);
+      color: #ffd043;
+    }
+
+    .ai-btn:hover {
+      box-shadow: 0 0 16px rgba(255, 208, 67, 0.4);
+    }
+
+    /* ==========================================================================
+       4. Scrollable Content Area & Core Player
+       ========================================================================== */
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px 22px;
+      scrollbar-width: none;
+    }
+    .app-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Core Player Module */
+    .player-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    /* Square Album Cover with Dynamic Ambient Glow */
+    .album-art-container {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin: 10px 0 24px;
+      transition: var(--transition-spring);
+    }
+
+    .album-art-glow {
+      position: absolute;
+      inset: 8px;
+      border-radius: var(--radius-lg);
+      background: var(--active-gradient, linear-gradient(135deg, #f72585, #7209b7));
+      filter: blur(28px);
+      opacity: 0.65;
+      transition: var(--transition-spring);
+      z-index: 1;
+    }
+
+    .album-art {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-lg);
+      background: var(--active-gradient, linear-gradient(135deg, #f72585, #7209b7));
+      border: 1px solid var(--glass-border-light);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-spring);
+      transform: scale(0.96);
+    }
+
+    .playing .album-art {
+      transform: scale(1.02);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+    }
+
+    .playing .album-art-glow {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+
+    .album-art svg {
+      width: 72px;
+      height: 72px;
+      opacity: 0.85;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+    }
+
+    /* Track Metadata */
+    .track-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .meta-text {
+      flex: 1;
+      overflow: hidden;
+      padding-right: 14px;
+    }
+
+    .track-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .favorite-btn {
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: var(--transition-spring);
+    }
+    .favorite-btn.active {
+      color: var(--accent-apple-music);
+      fill: var(--accent-apple-music);
+    }
+
+    /* Scrubbing Progress Bar */
+    .progress-wrapper {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar-container {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      width: 32%;
+      height: 100%;
+      background: var(--text-primary);
+      border-radius: var(--radius-pill);
+      transition: width 0.1s linear;
+    }
+
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+    }
+
+    /* Core Controls */
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .ctrl-btn {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-spring);
+      outline: none;
+    }
+
+    .ctrl-btn:hover {
+      transform: scale(1.12);
+      color: #fff;
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.92);
+    }
+
+    .play-pause-btn {
+      width: 62px;
+      height: 62px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--glass-border-light);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .play-pause-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ==========================================================================
+       5. Up Next / Song List Section
+       ========================================================================== */
+    .playlist-section {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .song-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .song-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--glass-card-bg);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition-spring);
+    }
+
+    .song-item:hover {
+      background: var(--glass-card-hover);
+      border-color: var(--glass-border);
+      transform: translateX(4px);
+    }
+
+    .song-item.active {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: var(--glass-border-light);
+    }
+
+    .song-item-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      margin-right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    .song-item-thumb svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.9;
+    }
+
+    .song-item-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .song-item-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-item-artist {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .playing-indicator {
+      display: none;
+      align-items: flex-end;
+      gap: 3px;
+      height: 16px;
+      margin-left: 10px;
+    }
+
+    .song-item.active .playing-indicator {
+      display: flex;
+    }
+
+    .playing-bar {
+      width: 3px;
+      background: var(--accent-apple-music);
+      border-radius: var(--radius-pill);
+      animation: bounce 0.8s infinite alternate ease-in-out;
+    }
+    .playing-bar:nth-child(1) { height: 14px; animation-delay: 0.1s; }
+    .playing-bar:nth-child(2) { height: 8px; animation-delay: 0.3s; }
+    .playing-bar:nth-child(3) { height: 16px; animation-delay: 0.2s; }
+
+    @keyframes bounce {
+      0% { height: 4px; }
+      100% { height: 16px; }
+    }
+
+    /* ==========================================================================
+       6. AI Liquid Glass Popup Banner
+       ========================================================================== */
+    .ai-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 50;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .ai-banner-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .ai-banner {
+      width: 100%;
+      background: rgba(36, 24, 52, 0.7);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid rgba(255, 215, 0, 0.35);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 30px rgba(255, 215, 0, 0.15);
+      transform: translateY(-30px) scale(0.94);
+      transition: var(--transition-spring);
+      position: relative;
+    }
+
+    .ai-banner-overlay.show .ai-banner {
+      transform: translateY(0) scale(1);
+    }
+
+    .ai-banner-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #ffd043;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .ai-banner-header svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .ai-banner-body {
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .ai-banner-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .ai-btn-action {
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition-spring);
+    }
+
+    .ai-btn-dismiss {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      border: 1px solid var(--glass-border);
+    }
+
+    .ai-btn-accept {
+      background: linear-gradient(135deg, #ffd043, #ff9500);
+      color: #000;
+      box-shadow: 0 4px 12px rgba(255, 149, 0, 0.35);
+    }
+
+    .ai-btn-action:hover {
+      transform: scale(1.05);
+    }
+
+    /* Minimalist Linear SVGs default parameters */
+    svg.icon {
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Reflection Canvas -->
+  <div class="ambient-mesh">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Hidden File Input for simulated song upload -->
+  <input type="file" id="fileUploadInput" accept="audio/*" style="display: none;">
+
+  <!-- Main Music App iOS Container -->
+  <div class="app-frame" id="appFrame">
+
+    <!-- Top Navigation (Frosted Liquid Glass) -->
+    <header class="top-nav">
+      <button class="nav-btn" id="btnBack" title="Back" aria-label="Go Back">
+        <!-- Minimalist Linear SVG < Arrow -->
+        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <span class="nav-title">Music</span>
+
+      <div class="nav-right-actions">
+        <!-- AI Suggestion Lightbulb Button -->
+        <button class="nav-btn ai-btn" id="btnAI" title="AI Recommendation" aria-label="AI Suggestion">
+          <!-- Minimalist Linear SVG 💡 -->
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M9 18h6"></path>
+            <path d="M10 21h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.3 4.7 3.3 6 .7.5 1.7 1.3 1.7 2.5v.5h4v-.5c0-1.2 1-2 1.7-2.5 2-1.3 3.3-3.5 3.3-6a7 7 0 0 0-7-7z"></path>
+            <line x1="12" y1="6" x2="12" y2="9"></line>
+          </svg>
+        </button>
+
+        <!-- Mock Music Upload Button (+) -->
+        <button class="nav-btn" id="btnUpload" title="Upload Music" aria-label="Upload Song">
+          <!-- Minimalist Linear SVG + -->
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Body Content -->
+    <main class="app-content">
+
+      <!-- Core Player Visuals & Info -->
+      <section class="player-card">
+        <div class="album-art-container" id="albumArtContainer">
+          <div class="album-art-glow" id="artGlow"></div>
+          <div class="album-art" id="artCover">
+            <!-- Dynamic Album Art Abstract Linear SVG -->
+            <svg class="icon" viewBox="0 0 24 24" id="albumArtIcon">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </div>
+        </div>
+
+        <div class="track-meta">
+          <div class="meta-text">
+            <h2 class="track-title" id="currentTitle">Liquid Horizon</h2>
+            <p class="track-artist" id="currentArtist">Aetheria & Nova</p>
+          </div>
+          <!-- Heart / Like Action -->
+          <svg class="icon favorite-btn" id="btnFavorite" viewBox="0 0 24 24" width="22" height="22">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </div>
+
+        <!-- Scrubbing Progress Bar -->
+        <div class="progress-wrapper">
+          <div class="progress-bar-container" id="progressBar">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+          <div class="time-labels">
+            <span id="currentTime">1:12</span>
+            <span id="durationTime">3:45</span>
+          </div>
+        </div>
+
+        <!-- Player Navigation Controls -->
+        <div class="player-controls">
+          <!-- Previous Song -->
+          <button class="ctrl-btn" id="btnPrev" aria-label="Previous Track">
+            <svg class="icon" viewBox="0 0 24 24" width="28" height="28">
+              <polygon points="19 20 9 12 19 4 19 20"></polygon>
+              <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+          </button>
+
+          <!-- Play / Pause -->
+          <button class="ctrl-btn play-pause-btn" id="btnPlayPause" aria-label="Play or Pause">
+            <svg class="icon" id="playIcon" viewBox="0 0 24 24" width="28" height="28" style="margin-left: 2px;">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+
+          <!-- Next Song -->
+          <button class="ctrl-btn" id="btnNext" aria-label="Next Track">
+            <svg class="icon" viewBox="0 0 24 24" width="28" height="28">
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Up Next Playlist -->
+      <section class="playlist-section">
+        <div class="section-title">
+          <span>Up Next</span>
+          <span>4 Tracks</span>
+        </div>
+        <ul class="song-list" id="songList">
+          <!-- Injected via JavaScript -->
+        </ul>
+      </section>
+
+    </main>
+
+    <!-- 4. AI Interactive Popup Banner (Liquid Glass Sheet) -->
+    <div class="ai-banner-overlay" id="aiOverlay">
+      <div class="ai-banner">
+        <div class="ai-banner-header">
+          <!-- Minimalist Linear SVG Sparkle / AI light -->
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          </svg>
+          <span>Apple Intelligence</span>
+        </div>
+        <div class="ai-banner-body">
+          AI thinks you are in a good mood now and wants to invite you to listen to this song together~
+        </div>
+        <div class="ai-banner-actions">
+          <button class="ai-btn-action ai-btn-dismiss" id="btnAiDismiss">Later</button>
+          <button class="ai-btn-action ai-btn-accept" id="btnAiAccept">Listen Together</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       7. Logic & State Management
+       ========================================================================== -->
+  <script>
+    // Playlist Dataset with dynamic modern gradient themes
+    const playlist = [
+      {
+        id: 0,
+        title: "Liquid Horizon",
+        artist: "Aetheria & Nova",
+        duration: "3:45",
+        durationSec: 225,
+        gradient: "linear-gradient(135deg, #ff2d55 0%, #7928ca 100%)",
+        accent: "#ff2d55",
+        iconType: "music"
+      },
+      {
+        id: 1,
+        title: "Neon Stardust",
+        artist: "Kavinsky Waves",
+        duration: "4:12",
+        durationSec: 252,
+        gradient: "linear-gradient(135deg, #0070f3 0%, #00dfd8 100%)",
+        accent: "#00dfd8",
+        iconType: "disc"
+      },
+      {
+        id: 2,
+        title: "Midnight Glass Reflections",
+        artist: "Tokyo Sunset Club",
+        duration: "2:58",
+        durationSec: 178,
+        gradient: "linear-gradient(135deg, #8a2be2 0%, #f72585 100%)",
+        accent: "#f72585",
+        iconType: "radio"
+      },
+      {
+        id: 3,
+        title: "Ambient Serenity",
+        artist: "Quiet Ocean Project",
+        duration: "5:04",
+        durationSec: 304,
+        gradient: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
+        accent: "#10b981",
+        iconType: "wave"
+      }
+    ];
+
+    // State
+    let currentIndex = 0;
+    let isPlaying = false;
+    let currentSeconds = 72;
+    let timer = null;
+
+    // DOM Elements
+    const songListEl = document.getElementById('songList');
+    const currentTitleEl = document.getElementById('currentTitle');
+    const currentArtistEl = document.getElementById('currentArtist');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
+    const progressFillEl = document.getElementById('progressFill');
+    const progressBarEl = document.getElementById('progressBar');
+    const artCoverEl = document.getElementById('artCover');
+    const artGlowEl = document.getElementById('artGlow');
+    const albumArtContainerEl = document.getElementById('albumArtContainer');
+    const playPauseBtn = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnFavorite = document.getElementById('btnFavorite');
+    const btnAI = document.getElementById('btnAI');
+    const aiOverlay = document.getElementById('aiOverlay');
+    const btnAiDismiss = document.getElementById('btnAiDismiss');
+    const btnAiAccept = document.getElementById('btnAiAccept');
+    const btnUpload = document.getElementById('btnUpload');
+    const fileUploadInput = document.getElementById('fileUploadInput');
+
+    // Helper: Minimal linear SVG generator for thumbnails
+    function getThumbSVG(type) {
+      if (type === 'disc') {
+        return `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+      if (type === 'radio') {
+        return `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>`;
+      }
+      if (type === 'wave') {
+        return `<svg class="icon" viewBox="0 0 24 24"><path d="M2 10v3m4-6v9m4-12v15m4-9v3m4-6v9m2-4v1"></path></svg>`;
+      }
+      return `<svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+    }
+
+    // Format mm:ss
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Render Song List
+    function renderPlaylist() {
+      songListEl.innerHTML = '';
+      playlist.forEach((song, idx) => {
+        const li = document.createElement('li');
+        li.className = `song-item ${idx === currentIndex ? 'active' : ''}`;
+        li.innerHTML = `
+          <div class="song-item-thumb" style="background: ${song.gradient}">
+            ${getThumbSVG(song.iconType)}
+          </div>
+          <div class="song-item-info">
+            <div class="song-item-name">${song.title}</div>
+            <div class="song-item-artist">${song.artist}</div>
+          </div>
+          <div class="playing-indicator">
+            <div class="playing-bar"></div>
+            <div class="playing-bar"></div>
+            <div class="playing-bar"></div>
+          </div>
+        `;
+        li.addEventListener('click', () => switchTrack(idx, true));
+        songListEl.appendChild(li);
+      });
+    }
+
+    // Switch Track
+    function switchTrack(index, autoPlay = false) {
+      currentIndex = index;
+      const song = playlist[currentIndex];
+
+      // Update text & durations
+      currentTitleEl.textContent = song.title;
+      currentArtistEl.textContent = song.artist;
+      durationTimeEl.textContent = song.duration;
+      currentSeconds = 0;
+      updateProgressDisplay();
+
+      // Update dynamic liquid gradient styles
+      artCoverEl.style.background = song.gradient;
+      artGlowEl.style.background = song.gradient;
+
+      renderPlaylist();
+
+      if (autoPlay) {
+        startPlay();
+      }
+    }
+
+    // Progress updates
+    function updateProgressDisplay() {
+      const song = playlist[currentIndex];
+      const ratio = Math.min(currentSeconds / song.durationSec, 1);
+      progressFillEl.style.width = `${ratio * 100}%`;
+      currentTimeEl.textContent = formatTime(currentSeconds);
+    }
+
+    // Audio Simulation Timer
+    function startPlay() {
+      isPlaying = true;
+      albumArtContainerEl.classList.add('playing');
+      playIcon.innerHTML = `
+        <line x1="6" y1="4" x2="6" y2="20"></line>
+        <line x1="18" y1="4" x2="18" y2="20"></line>
+      `;
+
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
+        const song = playlist[currentIndex];
+        currentSeconds++;
+        if (currentSeconds >= song.durationSec) {
+          nextTrack();
+        } else {
+          updateProgressDisplay();
+        }
+      }, 1000);
+    }
+
+    function pausePlay() {
+      isPlaying = false;
+      albumArtContainerEl.classList.remove('playing');
+      playIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
+      clearInterval(timer);
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        pausePlay();
+      } else {
+        startPlay();
+      }
+    }
+
+    function nextTrack() {
+      let next = (currentIndex + 1) % playlist.length;
+      switchTrack(next, isPlaying);
+    }
+
+    function prevTrack() {
+      let prev = (currentIndex - 1 + playlist.length) % playlist.length;
+      switchTrack(prev, isPlaying);
+    }
+
+    // Click on progress bar to seek
+    progressBarEl.addEventListener('click', (e) => {
+      const rect = progressBarEl.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = Math.max(0, Math.min(1, clickX / rect.width));
+      const song = playlist[currentIndex];
+      currentSeconds = Math.floor(percent * song.durationSec);
+      updateProgressDisplay();
+    });
+
+    // Control Listeners
+    playPauseBtn.addEventListener('click', togglePlay);
+    btnNext.addEventListener('click', nextTrack);
+    btnPrev.addEventListener('click', prevTrack);
+
+    // Heart toggle
+    btnFavorite.addEventListener('click', () => {
+      btnFavorite.classList.toggle('active');
+    });
+
+    // Back Button feedback
+    document.getElementById('btnBack').addEventListener('click', () => {
+      window.history.length > 1 ? window.history.back() : alert("Returning to iOS Home Screen...");
+    });
+
+    // 4. AI Interaction Trigger
+    btnAI.addEventListener('click', () => {
+      aiOverlay.classList.add('show');
+    });
+
+    btnAiDismiss.addEventListener('click', () => {
+      aiOverlay.classList.remove('show');
+    });
+
+    btnAiAccept.addEventListener('click', () => {
+      aiOverlay.classList.remove('show');
+      // Jump to the upbeat happy track (Track 1 or 2)
+      switchTrack(1, true);
+    });
+
+    // 5. Upload File (+) Simulation
+    btnUpload.addEventListener('click', () => {
+      fileUploadInput.click();
+    });
+
+    fileUploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const uploadedTrack = {
+          id: playlist.length,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          artist: "Local Device Audio",
+          duration: "3:30",
+          durationSec: 210,
+          gradient: "linear-gradient(135deg, #ff007f 0%, #7928ca 100%)",
+          accent: "#ff007f",
+          iconType: "disc"
+        };
+        playlist.unshift(uploadedTrack);
+        switchTrack(0, true);
+      }
+    });
+
+    // Initial Setup
+    renderPlaylist();
+    updateProgressDisplay();
+  </script>
+</body>
+</html>
