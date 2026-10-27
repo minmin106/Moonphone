@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Safari</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple iOS Safari Native Design Tokens (Dark Mode)
+       ---------------------------------------------------- */
+    :root {
+      --ios-bg-base: #000000;
+      --ios-bg-grouped: #1c1c1e;
+      --ios-bg-elevated: #2c2c2e;
+      --ios-bg-input: #1c1c1e;
+      --ios-separator: #38383a;
+      --ios-separator-light: rgba(84, 84, 88, 0.4);
+
+      --ios-text-primary: #ffffff;
+      --ios-text-secondary: #8e8e93;
+      --ios-text-tertiary: #636366;
+
+      --ios-blue: #0a84ff;
+      --ios-blue-pressed: #0071e3;
+      --ios-red: #ff453a;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 9999px;
+
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --duration-fast: 160ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--ios-bg-base);
+      color: var(--ios-text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .safari-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--ios-bg-base);
+      border-left: 1px solid var(--ios-separator);
+      border-right: 1px solid var(--ios-separator);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .safari-shell {
+        border-left: none;
+        border-right: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       Top Header Navigation
+       ---------------------------------------------------- */
+    .app-header {
+      height: 50px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--ios-separator-light);
+      background-color: var(--ios-bg-base);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .btn-nav-back {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 16px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .btn-nav-back:hover {
+      opacity: 0.8;
+    }
+
+    .btn-nav-back:active {
+      opacity: 0.5;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ios-text-primary);
+    }
+
+    .header-edit-btn {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .header-edit-btn:active {
+      opacity: 0.5;
+    }
+
+    /* Focus accessibility */
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--ios-blue);
+      outline-offset: 2px;
+    }
+
+    /* ----------------------------------------------------
+       Main Content: Start Page & Search History
+       ---------------------------------------------------- */
+    .safari-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 18px 16px 140px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ios-separator) transparent;
+    }
+
+    .safari-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .safari-content::-webkit-scrollbar-thumb {
+      background: var(--ios-separator);
+      border-radius: var(--radius-pill);
+    }
+
+    .page-hero-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 24px;
+      color: var(--ios-text-primary);
+    }
+
+    .section-block {
+      margin-bottom: 28px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--ios-text-primary);
+    }
+
+    .section-action {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .section-action:active {
+      opacity: 0.5;
+    }
+
+    /* Favorites Grid */
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 12px;
+    }
+
+    .favorite-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .favorite-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-lg);
+      background-color: var(--ios-bg-grouped);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ios-text-primary);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .favorite-item:hover .favorite-icon-box {
+      background-color: var(--ios-bg-elevated);
+      transform: translateY(-2px);
+    }
+
+    .favorite-item:active .favorite-icon-box {
+      transform: scale(0.95);
+    }
+
+    .favorite-label {
+      font-size: 11.5px;
+      color: var(--ios-text-primary);
+      text-align: center;
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* History & Search Records Card List */
+    .history-card-group {
+      background-color: var(--ios-bg-grouped);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--ios-separator);
+      cursor: pointer;
+      background: transparent;
+      width: 100%;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      text-align: left;
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-item:hover {
+      background-color: var(--ios-bg-elevated);
+    }
+
+    .history-item:active {
+      background-color: var(--ios-separator);
+    }
+
+    .history-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .history-icon {
+      color: var(--ios-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .history-text-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .history-query {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ios-text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-url {
+      font-size: 12px;
+      color: var(--ios-text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-time {
+      font-size: 12.5px;
+      color: var(--ios-text-tertiary);
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .history-remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--ios-text-tertiary);
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+
+    .history-remove-btn:hover {
+      color: var(--ios-red);
+    }
+
+    /* Privacy Report Banner */
+    .privacy-card {
+      background-color: var(--ios-bg-grouped);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .privacy-shield {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background-color: rgba(10, 132, 255, 0.15);
+      color: var(--ios-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .privacy-info-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ios-text-primary);
+      margin-bottom: 2px;
+    }
+
+    .privacy-info-desc {
+      font-size: 12px;
+      color: var(--ios-text-secondary);
+      line-height: 1.35;
+    }
+
+    /* ----------------------------------------------------
+       Bottom Safari Floating Address Bar + Toolbar
+       ---------------------------------------------------- */
+    .bottom-system-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background-color: rgba(28, 28, 30, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--ios-separator);
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+    }
+
+    /* Floating Address Search Capsule */
+    .address-bar-row {
+      padding: 8px 14px 4px;
+    }
+
+    .address-pill {
+      height: 44px;
+      border-radius: var(--radius-pill);
+      background-color: var(--ios-bg-elevated);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .address-pill:focus-within {
+      background-color: #3a3a3c;
+    }
+
+    .pill-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--ios-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+      transition: color var(--duration-fast) var(--ease-ios);
+    }
+
+    .pill-icon-btn:hover {
+      color: var(--ios-text-primary);
+    }
+
+    .address-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .lock-indicator {
+      width: 13px;
+      height: 13px;
+      color: var(--ios-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .address-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--ios-text-primary);
+      font-size: 14.5px;
+      outline: none;
+      text-align: center;
+    }
+
+    .address-input::placeholder {
+      color: var(--ios-text-secondary);
+    }
+
+    .refresh-btn.rotating svg {
+      animation: spin 600ms linear;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Bottom Navigation Toolbar */
+    .nav-toolbar {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .tool-btn {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      position: relative;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .tool-btn--disabled {
+      color: var(--ios-text-tertiary);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .tool-btn:active:not(.tool-btn--disabled) {
+      opacity: 0.4;
+    }
+
+    .tabs-badge {
+      position: absolute;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--ios-blue);
+    }
+
+    /* Feedback Toast */
+    .toast-alert {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: var(--ios-bg-elevated);
+      color: var(--ios-text-primary);
+      border: 1px solid var(--ios-separator);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 100;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Linear minimalist SVGs */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="safari-shell">
+
+    <!-- Toast feedback for home navigation -->
+    <div class="toast-alert" id="toastAlert">Returning to Home Screen...</div>
+
+    <!-- Safari Header -->
+    <header class="app-header">
+      <!-- Return to Home Screen (<) Button -->
+      <button class="btn-nav-back" id="btnBackHome" aria-label="Return to home screen">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Home</span>
+      </button>
+
+      <span class="header-title">Start Page</span>
+
+      <button class="header-edit-btn" id="btnEditPage" aria-label="Edit start page">Edit</button>
+    </header>
+
+    <!-- Main Content Stream: Start Page & History -->
+    <main class="safari-content" id="safariContent">
+
+      <h1 class="page-hero-title">Favorites</h1>
+
+      <!-- Favorites / Frequently Visited Grid -->
+      <section class="section-block" aria-labelledby="favHeading">
+        <div class="favorites-grid">
+          
+          <!-- GitHub -->
+          <button class="favorite-item" data-query="github.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">GitHub</span>
+          </button>
+
+          <!-- Twitter / X -->
+          <button class="favorite-item" data-query="x.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M4 4l16 16M4 20L20 4"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">Twitter</span>
+          </button>
+
+          <!-- Claude / AI Companion -->
+          <button class="favorite-item" data-query="claude.ai">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 3a9 9 0 0 1 9 9m-9 9a9 9 0 0 1-9-9"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">Claude</span>
+          </button>
+
+          <!-- Wikipedia -->
+          <button class="favorite-item" data-query="wikipedia.org">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">Wiki</span>
+          </button>
+
+          <!-- Weather -->
+          <button class="favorite-item" data-query="weather.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+              </svg>
+            </div>
+            <span class="favorite-label">Weather</span>
+          </button>
+
+          <!-- Apple -->
+          <button class="favorite-item" data-query="apple.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <path d="M12 20.94c1.88 0 3.05-1.12 4.19-1.12 1.15 0 2.12 1.09 4.01 1.09 2.05 0 3.8-1.55 4.8-3.05-2.22-1.28-2.61-4.22-.38-5.78-1.09-1.63-2.82-2.54-4.57-2.54-1.89 0-3.1 1.08-4.21 1.08-1.15 0-2.63-1.06-4.26-1.06C8.89 9.56 6 11.83 6 15.54c0 2.37 1.05 4.79 2.33 6.46 1.02 1.35 2.13 2.54 3.67 2.54z"></path>
+                <path d="M15.5 6.5c.83-1.02 1.39-2.45 1.24-3.88-1.21.05-2.67.81-3.53 1.83-.76.88-1.42 2.33-1.24 3.73 1.35.1 2.7-.66 3.53-1.68z"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">Apple</span>
+          </button>
+
+          <!-- Reddit -->
+          <button class="favorite-item" data-query="reddit.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <circle cx="12" cy="12" r="9"></circle>
+                <circle cx="9" cy="10" r="1" fill="currentColor"></circle>
+                <circle cx="15" cy="10" r="1" fill="currentColor"></circle>
+                <path d="M8 15s1.5 2 4 2 4-2 4-2"></path>
+              </svg>
+            </div>
+            <span class="favorite-label">Reddit</span>
+          </button>
+
+          <!-- News -->
+          <button class="favorite-item" data-query="news.ycombinator.com">
+            <div class="favorite-icon-box">
+              <svg viewBox="0 0 24 24" class="svg-icon">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <span class="favorite-label">HackerNews</span>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- Search Records & Recent History List -->
+      <section class="section-block" aria-labelledby="historyHeading">
+        <div class="section-header">
+          <h2 class="section-title" id="historyHeading">Recent Searches</h2>
+          <button class="section-action" id="btnClearHistory" aria-label="Clear all search records">Clear</button>
+        </div>
+
+        <div class="history-card-group" id="historyList">
+
+          <!-- History Item 1 -->
+          <div class="history-item" data-search-term="liquid glass visual specification">
+            <div class="history-main">
+              <svg viewBox="0 0 24 24" class="svg-icon history-icon" style="width: 17px; height: 17px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <div class="history-text-col">
+                <span class="history-query">liquid glass visual specification</span>
+                <span class="history-url">developer.apple.com · UI Standards</span>
+              </div>
+            </div>
+            <span class="history-time">10:42 AM</span>
+            <button class="history-remove-btn" aria-label="Remove item">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 15px; height: 15px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- History Item 2 -->
+          <div class="history-item" data-search-term="apple sf symbols stroke style guide">
+            <div class="history-main">
+              <svg viewBox="0 0 24 24" class="svg-icon history-icon" style="width: 17px; height: 17px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <div class="history-text-col">
+                <span class="history-query">apple sf symbols stroke style guide</span>
+                <span class="history-url">developer.apple.com/design</span>
+              </div>
+            </div>
+            <span class="history-time">Yesterday</span>
+            <button class="history-remove-btn" aria-label="Remove item">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 15px; height: 15px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- History Item 3 -->
+          <div class="history-item" data-search-term="vanilla js web components without framework">
+            <div class="history-main">
+              <svg viewBox="0 0 24 24" class="svg-icon history-icon" style="width: 17px; height: 17px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <div class="history-text-col">
+                <span class="history-query">vanilla js web components without framework</span>
+                <span class="history-url">developer.mozilla.org</span>
+              </div>
+            </div>
+            <span class="history-time">Monday</span>
+            <button class="history-remove-btn" aria-label="Remove item">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 15px; height: 15px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- History Item 4 -->
+          <div class="history-item" data-search-term="css backdrop-filter gpu acceleration tips">
+            <div class="history-main">
+              <svg viewBox="0 0 24 24" class="svg-icon history-icon" style="width: 17px; height: 17px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <div class="history-text-col">
+                <span class="history-query">css backdrop-filter gpu acceleration tips</span>
+                <span class="history-url">web.dev/articles</span>
+              </div>
+            </div>
+            <span class="history-time">Oct 24</span>
+            <button class="history-remove-btn" aria-label="Remove item">
+              <svg viewBox="0 0 24 24" class="svg-icon" style="width: 15px; height: 15px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Privacy Report Card -->
+      <section class="section-block">
+        <div class="privacy-card">
+          <div class="privacy-shield">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px;">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="privacy-info-title">Privacy Report</div>
+            <div class="privacy-info-desc">Safari prevented 41 trackers from profiling you in the last 7 days.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Safari System Controls (Address Bar + Toolbar) -->
+    <div class="bottom-system-container">
+
+      <!-- Iconic Safari Floating Search / Address Bar -->
+      <div class="address-bar-row">
+        <div class="address-pill">
+          
+          <!-- Format / Reader button ("aA") -->
+          <button class="pill-icon-btn" id="btnPageFormat" aria-label="Page settings and Reader view">
+            <span style="font-size: 13px; font-weight: 700; letter-spacing: -0.5px;">aA</span>
+          </button>
+
+          <!-- Search / URL Input Box -->
+          <div class="address-input-wrapper">
+            <svg viewBox="0 0 24 24" class="svg-icon lock-indicator">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input 
+              type="text" 
+              class="address-input" 
+              id="addressInput" 
+              placeholder="Search or enter website name" 
+              value="Start Page"
+              aria-label="Address and Search"
+            >
+          </div>
+
+          <!-- Refresh / Reload Button -->
+          <button class="pill-icon-btn refresh-btn" id="btnRefresh" aria-label="Reload webpage">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 17px; height: 17px;">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Safari Bottom Navigation Toolbar -->
+      <nav class="nav-toolbar" aria-label="Safari navigation toolbar">
+        
+        <!-- Back Navigation -->
+        <button class="tool-btn tool-btn--disabled" id="navBack" aria-label="Go back in history">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Forward Navigation -->
+        <button class="tool-btn tool-btn--disabled" id="navForward" aria-label="Go forward in history">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Share Sheet Icon -->
+        <button class="tool-btn" id="navShare" aria-label="Share current page">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Bookmarks / History Book Icon -->
+        <button class="tool-btn" id="navBookmarks" aria-label="Open bookmarks and reading list">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+        </button>
+
+        <!-- Tabs Icon (Overlapping windows) -->
+        <button class="tool-btn" id="navTabs" aria-label="Open tabs overview">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <rect x="8" y="4" width="13" height="13" rx="2"></rect>
+            <path d="M4 8H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"></path>
+          </svg>
+          <span class="tabs-badge">2</span>
+        </button>
+
+      </nav>
+
+    </div>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnBackHome = document.getElementById('btnBackHome');
+      const toastAlert = document.getElementById('toastAlert');
+      const addressInput = document.getElementById('addressInput');
+      const btnRefresh = document.getElementById('btnRefresh');
+      const btnClearHistory = document.getElementById('btnClearHistory');
+      const historyList = document.getElementById('historyList');
+
+      // 1. Return to Home Screen (<) Button Handler
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          if (toastAlert) {
+            toastAlert.classList.add('show');
+            setTimeout(() => {
+              toastAlert.classList.remove('show');
+            }, 1800);
+          }
+
+          console.log('[Safari App] Back to home clicked: Broadcasting NAVIGATE_HOME.');
+
+          // Dispatch message to parent shell or trigger browser back
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => {
+              window.history.back();
+            }, 300);
+          }
+        });
+      }
+
+      // 2. Address Input Interactions
+      if (addressInput) {
+        addressInput.addEventListener('focus', () => {
+          if (addressInput.value === 'Start Page') {
+            addressInput.value = '';
+          }
+          addressInput.select();
+        });
+
+        addressInput.addEventListener('blur', () => {
+          if (addressInput.value.trim() === '') {
+            addressInput.value = 'Start Page';
+          }
+        });
+
+        addressInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            addressInput.blur();
+            console.log(`[Safari App] Searching for: "${addressInput.value}"`);
+          }
+        });
+      }
+
+      // 3. Refresh Spin Micro-interaction
+      if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+          btnRefresh.classList.add('rotating');
+          setTimeout(() => {
+            btnRefresh.classList.remove('rotating');
+          }, 600);
+        });
+      }
+
+      // 4. Clicking a Favorite Item or History Record sets the Address Bar
+      const favoriteButtons = document.querySelectorAll('.favorite-item');
+      favoriteButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const query = btn.getAttribute('data-query');
+          if (query && addressInput) {
+            addressInput.value = query;
+          }
+        });
+      });
+
+      // 5. History Record Selection & Deletion
+      if (historyList) {
+        historyList.addEventListener('click', (e) => {
+          const removeBtn = e.target.closest('.history-remove-btn');
+          const historyRow = e.target.closest('.history-item');
+
+          if (removeBtn && historyRow) {
+            e.stopPropagation();
+            historyRow.remove();
+            return;
+          }
+
+          if (historyRow && addressInput) {
+            const searchTerm = historyRow.getAttribute('data-search-term');
+            if (searchTerm) {
+              addressInput.value = searchTerm;
+            }
+          }
+        });
+      }
+
+      // 6. Clear All History Handler
+      if (btnClearHistory && historyList) {
+        btnClearHistory.addEventListener('click', () => {
+          historyList.innerHTML = `
+            <div style="padding: 24px; text-align: center; color: var(--ios-text-secondary); font-size: 14px;">
+              No recent searches
+            </div>
+          `;
+          btnClearHistory.style.display = 'none';
+        });
+      }
+    });
+  </script>
+</body>
+</html>
