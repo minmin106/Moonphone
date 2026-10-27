@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Calendar</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple Calendar Design Tokens (Native White Theme)
+       ---------------------------------------------------- */
+    :root {
+      /* Classic Apple Calendar Light Palette */
+      --cal-bg: #ffffff;
+      --cal-surface: #f2f2f7;
+      --cal-surface-subtle: #f9f9fb;
+      --cal-border: #e5e5ea;
+      --cal-separator: #d1d1d6;
+
+      /* Apple Calendar Signature Red */
+      --cal-red: #ff3b30;
+      --cal-red-dim: rgba(255, 59, 48, 0.12);
+
+      /* Event Label Colors */
+      --badge-red: #ff3b30;
+      --badge-pink: #ff2d55;
+      --badge-blue: #007aff;
+      --badge-purple: #af52de;
+
+      --text-primary: #000000;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #c7c7cc;
+
+      /* Liquid Glass Notification Tokens */
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --glass-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 50%);
+      --glass-blur: blur(25px) saturate(180%);
+      --shadow-glass-lg: 0 16px 40px rgba(0, 0, 0, 0.15);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-pill: 9999px;
+
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --duration-fast: 160ms;
+      --duration-normal: 280ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--cal-bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .calendar-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--cal-bg);
+      border-left: 1px solid var(--cal-border);
+      border-right: 1px solid var(--cal-border);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .calendar-shell {
+        border: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       Top Navigation Bar
+       ---------------------------------------------------- */
+    .cal-header {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--cal-border);
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--cal-red);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .nav-btn:active {
+      opacity: 0.5;
+    }
+
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--cal-red);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios), transform var(--duration-fast) var(--ease-ios);
+    }
+
+    .icon-btn:hover {
+      background-color: var(--cal-red-dim);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* AI Simulate Reminder Button */
+    .btn-ai-spark {
+      background-color: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.3);
+    }
+
+    /* ----------------------------------------------------
+       Scrollable Body
+       ---------------------------------------------------- */
+    .cal-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 30px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--cal-separator) transparent;
+    }
+
+    .cal-scroll-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .cal-scroll-body::-webkit-scrollbar-thumb {
+      background-color: var(--cal-separator);
+      border-radius: var(--radius-pill);
+    }
+
+    /* Month Title Header */
+    .month-header-row {
+      padding: 12px 18px 4px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .month-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .year-subtitle {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ----------------------------------------------------
+       Calendar Grid (Monday to Sunday)
+       ---------------------------------------------------- */
+    .weekdays-header-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 8px 14px 4px;
+      text-align: center;
+      border-bottom: 1px solid var(--cal-border);
+    }
+
+    .weekday-col {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .month-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 8px 14px 16px;
+      row-gap: 6px;
+      border-bottom: 1px solid var(--cal-border);
+    }
+
+    .day-cell {
+      height: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .day-number-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .day-cell--outside .day-number-bubble {
+      color: var(--text-tertiary);
+    }
+
+    .day-cell:hover:not(.day-cell--today) .day-number-bubble {
+      background-color: var(--cal-surface);
+    }
+
+    /* Today's Date Marked with Solid Red Circle */
+    .day-cell--today .day-number-bubble {
+      background-color: var(--cal-red);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(255, 59, 48, 0.35);
+    }
+
+    /* Selected Day Outline */
+    .day-cell--selected:not(.day-cell--today) .day-number-bubble {
+      border: 1.5px solid var(--text-primary);
+    }
+
+    /* Indicator Dots Underneath Days */
+    .dots-indicator-row {
+      display: flex;
+      gap: 2.5px;
+      height: 4px;
+      align-items: center;
+    }
+
+    .event-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: var(--radius-pill);
+    }
+
+    .dot--red { background-color: var(--badge-red); }
+    .dot--pink { background-color: var(--badge-pink); }
+    .dot--blue { background-color: var(--badge-blue); }
+
+    /* ----------------------------------------------------
+       Today's Schedule & Anniversaries List
+       ---------------------------------------------------- */
+    .schedule-section {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .schedule-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .schedule-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .schedule-selected-date-str {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .events-card-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .event-item-card {
+      background-color: var(--cal-surface-subtle);
+      border: 1px solid var(--cal-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .event-item-card:hover {
+      background-color: var(--cal-surface);
+    }
+
+    .event-card-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    /* Vertical Indicator Bar */
+    .event-stripe {
+      width: 4px;
+      height: 38px;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+    }
+
+    .stripe--red { background-color: var(--badge-red); }
+    .stripe--pink { background-color: var(--badge-pink); }
+    .stripe--blue { background-color: var(--badge-blue); }
+
+    .event-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .event-title-line {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .event-time-line {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    /* Small Colored Badges */
+    .event-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.2px;
+    }
+
+    /* Red Label: Love Anniversary */
+    .badge--love {
+      background-color: rgba(255, 59, 48, 0.12);
+      color: var(--badge-red);
+      border: 1px solid rgba(255, 59, 48, 0.25);
+    }
+
+    /* Pink Label: Menstrual Prediction */
+    .badge--menstrual {
+      background-color: rgba(255, 45, 85, 0.12);
+      color: var(--badge-pink);
+      border: 1px solid rgba(255, 45, 85, 0.25);
+    }
+
+    /* Blue Label: National Day */
+    .badge--holiday {
+      background-color: rgba(0, 122, 255, 0.12);
+      color: var(--badge-blue);
+      border: 1px solid rgba(0, 122, 255, 0.25);
+    }
+
+    /* ----------------------------------------------------
+       Liquid Glass Notification Banner (Simulated AI Remind)
+       ---------------------------------------------------- */
+    .glass-notification {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-glass-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      transform: translateY(-130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--duration-normal) var(--ease-ios), opacity var(--duration-normal) var(--ease-ios);
+      overflow: hidden;
+    }
+
+    .glass-notification::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: var(--glass-highlight);
+      pointer-events: none;
+    }
+
+    .glass-notification.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .notif-app-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #ff3b30, #ff2d55);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255, 59, 48, 0.35);
+    }
+
+    .notif-text-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .notif-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .notif-app-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .notif-timestamp {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .notif-message-body {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    /* Universal Home Toast */
+    .home-toast-alert {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .home-toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--cal-red);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calendar-shell">
+
+    <!-- Universal Home Return Toast -->
+    <div class="home-toast-alert" id="homeToast">Returning to Home Screen...</div>
+
+    <!-- Liquid Glass Top Notification Banner (AI Anniversary Remind) -->
+    <aside class="glass-notification" id="aiGlassNotification" aria-live="polite">
+      <div class="notif-app-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px; stroke: #ffffff;">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="notif-text-col">
+        <div class="notif-header-line">
+          <span class="notif-app-title">Calendar · AI Companion</span>
+          <span class="notif-timestamp">Now</span>
+        </div>
+        <p class="notif-message-body" id="notifMessageText">
+          AI reminder: Tomorrow is your anniversary, don't forget to prepare a surprise! 🎁
+        </p>
+      </div>
+    </aside>
+
+    <!-- Top Navigation Bar -->
+    <header class="cal-header">
+      <!-- Upper Left: Return to Home Screen (< Home) -->
+      <button class="nav-btn" id="btnBackHome" aria-label="Return to home screen">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Home</span>
+      </button>
+
+      <div class="header-actions-right">
+        <!-- Simulate AI Reminder (💡) -->
+        <button class="icon-btn btn-ai-spark" id="btnSimulateAiCalendar" aria-label="Simulate AI Anniversary Reminder" title="AI Reminder">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 19px; height: 19px;">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+
+        <!-- Search -->
+        <button class="icon-btn" aria-label="Search events">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+
+        <!-- Add Event (+) -->
+        <button class="icon-btn" id="btnAddEvent" aria-label="Add new event">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Content -->
+    <main class="cal-scroll-body">
+      
+      <!-- Current Month Title -->
+      <div class="month-header-row">
+        <h1 class="month-title">October</h1>
+        <span class="year-subtitle">2026</span>
+      </div>
+
+      <!-- Table Header: Monday to Sunday -->
+      <div class="weekdays-header-grid" aria-hidden="true">
+        <span class="weekday-col">Mon</span>
+        <span class="weekday-col">Tue</span>
+        <span class="weekday-col">Wed</span>
+        <span class="weekday-col">Thu</span>
+        <span class="weekday-col">Fri</span>
+        <span class="weekday-col">Sat</span>
+        <span class="weekday-col">Sun</span>
+      </div>
+
+      <!-- Month Days Calendar Grid (October 2026) -->
+      <div class="month-days-grid" id="monthDaysGrid">
+
+        <!-- Week 1: Sep 28 - Oct 4 -->
+        <div class="day-cell day-cell--outside"><div class="day-number-bubble">28</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell day-cell--outside"><div class="day-number-bubble">29</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell day-cell--outside"><div class="day-number-bubble">30</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="1">
+          <div class="day-number-bubble">1</div>
+          <div class="dots-indicator-row"><span class="event-dot dot--blue"></span></div>
+        </div>
+        <div class="day-cell" data-day="2"><div class="day-number-bubble">2</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="3"><div class="day-number-bubble">3</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="4"><div class="day-number-bubble">4</div><div class="dots-indicator-row"></div></div>
+
+        <!-- Week 2: Oct 5 - Oct 11 -->
+        <div class="day-cell" data-day="5"><div class="day-number-bubble">5</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="6"><div class="day-number-bubble">6</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="7"><div class="day-number-bubble">7</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="8"><div class="day-number-bubble">8</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="9"><div class="day-number-bubble">9</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="10"><div class="day-number-bubble">10</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="11"><div class="day-number-bubble">11</div><div class="dots-indicator-row"></div></div>
+
+        <!-- Week 3: Oct 12 - Oct 18 -->
+        <div class="day-cell" data-day="12"><div class="day-number-bubble">12</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="13"><div class="day-number-bubble">13</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="14"><div class="day-number-bubble">14</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="15"><div class="day-number-bubble">15</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="16"><div class="day-number-bubble">16</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="17"><div class="day-number-bubble">17</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="18"><div class="day-number-bubble">18</div><div class="dots-indicator-row"></div></div>
+
+        <!-- Week 4: Oct 19 - Oct 25 -->
+        <div class="day-cell" data-day="19"><div class="day-number-bubble">19</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="20"><div class="day-number-bubble">20</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="21"><div class="day-number-bubble">21</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="22"><div class="day-number-bubble">22</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="23"><div class="day-number-bubble">23</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="24"><div class="day-number-bubble">24</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="25"><div class="day-number-bubble">25</div><div class="dots-indicator-row"></div></div>
+
+        <!-- Week 5: Oct 26 - Nov 1 -->
+        <div class="day-cell" data-day="26">
+          <div class="day-number-bubble">26</div>
+          <div class="dots-indicator-row"></div>
+        </div>
+
+        <!-- Today: October 27 Marked with Red Circle -->
+        <div class="day-cell day-cell--today" data-day="27" aria-label="Today, October 27">
+          <div class="day-number-bubble">27</div>
+          <div class="dots-indicator-row">
+            <span class="event-dot dot--red"></span>
+            <span class="event-dot dot--pink"></span>
+          </div>
+        </div>
+
+        <!-- Tomorrow (Anniversary Target Day) -->
+        <div class="day-cell" data-day="28">
+          <div class="day-number-bubble">28</div>
+          <div class="dots-indicator-row"><span class="event-dot dot--red"></span></div>
+        </div>
+
+        <div class="day-cell" data-day="29"><div class="day-number-bubble">29</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="30"><div class="day-number-bubble">30</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell" data-day="31"><div class="day-number-bubble">31</div><div class="dots-indicator-row"></div></div>
+        <div class="day-cell day-cell--outside"><div class="day-number-bubble">1</div><div class="dots-indicator-row"></div></div>
+
+      </div>
+
+      <!-- Below Grid: Today's Schedule & Anniversaries -->
+      <section class="schedule-section" aria-label="Schedule and Anniversaries">
+        
+        <div class="schedule-section-header">
+          <h2 class="schedule-section-title">Today's Schedule</h2>
+          <span class="schedule-selected-date-str" id="selectedDateDisplay">Tuesday, Oct 27</span>
+        </div>
+
+        <div class="events-card-stack" id="eventsCardStack">
+
+          <!-- Item 1: Love Anniversary (Red Label) -->
+          <article class="event-item-card">
+            <div class="event-card-left">
+              <div class="event-stripe stripe--red"></div>
+              <div class="event-details">
+                <span class="event-title-line">2nd Love Anniversary Eve</span>
+                <span class="event-time-line">All Day · Dinner Reservation at 19:30</span>
+              </div>
+            </div>
+            <!-- Red Badge -->
+            <span class="event-tag-badge badge--love">Love Anniversary</span>
+          </article>
+
+          <!-- Item 2: Menstrual Prediction (Pink Label) -->
+          <article class="event-item-card">
+            <div class="event-card-left">
+              <div class="event-stripe stripe--pink"></div>
+              <div class="event-details">
+                <span class="event-title-line">Menstrual Cycle Prediction (Day 1)</span>
+                <span class="event-time-line">Health Tracker · Keep warm & stay rested</span>
+              </div>
+            </div>
+            <!-- Pink Badge -->
+            <span class="event-tag-badge badge--menstrual">Menstrual Prediction</span>
+          </article>
+
+          <!-- Item 3: National Day Holiday (Blue Label) -->
+          <article class="event-item-card">
+            <div class="event-card-left">
+              <div class="event-stripe stripe--blue"></div>
+              <div class="event-details">
+                <span class="event-title-line">National Golden Week Holiday Notice</span>
+                <span class="event-time-line">Public Holiday Calendar Sync</span>
+              </div>
+            </div>
+            <!-- Blue Badge -->
+            <span class="event-tag-badge badge--holiday">National Day</span>
+          </article>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnBackHome = document.getElementById('btnBackHome');
+      const homeToast = document.getElementById('homeToast');
+      const btnSimulateAiCalendar = document.getElementById('btnSimulateAiCalendar');
+      const aiGlassNotification = document.getElementById('aiGlassNotification');
+      const notifMessageText = document.getElementById('notifMessageText');
+      const dayCells = document.querySelectorAll('.day-cell:not(.day-cell--outside)');
+      const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+      const btnAddEvent = document.getElementById('btnAddEvent');
+      const eventsCardStack = document.getElementById('eventsCardStack');
+
+      let notifTimer = null;
+
+      // ----------------------------------------------------
+      // 1. Return to Home Screen (< Home)
+      // ----------------------------------------------------
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          homeToast.classList.add('show');
+          setTimeout(() => homeToast.classList.remove('show'), 1800);
+          console.log('[Calendar App] Navigating to Home screen.');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => window.history.back(), 300);
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 2. Calendar Grid Cell Selection
+      // ----------------------------------------------------
+      dayCells.forEach((cell) => {
+        cell.addEventListener('click', () => {
+          dayCells.forEach((c) => c.classList.remove('day-cell--selected'));
+          cell.classList.add('day-cell--selected');
+
+          const dayNumber = cell.getAttribute('data-day');
+          if (dayNumber) {
+            selectedDateDisplay.textContent = `October ${dayNumber}, 2026`;
+          }
+        });
+      });
+
+      // ----------------------------------------------------
+      // 3. Simulated AI Anniversary Reminder (💡 Button)
+      // ----------------------------------------------------
+      if (btnSimulateAiCalendar) {
+        btnSimulateAiCalendar.addEventListener('click', () => {
+          notifMessageText.textContent = "AI reminder: Tomorrow is your anniversary, don't forget to prepare a surprise! 🎁";
+
+          // Slide in Liquid Glass Notification Banner
+          aiGlassNotification.classList.add('active');
+
+          if (notifTimer) clearTimeout(notifTimer);
+
+          // Slide out automatically after 4.5 seconds
+          notifTimer = setTimeout(() => {
+            aiGlassNotification.classList.remove('active');
+          }, 4500);
+
+          console.log('[AI Companion Reminder Triggered]: Tomorrow is your anniversary.');
+        });
+      }
+
+      // ----------------------------------------------------
+      // 4. Quick Add Event Action
+      // ----------------------------------------------------
+      if (btnAddEvent) {
+        btnAddEvent.addEventListener('click', () => {
+          const title = prompt("Enter event title:", "Companion Coffee Tasting");
+          if (!title || !title.trim()) return;
+
+          const card = document.createElement('article');
+          card.className = 'event-item-card';
+          card.innerHTML = `
+            <div class="event-card-left">
+              <div class="event-stripe stripe--blue"></div>
+              <div class="event-details">
+                <span class="event-title-line">${title.trim()}</span>
+                <span class="event-time-line">14:00 - 15:00 · Personal</span>
+              </div>
+            </div>
+            <span class="event-tag-badge badge--holiday">Scheduled</span>
+          `;
+          eventsCardStack.prepend(card);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
