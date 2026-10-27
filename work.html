@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Workflow Log - Process Record</title>
+  <style>
+    /* ---------------- CSS Variables ---------------- */
+    :root {
+      --bg-body: #0d1117;
+      --bg-card: rgba(22, 27, 34, 0.65);
+      --glass-nav: rgba(13, 17, 23, 0.72);
+      --glass-modal: rgba(22, 27, 34, 0.82);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-light: rgba(255, 255, 255, 0.15);
+      --glass-blur: blur(16px);
+
+      --text-main: #f0f6fc;
+      --text-sub: #8b949e;
+      --text-dim: #484f58;
+
+      /* Tag Categories */
+      --tag-thought-bg: rgba(163, 113, 247, 0.15);
+      --tag-thought-color: #d2a8ff;
+      --tag-thought-border: rgba(163, 113, 247, 0.3);
+
+      --tag-work-bg: rgba(88, 166, 255, 0.15);
+      --tag-work-color: #79c0ff;
+      --tag-work-border: rgba(88, 166, 255, 0.3);
+
+      --tag-mind-bg: rgba(63, 185, 80, 0.15);
+      --tag-mind-color: #7ee787;
+      --tag-mind-border: rgba(63, 185, 80, 0.3);
+
+      --tag-ai-bg: rgba(240, 136, 62, 0.15);
+      --tag-ai-color: #ffa657;
+      --tag-ai-border: rgba(240, 136, 62, 0.3);
+
+      /* Border Radiuses */
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      /* Animation */
+      --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ---------------- Global Reset ---------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(88, 166, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(163, 113, 247, 0.05) 0%, transparent 40%);
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 600px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 90px;
+    }
+
+    /* ---------------- Top Glass Navigation ---------------- */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      padding: 0 18px;
+      background: var(--glass-nav);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .nav-btn {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-main);
+      transition: var(--transition-smooth);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--glass-border);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    .nav-title {
+      font-size: 16.5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--text-main);
+    }
+
+    /* ---------------- Top Notification Toast ---------------- */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .toast {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--glass-modal);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border-light);
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      color: var(--text-main);
+      font-size: 13.5px;
+      transform: translateY(-80px);
+      opacity: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ---------------- Timeline Container ---------------- */
+    .timeline-container {
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .timeline-list {
+      list-style: none;
+      position: relative;
+    }
+
+    .timeline-list::before {
+      content: "";
+      position: absolute;
+      top: 15px;
+      bottom: 20px;
+      left: 82px;
+      width: 1.5px;
+      background: linear-gradient(to bottom, var(--glass-border-light) 0%, rgba(255, 255, 255, 0.03) 100%);
+    }
+
+    /* ---------------- Timeline Item ---------------- */
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 22px;
+      position: relative;
+      animation: entryIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes entryIn {
+      from {
+        opacity: 0;
+        transform: translateY(-12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Timestamp column */
+    .timeline-time {
+      width: 68px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+      line-height: 1.4;
+      flex-shrink: 0;
+      padding-top: 6px;
+    }
+
+    .timeline-time span {
+      display: block;
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    /* Timeline center node indicator */
+    .timeline-node {
+      position: absolute;
+      left: 77.5px;
+      top: 10px;
+      width: 10px;
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-body);
+      border: 2px solid var(--text-sub);
+      box-shadow: 0 0 0 2px var(--bg-body);
+      z-index: 1;
+      transition: var(--transition-smooth);
+    }
+
+    /* Card Box */
+    .timeline-card {
+      flex: 1;
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      transition: var(--transition-smooth);
+      position: relative;
+    }
+
+    .timeline-card:hover {
+      border-color: var(--glass-border-light);
+      background: rgba(28, 33, 40, 0.85);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    /* Tag Badges */
+    .tag-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      letter-spacing: 0.2px;
+      display: inline-block;
+    }
+
+    .tag-thought {
+      background: var(--tag-thought-bg);
+      color: var(--tag-thought-color);
+      border-color: var(--tag-thought-border);
+    }
+
+    .tag-work {
+      background: var(--tag-work-bg);
+      color: var(--tag-work-color);
+      border-color: var(--tag-work-border);
+    }
+
+    .tag-mind {
+      background: var(--tag-mind-bg);
+      color: var(--tag-mind-color);
+      border-color: var(--tag-mind-border);
+    }
+
+    .tag-ai {
+      background: var(--tag-ai-bg);
+      color: var(--tag-ai-color);
+      border-color: var(--tag-ai-border);
+    }
+
+    .card-text {
+      font-size: 13.5px;
+      color: var(--text-main);
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    /* ---------------- Floating Bulb Button ---------------- */
+    .fab-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-full);
+      background: rgba(30, 36, 46, 0.82);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border-light);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffa657;
+      transition: var(--transition-smooth);
+      z-index: 100;
+    }
+
+    .fab-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 28px rgba(240, 136, 62, 0.25);
+      border-color: rgba(240, 136, 62, 0.4);
+    }
+
+    .fab-btn:active {
+      transform: scale(0.94);
+    }
+
+    /* ---------------- Modal Dialog ---------------- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+      z-index: 200;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 440px;
+      background: var(--glass-modal);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border-light);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      transform: scale(0.92);
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active .modal-sheet {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      background: rgba(13, 17, 23, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-main);
+      font-size: 13.5px;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-select:focus, .form-input:focus {
+      border-color: rgba(88, 166, 255, 0.5);
+    }
+
+    .form-textarea {
+      resize: none;
+      height: 90px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-sub);
+      border-color: var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-primary {
+      background: #238636;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #2ea043;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Slide Toast Notification -->
+  <div class="toast-container">
+    <div id="aiToast" class="toast">
+      <!-- Minimalist Check/Sparkle Linear Icon -->
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: #7ee787;">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+      </svg>
+      <span>AI has recorded the thinking process just now</span>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Glass Navigation Bar -->
+    <header class="top-nav">
+      <!-- Back Button (<) -->
+      <button class="nav-btn" onclick="alert('Returning to Home Screen...')" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <span class="nav-title">Process Record</span>
+
+      <!-- Add Record Button (+) -->
+      <button class="nav-btn" id="openAddModalBtn" aria-label="Add Record">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Timeline Body (Reverse Chronological Order) -->
+    <main class="timeline-container">
+      <ul class="timeline-list" id="timelineList">
+        <!-- Records will be injected and pre-rendered here -->
+      </ul>
+    </main>
+
+    <!-- Floating AI Trigger Button (💡 Light Bulb) -->
+    <button class="fab-btn" id="aiInspireBtn" title="AI Record Thought">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6M10 22h4"/>
+        <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/>
+        <line x1="12" y1="6" x2="12" y2="10"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Manual Record Modal Window -->
+  <div class="modal-overlay" id="addModalOverlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">New Record</h3>
+        <button class="nav-btn" id="closeAddModalBtn" style="width: 28px; height: 28px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Classification</label>
+        <select class="form-select" id="recordCategory">
+          <option value="thought">Thinking Process</option>
+          <option value="mind">Mental Activity</option>
+          <option value="work">Work Content</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description / Record Text</label>
+        <textarea class="form-input form-textarea" id="recordContent" placeholder="Enter process details..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveRecordBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------------- Initial Sample Data ---------------- */
+    const initialRecords = [
+      {
+        id: 1,
+        time: "14:20",
+        day: "Today",
+        type: "work",
+        category: "Work Content",
+        text: "Refactored the front-end style architecture to use CSS variables and unified the frosted glass parameters across components."
+      },
+      {
+        id: 2,
+        time: "11:45",
+        day: "Today",
+        type: "thought",
+        category: "Thinking Process",
+        text: "Pondered whether timeline items should group by date or use smooth continuous vertical markers. Opted for continuous line to preserve flow."
+      },
+      {
+        id: 3,
+        time: "09:10",
+        day: "Today",
+        type: "mind",
+        category: "Mental Activity",
+        text: "Felt mentally organized after morning coffee. Ready to dive into user experience polish."
+      },
+      {
+        id: 4,
+        time: "20:30",
+        day: "Yesterday",
+        type: "thought",
+        category: "Thinking Process",
+        text: "Evaluated icon design constraints: strictly minimal linear SVGs yield much cleaner visual rhythm than raster graphics."
+      },
+      {
+        id: 5,
+        time: "16:15",
+        day: "Yesterday",
+        type: "work",
+        category: "Work Content",
+        text: "Finalized requirements documentation and defined the interactions for liquid-glass navigation elements."
+      }
+    ];
+
+    /* ---------------- AI Simulation Pools ---------------- */
+    const aiThoughtLibrary = [
+      "Noticed potential cognitive friction in timeline grouping; dynamically adapted visual spacing.",
+      "Identified sub-conscious focus shift: decided to break down next task into 15-minute bursts.",
+      "Summarized design insight: translucent glass backdrops reduce contrast harshness in dark viewports.",
+      "Observed user workflow rhythm: peak productivity reached during silent thought intervals.",
+      "Synthesized technical strategy: keep dependencies zero, leverage native web APIs for peak speed."
+    ];
+
+    const timelineListEl = document.getElementById('timelineList');
+    const aiToast = document.getElementById('aiToast');
+    const aiInspireBtn = document.getElementById('aiInspireBtn');
+
+    /* ---------------- Render Timeline Item ---------------- */
+    function renderRecord(record, prepend = false) {
+      const li = document.createElement('li');
+      li.className = 'timeline-item';
+
+      li.innerHTML = `
+        <div class="timeline-time">
+          ${record.time}
+          <span>${record.day}</span>
+        </div>
+        <div class="timeline-node"></div>
+        <div class="timeline-card">
+          <div class="card-header">
+            <span class="tag-badge tag-${record.type}">${record.category}</span>
+          </div>
+          <p class="card-text">${escapeHtml(record.text)}</p>
+        </div>
+      `;
+
+      if (prepend && timelineListEl.firstChild) {
+        timelineListEl.insertBefore(li, timelineListEl.firstChild);
+      } else {
+        timelineListEl.appendChild(li);
+      }
+    }
+
+    function escapeHtml(string) {
+      const div = document.createElement('div');
+      div.textContent = string;
+      return div.innerHTML;
+    }
+
+    // Initialize list
+    initialRecords.forEach(rec => renderRecord(rec));
+
+    /* ---------------- Toast Notification ---------------- */
+    let toastTimeout;
+    function triggerToast() {
+      clearTimeout(toastTimeout);
+      aiToast.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        aiToast.classList.remove('show');
+      }, 2800);
+    }
+
+    /* ---------------- AI Record Trigger (💡) ---------------- */
+    aiInspireBtn.addEventListener('click', () => {
+      // 1. Trigger toast
+      triggerToast();
+
+      // 2. Generate simulated AI item
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const randomIdea = aiThoughtLibrary[Math.floor(Math.random() * aiThoughtLibrary.length)];
+
+      const newAIRecord = {
+        id: Date.now(),
+        time: `${hours}:${minutes}`,
+        day: "Today",
+        type: "ai",
+        category: "Thinking Process",
+        text: randomIdea
+      };
+
+      // 3. Prepend to list
+      renderRecord(newAIRecord, true);
+    });
+
+    /* ---------------- Modal & Manual Addition ---------------- */
+    const addModalOverlay = document.getElementById('addModalOverlay');
+    const openAddModalBtn = document.getElementById('openAddModalBtn');
+    const closeAddModalBtn = document.getElementById('closeAddModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const saveRecordBtn = document.getElementById('saveRecordBtn');
+    const recordCategory = document.getElementById('recordCategory');
+    const recordContent = document.getElementById('recordContent');
+
+    function openModal() {
+      addModalOverlay.classList.add('active');
+      recordContent.value = '';
+      setTimeout(() => recordContent.focus(), 150);
+    }
+
+    function closeModal() {
+      addModalOverlay.classList.remove('active');
+    }
+
+    openAddModalBtn.addEventListener('click', openModal);
+    closeAddModalBtn.addEventListener('click', closeModal);
+    cancelModalBtn.addEventListener('click', closeModal);
+
+    addModalOverlay.addEventListener('click', (e) => {
+      if (e.target === addModalOverlay) closeModal();
+    });
+
+    saveRecordBtn.addEventListener('click', () => {
+      const text = recordContent.value.trim();
+      if (!text) {
+        recordContent.focus();
+        return;
+      }
+
+      const categoryVal = recordCategory.value;
+      const categoryNames = {
+        thought: "Thinking Process",
+        mind: "Mental Activity",
+        work: "Work Content"
+      };
+
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      const manualRecord = {
+        id: Date.now(),
+        time: `${hours}:${minutes}`,
+        day: "Today",
+        type: categoryVal,
+        category: categoryNames[categoryVal] || "Work Content",
+        text: text
+      };
+
+      renderRecord(manualRecord, true);
+      closeModal();
+    });
+  </script>
+</body>
+</html>
