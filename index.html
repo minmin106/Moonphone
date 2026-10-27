@@ -132,7 +132,6 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      /* Safe padding at the top avoids collision with notch / dynamic island */
       padding: max(calc(env(safe-area-inset-top) + 14px), 36px) 
                env(safe-area-inset-right, 16px) 
                env(safe-area-inset-bottom, 8px) 
@@ -182,12 +181,21 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      text-decoration: none;
+      color: inherit;
       cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Tactile Pressing Feedback */
+    .widget-card:hover {
+      box-shadow: 0 14px 32px -4px rgba(20, 24, 38, 0.14), var(--glass-inner-highlight);
     }
 
     .widget-card:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
+      box-shadow: 0 6px 18px -4px rgba(20, 24, 38, 0.12), var(--glass-inner-highlight);
     }
 
     .widget-card::before {
@@ -533,7 +541,7 @@
       <div class="app-grid">
 
         <!-- ==================== WIDGET 1: PHOTO WIDGET (2x2) ==================== -->
-        <div class="widget-card widget-photo" title="Photo Memories">
+        <a class="widget-card widget-photo" href="photos.html" title="Open Photos Album">
           <!-- Minimalist Vector Landscape SVG -->
           <svg class="photo-svg-art" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" fill="none">
             <!-- Sky Gradient Wash -->
@@ -580,10 +588,10 @@
             <div class="photo-caption-title">Lake Solitude</div>
             <div class="photo-caption-sub">Updated today</div>
           </div>
-        </div>
+        </a>
 
         <!-- ==================== WIDGET 2: MUSIC WIDGET (2x2) ==================== -->
-        <div class="widget-card widget-music" title="Music Player">
+        <a class="widget-card widget-music" href="music.html" title="Open Music">
           <!-- Top Area: Cover + Title -->
           <div class="music-widget-top">
             <div class="album-art-tile">
@@ -608,7 +616,7 @@
 
           <!-- Bottom: Minimalist Linear Playback Controls -->
           <div class="music-controls">
-            <!-- Previous -->
+            <!-- Previous Button -->
             <button class="music-ctrl-btn" aria-label="Previous">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="19 20 9 12 19 4 19 20"/>
@@ -623,7 +631,7 @@
               </svg>
             </button>
 
-            <!-- Next -->
+            <!-- Next Button -->
             <button class="music-ctrl-btn" aria-label="Next">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="5 4 15 12 5 20 5 4"/>
@@ -631,7 +639,7 @@
               </svg>
             </button>
           </div>
-        </div>
+        </a>
 
         <!-- ==================== 15 APP ICONS (NEAT 4-COLUMN FLOW) ==================== -->
         <!-- 1. Weather -->
@@ -893,11 +901,21 @@
     document.addEventListener("DOMContentLoaded", () => {
       const btnPlay = document.getElementById("btn-toggle-play");
       const playIcon = document.getElementById("play-icon");
+      const ctrlButtons = document.querySelectorAll(".music-ctrl-btn");
       let isPlaying = false;
+
+      // Prevent playback buttons from triggering the outer anchor navigation
+      ctrlButtons.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
 
       if (btnPlay && playIcon) {
         btnPlay.addEventListener("click", (e) => {
           e.preventDefault();
+          e.stopPropagation();
           isPlaying = !isPlaying;
 
           if (isPlaying) {
