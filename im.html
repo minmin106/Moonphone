@@ -6,13 +6,14 @@
   <title>iMessage</title>
   <style>
     /* ----------------------------------------------------
-       Design Tokens & Configurable Themes
+       Design Tokens & Themes
        ---------------------------------------------------- */
     :root {
       /* App Base Theme */
       --app-bg: #000000;
       --app-header-bg: rgba(0, 0, 0, 0.85);
       --app-border: #262628;
+      --app-card: #1c1c1e;
 
       /* Bubble Colors */
       --bubble-sent: #007aff;
@@ -29,8 +30,9 @@
       --ios-green: #34c759;
       --ios-pink: #ff2d55;
       --ios-purple: #af52de;
+      --ios-orange: #ff9500;
 
-      /* Liquid Glass Tokens (Custom Panel) */
+      /* Liquid Glass Tokens (Custom Panel Hierarchy) */
       --glass-bg: rgba(255, 255, 255, 0.1);
       --glass-bg-elevated: rgba(255, 255, 255, 0.16);
       --glass-border: rgba(255, 255, 255, 0.2);
@@ -62,7 +64,7 @@
       height: 100%;
       background-color: var(--app-bg);
       color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       display: flex;
       justify-content: center;
@@ -94,7 +96,246 @@
     }
 
     /* ----------------------------------------------------
-       Top Header Bar
+       View Management (View 1 & View 2)
+       ---------------------------------------------------- */
+    .app-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: inherit;
+      transition: transform var(--duration-normal) var(--ease-liquid), opacity var(--duration-normal) var(--ease-liquid);
+    }
+
+    /* Smooth Slide Transitions between Views */
+    .app-view--active {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .app-view--inactive-left {
+      transform: translateX(-24%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .app-view--inactive-right {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* ----------------------------------------------------
+       View 1: Session List (Table of Contents)
+       ---------------------------------------------------- */
+    .session-top-bar {
+      height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .btn-text-nav {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .btn-text-nav:active {
+      opacity: 0.5;
+    }
+
+    .session-title-header {
+      padding: 4px 18px 12px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .session-large-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    /* Search Bar in Session List */
+    .session-search-box {
+      margin: 0 16px 12px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background-color: var(--app-card);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-icon {
+      color: var(--text-secondary);
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14.5px;
+      outline: none;
+      width: 100%;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    /* Sessions Scrollable List */
+    .session-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--app-border) transparent;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+      transition: background-color var(--duration-fast) var(--ease-liquid);
+    }
+
+    .session-item:active {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .session-item:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .unread-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-pill);
+      background-color: var(--ios-blue);
+      flex-shrink: 0;
+    }
+
+    .unread-indicator--hidden {
+      visibility: hidden;
+    }
+
+    .session-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      flex-shrink: 0;
+      background-color: #3a3a3c;
+    }
+
+    .session-avatar--ai {
+      background: linear-gradient(135deg, #007aff, #ff2d55);
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+    }
+
+    .session-avatar--sarah {
+      background: linear-gradient(135deg, #af52de, #5856d6);
+    }
+
+    .session-avatar--dev {
+      background: linear-gradient(135deg, #34c759, #30b0c7);
+    }
+
+    .session-avatar--apple {
+      background: #48484a;
+    }
+
+    .session-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      border-bottom: 1px solid var(--app-border);
+      padding-bottom: 12px;
+    }
+
+    .session-item:last-child .session-info {
+      border-bottom: none;
+    }
+
+    .session-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .session-contact-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .session-timestamp {
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .session-preview-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .session-last-message {
+      font-size: 14px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    .session-chevron {
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    /* ----------------------------------------------------
+       View 2: Chat Details Page
        ---------------------------------------------------- */
     .chat-header {
       height: 64px;
@@ -110,7 +351,7 @@
       flex-shrink: 0;
     }
 
-    .btn-header-nav {
+    .btn-header-back {
       background: transparent;
       border: none;
       color: var(--ios-blue);
@@ -124,15 +365,10 @@
       transition: opacity var(--duration-fast) var(--ease-liquid);
     }
 
-    .btn-header-nav:hover {
-      opacity: 0.8;
-    }
-
-    .btn-header-nav:active {
+    .btn-header-back:active {
       opacity: 0.5;
     }
 
-    /* Contact Info Center */
     .contact-center {
       display: flex;
       flex-direction: column;
@@ -141,41 +377,40 @@
       cursor: pointer;
     }
 
-    .contact-avatar {
+    .chat-avatar {
       width: 32px;
       height: 32px;
       border-radius: var(--radius-pill);
-      background: linear-gradient(135deg, #007aff, #ff2d55);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #ffffff;
       font-size: 12px;
       font-weight: 700;
+      background: linear-gradient(135deg, #007aff, #ff2d55);
       box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
     }
 
-    .contact-name-group {
+    .chat-name-group {
       display: flex;
       align-items: center;
       gap: 3px;
     }
 
-    .contact-name {
+    .chat-contact-name {
       font-size: 12px;
       font-weight: 600;
       color: var(--text-primary);
     }
 
-    .contact-chevron {
+    .chat-chevron {
       color: var(--text-secondary);
     }
 
-    /* Header Right Tools */
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .btn-icon {
@@ -200,15 +435,7 @@
       transform: scale(0.95);
     }
 
-    button:focus-visible,
-    input:focus-visible {
-      outline: 2px solid var(--ios-blue);
-      outline-offset: 2px;
-    }
-
-    /* ----------------------------------------------------
-       Chat Timeline & Dialogue Bubbles
-       ---------------------------------------------------- */
+    /* Chat Messages Stream */
     .chat-stream {
       flex: 1;
       overflow-y: auto;
@@ -243,7 +470,7 @@
     .message-row {
       display: flex;
       flex-direction: column;
-      max-width: 75%;
+      max-width: 76%;
       animation: messagePop var(--duration-normal) var(--ease-liquid);
     }
 
@@ -277,7 +504,6 @@
       transition: background-color var(--duration-fast) var(--ease-liquid);
     }
 
-    /* Native iOS iMessage bubble curvature */
     .message-row--sent .message-bubble {
       background-color: var(--bubble-sent);
       color: var(--bubble-sent-text);
@@ -297,9 +523,7 @@
       padding-right: 4px;
     }
 
-    /* ----------------------------------------------------
-       Bottom Input Dock & Controls
-       ---------------------------------------------------- */
+    /* Bottom Input Dock */
     .input-dock {
       padding: 8px 12px 14px;
       border-top: 1px solid var(--app-border);
@@ -332,7 +556,7 @@
       background-color: rgba(255, 255, 255, 0.2);
     }
 
-    /* Active Message Simulation Button */
+    /* Active Message Simulation Button (💡) */
     .btn-simulate-ai {
       width: 34px;
       height: 34px;
@@ -357,7 +581,6 @@
       transform: scale(0.92);
     }
 
-    /* Text Input Pill */
     .input-pill {
       flex: 1;
       min-height: 36px;
@@ -383,7 +606,6 @@
       color: var(--text-secondary);
     }
 
-    /* Send Upward Arrow Button */
     .btn-send-arrow {
       width: 28px;
       height: 28px;
@@ -396,7 +618,7 @@
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: transform var(--duration-fast) var(--ease-liquid), opacity var(--duration-fast) var(--ease-liquid);
+      transition: transform var(--duration-fast) var(--ease-liquid);
     }
 
     .btn-send-arrow:active {
@@ -439,6 +661,7 @@
       overflow: hidden;
     }
 
+    /* Standard Liquid Glass panel highlight reflection */
     .glass-sheet::before {
       content: '';
       position: absolute;
@@ -524,6 +747,12 @@
       box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
     }
 
+    .swatch--blue { background-color: var(--ios-blue); }
+    .swatch--green { background-color: var(--ios-green); }
+    .swatch--pink { background-color: var(--ios-pink); }
+    .swatch--purple { background-color: var(--ios-purple); }
+    .swatch--orange { background-color: var(--ios-orange); }
+
     .theme-buttons-row {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -552,12 +781,10 @@
       background: rgba(0, 122, 255, 0.2);
     }
 
-    /* ----------------------------------------------------
-       Return Home Toast Feedback
-       ---------------------------------------------------- */
+    /* Feedback Toast */
     .toast-pill {
       position: absolute;
-      top: 74px;
+      top: 64px;
       left: 50%;
       transform: translateX(-50%) translateY(-20px);
       background-color: rgba(30, 30, 32, 0.9);
@@ -580,7 +807,13 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Linear SVG standard */
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--ios-blue);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
     .svg-icon {
       width: 20px;
       height: 20px;
@@ -600,154 +833,277 @@
     <!-- Toast Notice for Returning Home -->
     <div class="toast-pill" id="toastPill">Returning to Home Screen...</div>
 
-    <!-- Top Header -->
-    <header class="chat-header">
+    <!-- ====================================================
+         VIEW 1: Session List (Table of Contents)
+         ==================================================== -->
+    <section class="app-view app-view--active" id="viewSessionList" aria-label="Messages List">
       
-      <!-- Upper Left: Return to Home Button -->
-      <button class="btn-header-nav" id="btnBackHome" aria-label="Return to home screen">
-        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        <span>Messages</span>
-      </button>
-
-      <!-- Center: Contact Info -->
-      <div class="contact-center" id="contactHeader" aria-label="Contact information">
-        <div class="contact-avatar">AI</div>
-        <div class="contact-name-group">
-          <span class="contact-name">Liquid Companion</span>
-          <svg viewBox="0 0 24 24" class="svg-icon contact-chevron" style="width: 12px; height: 12px;">
-            <polyline points="9 18 15 12 9 6"></polyline>
+      <!-- Top Navigation & Action Row -->
+      <div class="session-top-bar">
+        <!-- Return to Home Screen (< Home) -->
+        <button class="btn-text-nav" id="btnHomeFromList" aria-label="Return to home screen">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
-        </div>
-      </div>
-
-      <!-- Upper Right: FaceTime & Settings Icons -->
-      <div class="header-actions">
-        <!-- FaceTime Video Call -->
-        <button class="btn-icon" aria-label="Start FaceTime call">
-          <svg viewBox="0 0 24 24" class="svg-icon">
-            <polygon points="23 7 16 12 23 17 23 7"></polygon>
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-          </svg>
+          <span>Home</span>
         </button>
 
-        <!-- Settings (Gear) Icon to Open Custom Panel -->
-        <button class="btn-icon" id="btnOpenSettings" aria-label="Customize appearance settings">
+        <!-- Compose New Message Icon Button -->
+        <button class="btn-icon" id="btnComposeNew" aria-label="New Message">
           <svg viewBox="0 0 24 24" class="svg-icon">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
         </button>
       </div>
 
-    </header>
-
-    <!-- Chat Messages Stream -->
-    <main class="chat-stream" id="chatStream">
-
-      <div class="timestamp-separator">Today 9:41 AM</div>
-
-      <!-- AI Received Message -->
-      <div class="message-row message-row--received">
-        <div class="message-bubble">
-          Good morning! I reviewed your notes and prepared the morning briefing for you.
-        </div>
+      <!-- Large Title Header -->
+      <div class="session-title-header">
+        <h1 class="session-large-title">Messages</h1>
+        <button class="btn-text-nav" id="btnEditList" aria-label="Edit messages">Edit</button>
       </div>
 
-      <!-- User Sent Message -->
-      <div class="message-row message-row--sent">
-        <div class="message-bubble">
-          Thanks! How does the project schedule look for today?
-        </div>
-        <span class="message-status">Delivered</span>
-      </div>
-
-      <!-- AI Received Message -->
-      <div class="message-row message-row--received">
-        <div class="message-bubble">
-          You're right on track with Phase 1. When you're ready, we can move forward with the next app modules.
-        </div>
-      </div>
-
-    </main>
-
-    <!-- Bottom Input Dock -->
-    <footer class="input-dock">
-      
-      <!-- Apps / Plus Button -->
-      <button class="btn-app-plus" aria-label="Open message apps">
-        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 18px; height: 18px;">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
+      <!-- Search Input Box -->
+      <div class="session-search-box">
+        <svg viewBox="0 0 24 24" class="svg-icon search-icon" style="width: 16px; height: 16px;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-      </button>
+        <input type="text" class="search-input" placeholder="Search" aria-label="Search messages">
+      </div>
 
-      <!-- Active Message Simulation Button (💡) -->
-      <button class="btn-simulate-ai" id="btnSimulateAi" aria-label="Simulate AI active sending message" title="Simulate AI Active Message">
-        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 18px; height: 18px;">
-          <path d="M9 18h6"></path>
-          <path d="M10 22h4"></path>
-          <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
-        </svg>
-      </button>
+      <!-- Conversations Stream List -->
+      <div class="session-list" id="sessionListContainer">
 
-      <!-- Input Capsule -->
-      <div class="input-pill">
-        <input 
-          type="text" 
-          class="chat-text-input" 
-          id="chatTextInput" 
-          placeholder="iMessage" 
-          aria-label="iMessage text input"
-        >
+        <!-- Conversation 1: AI Companion (Unread dot) -->
+        <button class="session-item" data-contact="Liquid Companion" data-initial="AI" data-is-ai="true">
+          <span class="unread-indicator" id="aiUnreadDot"></span>
+          <div class="session-avatar session-avatar--ai">AI</div>
+          <div class="session-info">
+            <div class="session-meta-row">
+              <span class="session-contact-name">Liquid Companion</span>
+              <span class="session-timestamp">9:41 AM</span>
+            </div>
+            <div class="session-preview-row">
+              <span class="session-last-message" id="aiSessionPreview">Good morning! I prepared the morning briefing for you.</span>
+              <svg viewBox="0 0 24 24" class="svg-icon session-chevron" style="width: 14px; height: 14px;">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <!-- Conversation 2: Sarah Jenkins -->
+        <button class="session-item" data-contact="Sarah Jenkins" data-initial="SJ" data-is-ai="false">
+          <span class="unread-indicator unread-indicator--hidden"></span>
+          <div class="session-avatar session-avatar--sarah">SJ</div>
+          <div class="session-info">
+            <div class="session-meta-row">
+              <span class="session-contact-name">Sarah Jenkins</span>
+              <span class="session-timestamp">Yesterday</span>
+            </div>
+            <div class="session-preview-row">
+              <span class="session-last-message">Are we still meeting for coffee afternoon?</span>
+              <svg viewBox="0 0 24 24" class="svg-icon session-chevron" style="width: 14px; height: 14px;">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <!-- Conversation 3: Dev Team -->
+        <button class="session-item" data-contact="Core Dev Team" data-initial="DT" data-is-ai="false">
+          <span class="unread-indicator unread-indicator--hidden"></span>
+          <div class="session-avatar session-avatar--dev">DT</div>
+          <div class="session-info">
+            <div class="session-meta-row">
+              <span class="session-contact-name">Core Dev Team</span>
+              <span class="session-timestamp">Sunday</span>
+            </div>
+            <div class="session-preview-row">
+              <span class="session-last-message">Phase 1 liquid UI has been deployed smoothly.</span>
+              <svg viewBox="0 0 24 24" class="svg-icon session-chevron" style="width: 14px; height: 14px;">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <!-- Conversation 4: Apple -->
+        <button class="session-item" data-contact="Apple" data-initial="" data-is-ai="false">
+          <span class="unread-indicator unread-indicator--hidden"></span>
+          <div class="session-avatar session-avatar--apple"></div>
+          <div class="session-info">
+            <div class="session-meta-row">
+              <span class="session-contact-name">Apple</span>
+              <span class="session-timestamp">Oct 24</span>
+            </div>
+            <div class="session-preview-row">
+              <span class="session-last-message">Your verification security code is 482091.</span>
+              <svg viewBox="0 0 24 24" class="svg-icon session-chevron" style="width: 14px; height: 14px;">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================
+         VIEW 2: Chat Details Page
+         ==================================================== -->
+    <section class="app-view app-view--inactive-right" id="viewChatDetail" aria-label="Conversation Details">
+
+      <!-- Chat Details Header -->
+      <header class="chat-header">
         
-        <!-- Upward Arrow Send Button -->
-        <button class="btn-send-arrow" id="btnSendMessage" aria-label="Send message">
-          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px; stroke-width: 2.5;">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
+        <!-- Upper Left: Return to View 1 (< Messages) -->
+        <button class="btn-header-back" id="btnBackToSessions" aria-label="Return to messages list">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
+          <span>Messages</span>
         </button>
-      </div>
 
-    </footer>
+        <!-- Center: Contact Info Avatar & Name -->
+        <div class="contact-center" id="contactHeader" aria-label="Contact information">
+          <div class="chat-avatar" id="chatCurrentAvatar">AI</div>
+          <div class="chat-name-group">
+            <span class="chat-contact-name" id="chatCurrentName">Liquid Companion</span>
+            <svg viewBox="0 0 24 24" class="svg-icon chat-chevron" style="width: 12px; height: 12px;">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
 
-    <!-- Customization Panel: Liquid Glass Bottom Sheet -->
-    <div class="sheet-overlay" id="sheetOverlay"></div>
-    <section class="glass-sheet" id="customSheet" aria-label="Customization settings">
-      <div class="sheet-drag-handle"></div>
-      
-      <div class="sheet-header">
-        <h2 class="sheet-title">iMessage Appearance</h2>
-        <button class="btn-sheet-done" id="btnCloseSheet">Done</button>
-      </div>
-
-      <!-- Change Bubble Color -->
-      <div class="custom-section">
-        <div class="custom-label">Bubble Accent Color</div>
-        <div class="color-swatches-row">
-          <button class="color-swatch-btn selected" data-color="#007aff" style="background-color: #007aff;" aria-label="Classic Blue">
-            <svg viewBox="0 0 24 24" class="svg-icon checkmark-icon" style="width: 16px; height: 16px;">
-              <polyline points="20 6 9 17 4 12"></polyline>
+        <!-- Upper Right: FaceTime & Settings (Gear) Icon -->
+        <div class="header-actions">
+          <button class="btn-icon" aria-label="FaceTime Video">
+            <svg viewBox="0 0 24 24" class="svg-icon">
+              <polygon points="23 7 16 12 23 17 23 7"></polygon>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
             </svg>
           </button>
-          <button class="color-swatch-btn" data-color="#34c759" style="background-color: #34c759;" aria-label="Emerald Green"></button>
-          <button class="color-swatch-btn" data-color="#ff2d55" style="background-color: #ff2d55;" aria-label="Neon Pink"></button>
-          <button class="color-swatch-btn" data-color="#af52de" style="background-color: #af52de;" aria-label="Royal Purple"></button>
-        </div>
-      </div>
 
-      <!-- Change Background Color -->
-      <div class="custom-section">
-        <div class="custom-label">Background Theme</div>
-        <div class="theme-buttons-row">
-          <button class="theme-choice-btn selected" data-bg="#000000" data-header="rgba(0, 0, 0, 0.85)">Pitch Black</button>
-          <button class="theme-choice-btn" data-bg="#0b111e" data-header="rgba(11, 17, 30, 0.85)">Midnight Blue</button>
-          <button class="theme-choice-btn" data-bg="#161618" data-header="rgba(22, 22, 24, 0.85)">Dark Slate</button>
-          <button class="theme-choice-btn" data-bg="#150d1e" data-header="rgba(21, 13, 30, 0.85)">Deep Plum</button>
+          <!-- Settings Gear to open custom panel -->
+          <button class="btn-icon" id="btnOpenSettings" aria-label="Open customization settings">
+            <svg viewBox="0 0 24 24" class="svg-icon">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
-      </div>
+
+      </header>
+
+      <!-- Chat Dialogue Messages Stream -->
+      <main class="chat-stream" id="chatStream">
+        <div class="timestamp-separator">Today 9:41 AM</div>
+
+        <!-- AI Received Message Bubble -->
+        <div class="message-row message-row--received">
+          <div class="message-bubble">
+            Good morning! I reviewed your notes and prepared the morning briefing for you.
+          </div>
+        </div>
+
+        <!-- User Sent Message Bubble -->
+        <div class="message-row message-row--sent">
+          <div class="message-bubble">
+            Thanks! How does the project schedule look for today?
+          </div>
+          <span class="message-status">Delivered</span>
+        </div>
+
+        <!-- AI Received Message Bubble -->
+        <div class="message-row message-row--received">
+          <div class="message-bubble">
+            You're right on track with Phase 1. When you're ready, we can test the interactive panels.
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom Input Dock -->
+      <footer class="input-dock">
+        
+        <!-- App Store / Plus Button -->
+        <button class="btn-app-plus" aria-label="Open message apps">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 18px; height: 18px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+
+        <!-- Simulated Active Message Sending Button (💡) -->
+        <button class="btn-simulate-ai" id="btnSimulateAi" aria-label="Simulate AI active sending message" title="Simulate AI Active Message">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 18px; height: 18px;">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+
+        <!-- Input Pill -->
+        <div class="input-pill">
+          <input 
+            type="text" 
+            class="chat-text-input" 
+            id="chatTextInput" 
+            placeholder="iMessage" 
+            aria-label="iMessage text input"
+          >
+          
+          <!-- Send Button (Upward Arrow) -->
+          <button class="btn-send-arrow" id="btnSendMessage" aria-label="Send message">
+            <svg viewBox="0 0 24 24" class="svg-icon" style="width: 16px; height: 16px; stroke-width: 2.5;">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+          </button>
+        </div>
+
+      </footer>
+
+      <!-- Customization Panel: Liquid Glass Bottom Sheet -->
+      <div class="sheet-overlay" id="sheetOverlay"></div>
+      <section class="glass-sheet" id="customSheet" aria-label="Customization settings">
+        <div class="sheet-drag-handle"></div>
+        
+        <div class="sheet-header">
+          <h2 class="sheet-title">iMessage Appearance</h2>
+          <button class="btn-sheet-done" id="btnCloseSheet">Done</button>
+        </div>
+
+        <!-- Section 1: Change Bubble Color -->
+        <div class="custom-section">
+          <div class="custom-label">Bubble Accent Color</div>
+          <div class="color-swatches-row">
+            <button class="color-swatch-btn swatch--blue selected" data-color="#007aff" aria-label="Classic Blue">
+              <svg viewBox="0 0 24 24" class="svg-icon checkmark-icon" style="width: 16px; height: 16px;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <button class="color-swatch-btn swatch--green" data-color="#34c759" aria-label="Emerald Green"></button>
+            <button class="color-swatch-btn swatch--pink" data-color="#ff2d55" aria-label="Neon Pink"></button>
+            <button class="color-swatch-btn swatch--purple" data-color="#af52de" aria-label="Royal Purple"></button>
+            <button class="color-swatch-btn swatch--orange" data-color="#ff9500" aria-label="Sunset Orange"></button>
+          </div>
+        </div>
+
+        <!-- Section 2: Change Background Color -->
+        <div class="custom-section">
+          <div class="custom-label">Background Theme</div>
+          <div class="theme-buttons-row">
+            <button class="theme-choice-btn selected" data-bg="#000000" data-header="rgba(0, 0, 0, 0.85)">Pitch Black</button>
+            <button class="theme-choice-btn" data-bg="#0b111e" data-header="rgba(11, 17, 30, 0.85)">Midnight Blue</button>
+            <button class="theme-choice-btn" data-bg="#161618" data-header="rgba(22, 22, 24, 0.85)">Dark Slate</button>
+            <button class="theme-choice-btn" data-bg="#160c1c" data-header="rgba(22, 12, 28, 0.85)">Deep Plum</button>
+          </div>
+        </div>
+
+      </section>
 
     </section>
 
@@ -756,16 +1112,28 @@
   <!-- Native ES6+ Module Interaction Logic -->
   <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
-      const btnBackHome = document.getElementById('btnBackHome');
+      // Views Elements
+      const viewSessionList = document.getElementById('viewSessionList');
+      const viewChatDetail = document.getElementById('viewChatDetail');
+      const btnBackToSessions = document.getElementById('btnBackToSessions');
+      const btnHomeFromList = document.getElementById('btnHomeFromList');
       const toastPill = document.getElementById('toastPill');
+
+      // Chat Elements
+      const chatCurrentName = document.getElementById('chatCurrentName');
+      const chatCurrentAvatar = document.getElementById('chatCurrentAvatar');
+      const chatStream = document.getElementById('chatStream');
+      const chatTextInput = document.getElementById('chatTextInput');
+      const btnSendMessage = document.getElementById('btnSendMessage');
+      const btnSimulateAi = document.getElementById('btnSimulateAi');
+      const aiSessionPreview = document.getElementById('aiSessionPreview');
+      const aiUnreadDot = document.getElementById('aiUnreadDot');
+
+      // Customization Panel Elements
       const btnOpenSettings = document.getElementById('btnOpenSettings');
       const btnCloseSheet = document.getElementById('btnCloseSheet');
       const sheetOverlay = document.getElementById('sheetOverlay');
       const customSheet = document.getElementById('customSheet');
-      const chatStream = document.getElementById('chatStream');
-      const btnSimulateAi = document.getElementById('btnSimulateAi');
-      const chatTextInput = document.getElementById('chatTextInput');
-      const btnSendMessage = document.getElementById('btnSendMessage');
 
       // AI Spontaneous Message Pool
       const aiMessagePool = [
@@ -777,19 +1145,61 @@
       ];
       let aiMsgIndex = 0;
 
-      // 1. Return to Home Screen (<) Button Handler
-      if (btnBackHome) {
-        btnBackHome.addEventListener('click', () => {
+      // ----------------------------------------------------
+      // 1. Navigation & View Switching (View 1 <-> View 2)
+      // ----------------------------------------------------
+      const switchToChatView = (contactName, initial, isAi) => {
+        // Update contact title and avatar in View 2
+        chatCurrentName.textContent = contactName;
+        chatCurrentAvatar.textContent = initial;
+
+        if (isAi && aiUnreadDot) {
+          aiUnreadDot.classList.add('unread-indicator--hidden');
+        }
+
+        // Slide transition
+        viewSessionList.className = 'app-view app-view--inactive-left';
+        viewChatDetail.className = 'app-view app-view--active';
+
+        // Auto-scroll chat to bottom
+        setTimeout(() => {
+          chatStream.scrollTop = chatStream.scrollHeight;
+        }, 50);
+      };
+
+      const switchToSessionListView = () => {
+        // Slide back to View 1
+        viewSessionList.className = 'app-view app-view--active';
+        viewChatDetail.className = 'app-view app-view--inactive-right';
+      };
+
+      // Bind contact item clicks
+      const sessionItems = document.querySelectorAll('.session-item');
+      sessionItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const contact = item.getAttribute('data-contact') || 'Contact';
+          const initial = item.getAttribute('data-initial') || 'C';
+          const isAi = item.getAttribute('data-is-ai') === 'true';
+          switchToChatView(contact, initial, isAi);
+        });
+      });
+
+      // Back to Sessions (< Messages)
+      if (btnBackToSessions) {
+        btnBackToSessions.addEventListener('click', switchToSessionListView);
+      }
+
+      // Return to Home Screen (< Home)
+      if (btnHomeFromList) {
+        btnHomeFromList.addEventListener('click', () => {
           if (toastPill) {
             toastPill.classList.add('show');
             setTimeout(() => {
               toastPill.classList.remove('show');
             }, 1800);
           }
+          console.log('[iMessage App] Returning to Home screen.');
 
-          console.log('[iMessage App] Return to home clicked.');
-
-          // Dispatch event to parent window if in an iframe
           if (window.parent && window.parent !== window) {
             window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
           } else if (window.history.length > 1) {
@@ -800,7 +1210,9 @@
         });
       }
 
-      // 2. Customization Sheet (Open / Close)
+      // ----------------------------------------------------
+      // 2. Customization Sheet (Liquid Glass Bottom Panel)
+      // ----------------------------------------------------
       const openSheet = () => {
         sheetOverlay.classList.add('open');
         customSheet.classList.add('open');
@@ -815,7 +1227,7 @@
       if (btnCloseSheet) btnCloseSheet.addEventListener('click', closeSheet);
       if (sheetOverlay) sheetOverlay.addEventListener('click', closeSheet);
 
-      // 3. Change Bubble Accent Color (Live Switcher)
+      // Change Bubble Accent Color
       const bubbleSwatches = document.querySelectorAll('.color-swatch-btn');
       bubbleSwatches.forEach((swatch) => {
         swatch.addEventListener('click', () => {
@@ -839,7 +1251,7 @@
         });
       });
 
-      // 4. Change Background Theme (Live Switcher)
+      // Change Background Theme
       const themeButtons = document.querySelectorAll('.theme-choice-btn');
       themeButtons.forEach((themeBtn) => {
         themeBtn.addEventListener('click', () => {
@@ -856,13 +1268,15 @@
         });
       });
 
-      // 5. Active Message Simulation Button (💡)
+      // ----------------------------------------------------
+      // 3. Simulated Active Message Sending (💡 Button)
+      // ----------------------------------------------------
       if (btnSimulateAi) {
         btnSimulateAi.addEventListener('click', () => {
           const messageText = aiMessagePool[aiMsgIndex % aiMessagePool.length];
           aiMsgIndex++;
 
-          // Create message elements safely using DOM API
+          // Construct received bubble via DOM API
           const row = document.createElement('div');
           row.className = 'message-row message-row--received';
 
@@ -873,26 +1287,33 @@
           row.appendChild(bubble);
           chatStream.appendChild(row);
 
-          // Scroll to bottom
+          // Update View 1 snippet preview
+          if (aiSessionPreview) {
+            aiSessionPreview.textContent = messageText;
+          }
+
+          // Smooth scroll
           chatStream.scrollTo({
             top: chatStream.scrollHeight,
             behavior: 'smooth'
           });
 
-          console.log('[iMessage AI] Active spontaneous message delivered:', messageText);
+          console.log('[AI Active Message Delivered]:', messageText);
         });
       }
 
-      // 6. User Send Message Interaction
+      // ----------------------------------------------------
+      // 4. User Send Message Interaction
+      // ----------------------------------------------------
       const handleUserSend = () => {
         const text = chatTextInput.value.trim();
         if (!text) return;
 
-        // Clear previous "Delivered" indicators on sent rows
+        // Clear previous "Delivered" indicators on sent messages
         const previousStatuses = chatStream.querySelectorAll('.message-status');
         previousStatuses.forEach((status) => status.remove());
 
-        // Create sent message elements using DOM API
+        // Construct sent bubble via DOM API
         const row = document.createElement('div');
         row.className = 'message-row message-row--sent';
 
@@ -910,7 +1331,7 @@
 
         chatTextInput.value = '';
 
-        // Scroll to bottom
+        // Smooth scroll
         chatStream.scrollTo({
           top: chatStream.scrollHeight,
           behavior: 'smooth'
