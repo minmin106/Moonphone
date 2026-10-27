@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Schedule</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple Timeline & Liquid Glass Design Tokens
+       ---------------------------------------------------- */
+    :root {
+      /* Dark Theme System Tokens */
+      --sched-bg: #000000;
+      --sched-surface: #1c1c1e;
+      --sched-surface-elevated: #2c2c2e;
+      --sched-border: #2c2c2e;
+      --sched-line: #38383a;
+      --sched-separator: rgba(84, 84, 88, 0.4);
+
+      /* Dual Identity Accent Colors */
+      --user-blue: #007aff;
+      --user-blue-dim: rgba(0, 122, 255, 0.15);
+      --ai-purple: #af52de;
+      --ai-purple-dim: rgba(175, 82, 222, 0.15);
+      --ai-teal: #30b0c7;
+
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+
+      /* Liquid Glass Notification Tokens */
+      --glass-bg: rgba(28, 28, 30, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --glass-highlight: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 50%);
+      --glass-blur: blur(35px) saturate(180%);
+      --shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --ease-liquid: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 160ms;
+      --duration-normal: 280ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--sched-bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .schedule-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--sched-bg);
+      border-left: 1px solid var(--sched-border);
+      border-right: 1px solid var(--sched-border);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .schedule-shell {
+        border: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       Top Header Navigation
+       ---------------------------------------------------- */
+    .app-header {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--sched-separator);
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--user-blue);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .nav-btn:active {
+      opacity: 0.5;
+    }
+
+    .header-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--user-blue);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios), transform var(--duration-fast) var(--ease-ios);
+    }
+
+    .icon-btn:hover {
+      background-color: var(--user-blue-dim);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* AI Simulate Reminder Button */
+    .btn-ai-spark {
+      background-color: var(--ai-purple-dim);
+      border: 1px solid rgba(175, 82, 222, 0.35);
+      color: var(--ai-purple);
+    }
+
+    .btn-ai-spark:hover {
+      background-color: rgba(175, 82, 222, 0.25);
+    }
+
+    /* ----------------------------------------------------
+       Scrollable Timeline Body
+       ---------------------------------------------------- */
+    .timeline-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px 16px 60px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--sched-border) transparent;
+    }
+
+    .timeline-scroll-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .timeline-scroll-body::-webkit-scrollbar-thumb {
+      background-color: var(--sched-border);
+      border-radius: var(--radius-pill);
+    }
+
+    /* Title Block & Date Indicator */
+    .schedule-title-block {
+      padding: 6px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-large {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .date-indicator {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* Dual Schedule Legend Indicator */
+    .dual-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 12px;
+      background-color: var(--sched-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--sched-border);
+      margin-bottom: 24px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .legend-dot--user { background-color: var(--user-blue); box-shadow: 0 0 8px rgba(0, 122, 255, 0.6); }
+    .legend-dot--ai { background-color: var(--ai-purple); box-shadow: 0 0 8px rgba(175, 82, 222, 0.6); }
+
+    /* ----------------------------------------------------
+       Vertical Timeline Architecture
+       ---------------------------------------------------- */
+    .timeline-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      padding-left: 54px; /* Space for time axis on left */
+    }
+
+    /* Continuous Vertical Guide Line */
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      bottom: 20px;
+      left: 64px;
+      width: 2px;
+      background-color: var(--sched-line);
+      z-index: 1;
+    }
+
+    .timeline-node-row {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      animation: nodeFadeIn var(--duration-normal) var(--ease-ios);
+    }
+
+    @keyframes nodeFadeIn {
+      0% { opacity: 0; transform: translateY(-8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Left Time Point Axis */
+    .time-axis-col {
+      position: absolute;
+      left: -54px;
+      top: 12px;
+      width: 48px;
+      text-align: right;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Timeline Bullet Node */
+    .timeline-node-pin {
+      position: absolute;
+      left: 5px;
+      top: 15px;
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-pill);
+      background-color: var(--sched-bg);
+      border: 2px solid var(--user-blue);
+      z-index: 2;
+      transform: translateX(-50%);
+    }
+
+    .timeline-node-pin--ai {
+      border-color: var(--ai-purple);
+      box-shadow: 0 0 8px rgba(175, 82, 222, 0.5);
+    }
+
+    .timeline-node-pin--user {
+      border-color: var(--user-blue);
+      box-shadow: 0 0 8px rgba(0, 122, 255, 0.5);
+    }
+
+    /* Right Schedule Card */
+    .schedule-card {
+      margin-left: 24px;
+      flex: 1;
+      background-color: var(--sched-surface);
+      border: 1px solid var(--sched-border);
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .schedule-card:hover {
+      background-color: var(--sched-surface-elevated);
+      transform: translateY(-1px);
+    }
+
+    /* Left Color Accent Border */
+    .schedule-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .schedule-card--user::before {
+      background-color: var(--user-blue);
+    }
+
+    .schedule-card--ai::before {
+      background: linear-gradient(180deg, var(--ai-purple), var(--ai-teal));
+    }
+
+    .card-meta-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Avatar & Identity Badges */
+    .owner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
+    }
+
+    .owner-badge--user {
+      background-color: var(--user-blue-dim);
+      color: var(--user-blue);
+      border: 1px solid rgba(0, 122, 255, 0.3);
+    }
+
+    .owner-badge--ai {
+      background-color: var(--ai-purple-dim);
+      color: var(--ai-purple);
+      border: 1px solid rgba(175, 82, 222, 0.3);
+    }
+
+    .card-duration-tag {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+    }
+
+    .card-event-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .card-event-desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    /* ----------------------------------------------------
+       Liquid Glass Notification Banner (Simulated AI Remind)
+       ---------------------------------------------------- */
+    .glass-notification {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-glass-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      transform: translateY(-130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--duration-normal) var(--ease-liquid), opacity var(--duration-normal) var(--ease-liquid);
+      overflow: hidden;
+    }
+
+    .glass-notification::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: var(--glass-highlight);
+      pointer-events: none;
+    }
+
+    .glass-notification.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .notif-app-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--ai-purple), #7856ff);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(175, 82, 222, 0.4);
+    }
+
+    .notif-text-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .notif-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .notif-app-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .notif-timestamp {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .notif-message-body {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    /* Universal Home Toast */
+    .home-toast-alert {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: var(--sched-surface-elevated);
+      color: #ffffff;
+      border: 1px solid var(--sched-border);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .home-toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--user-blue);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="schedule-shell">
+
+    <!-- Universal Home Return Toast -->
+    <div class="home-toast-alert" id="homeToast">Returning to Home Screen...</div>
+
+    <!-- Liquid Glass Top Notification Banner (Simulated AI Remind) -->
+    <aside class="glass-notification" id="aiGlassNotification" aria-live="polite">
+      <div class="notif-app-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 20px; height: 20px; stroke: #ffffff;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="notif-text-col">
+        <div class="notif-header-line">
+          <span class="notif-app-title">Schedule · AI Companion</span>
+          <span class="notif-timestamp">Just now</span>
+        </div>
+        <p class="notif-message-body" id="notifMessageText">
+          AI has just updated tomorrow's schedule.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <!-- Upper Left: Return to Home Screen (< Home) -->
+      <button class="nav-btn" id="btnBackHome" aria-label="Return to home screen">
+        <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Home</span>
+      </button>
+
+      <div class="header-actions-right">
+        <!-- Simulate AI Schedule Update (💡) -->
+        <button class="icon-btn btn-ai-spark" id="btnSimulateAiSchedule" aria-label="Simulate AI schedule update" title="AI Update Schedule">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 19px; height: 19px;">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 3.03 1.8 5.63 4.39 6.74A1 1 0 0 1 10 16.65V18h4v-1.35a1 1 0 0 1 .61-.92C17.2 14.63 19 12.03 19 9a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+
+        <!-- Add Schedule Item (+) -->
+        <button class="icon-btn" id="btnAddSchedule" aria-label="Add new schedule item">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 22px; height: 22px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Timeline -->
+    <main class="timeline-scroll-body">
+      
+      <!-- Title & Current Date -->
+      <div class="schedule-title-block">
+        <h1 class="title-large">Schedule</h1>
+        <span class="date-indicator">Tuesday, October 27, 2026</span>
+      </div>
+
+      <!-- Dual Schedule Legend (Me vs. AI) -->
+      <section class="dual-legend-row" aria-label="Schedule legend">
+        <div class="legend-item">
+          <span class="legend-dot legend-dot--user"></span>
+          <span>My Schedule</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot legend-dot--ai"></span>
+          <span>AI Companion's Schedule</span>
+        </div>
+      </section>
+
+      <!-- Vertical Timeline Stream -->
+      <div class="timeline-container" id="timelineContainer">
+
+        <!-- Time Node 1: User Standup -->
+        <div class="timeline-node-row">
+          <span class="time-axis-col">09:00</span>
+          <div class="timeline-node-pin timeline-node-pin--user"></div>
+          <article class="schedule-card schedule-card--user">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--user">
+                <!-- User SVG Icon -->
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Me</span>
+              </span>
+              <span class="card-duration-tag">09:00 - 10:00 · 1h</span>
+            </div>
+            <h2 class="card-event-title">Engineering Standup & Architecture Review</h2>
+            <p class="card-event-desc">Review liquid glass Phase 1 UI code specs and modular integration.</p>
+          </article>
+        </div>
+
+        <!-- Time Node 2: AI Background Sync -->
+        <div class="timeline-node-row">
+          <span class="time-axis-col">10:30</span>
+          <div class="timeline-node-pin timeline-node-pin--ai"></div>
+          <article class="schedule-card schedule-card--ai">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--ai">
+                <!-- AI Sparkles SVG Icon -->
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+                <span>Liquid AI</span>
+              </span>
+              <span class="card-duration-tag">10:30 - 11:15 · 45m</span>
+            </div>
+            <h2 class="card-event-title">Context Indexing & Health Metric Optimization</h2>
+            <p class="card-event-desc">Automatic memory indexing and weather condition synchronization.</p>
+          </article>
+        </div>
+
+        <!-- Time Node 3: User Lunch & Rest -->
+        <div class="timeline-node-row">
+          <span class="time-axis-col">12:30</span>
+          <div class="timeline-node-pin timeline-node-pin--user"></div>
+          <article class="schedule-card schedule-card--user">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--user">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Me</span>
+              </span>
+              <span class="card-duration-tag">12:30 - 13:30 · 1h</span>
+            </div>
+            <h2 class="card-event-title">Lunch Break & Park Walk</h2>
+            <p class="card-event-desc">Unplugging for a brief walk to refresh mental focus.</p>
+          </article>
+        </div>
+
+        <!-- Time Node 4: User Integration Testing -->
+        <div class="timeline-node-row">
+          <span class="time-axis-col">14:00</span>
+          <div class="timeline-node-pin timeline-node-pin--user"></div>
+          <article class="schedule-card schedule-card--user">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--user">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Me</span>
+              </span>
+              <span class="card-duration-tag">14:00 - 16:00 · 2h</span>
+            </div>
+            <h2 class="card-event-title">Component Refactoring & GPU Performance Testing</h2>
+            <p class="card-event-desc">Validating backdrop-filter layer count and 60fps scrolling efficiency.</p>
+          </article>
+        </div>
+
+        <!-- Time Node 5: AI Knowledge Collation -->
+        <div class="timeline-node-row">
+          <span class="time-axis-col">16:30</span>
+          <div class="timeline-node-pin timeline-node-pin--ai"></div>
+          <article class="schedule-card schedule-card--ai">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--ai">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+                <span>Liquid AI</span>
+              </span>
+              <span class="card-duration-tag">16:30 - 17:15 · 45m</span>
+            </div>
+            <h2 class="card-event-title">Daily Knowledge Collation & Summary Synthesis</h2>
+            <p class="card-event-desc">Consolidating notes, academic topics, and tomorrow's briefing queue.</p>
+          </article>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnBackHome = document.getElementById('btnBackHome');
+      const homeToast = document.getElementById('homeToast');
+      const btnSimulateAiSchedule = document.getElementById('btnSimulateAiSchedule');
+      const aiGlassNotification = document.getElementById('aiGlassNotification');
+      const notifMessageText = document.getElementById('notifMessageText');
+      const btnAddSchedule = document.getElementById('btnAddSchedule');
+      const timelineContainer = document.getElementById('timelineContainer');
+
+      let notifTimer = null;
+
+      // ----------------------------------------------------
+      // 1. Return to Home Screen (< Home)
+      // ----------------------------------------------------
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          homeToast.classList.add('show');
+          setTimeout(() => homeToast.classList.remove('show'), 1800);
+          console.log('[Schedule App] Navigating to Home screen.');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => window.history.back(), 300);
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 2. Simulated AI Schedule Update (💡 Button)
+      // ----------------------------------------------------
+      if (btnSimulateAiSchedule) {
+        btnSimulateAiSchedule.addEventListener('click', () => {
+          notifMessageText.textContent = "AI has just updated tomorrow's schedule.";
+
+          // Slide in Liquid Glass Notification Banner
+          aiGlassNotification.classList.add('active');
+
+          if (notifTimer) clearTimeout(notifTimer);
+
+          // Slide out automatically after 4 seconds
+          notifTimer = setTimeout(() => {
+            aiGlassNotification.classList.remove('active');
+          }, 4000);
+
+          // Append newly generated AI schedule node to the timeline
+          appendAiScheduleNode("18:00", "Tomorrow's Schedule Plan & Evening Wind-Down", "Organizing sleep cycles, ambient lighting schedules, and tomorrow's 9:00 AM briefing.");
+          
+          console.log('[AI Schedule Update]: AI added autonomous schedule node.');
+        });
+      }
+
+      const appendAiScheduleNode = (timeStr, title, desc) => {
+        const row = document.createElement('div');
+        row.className = 'timeline-node-row';
+        row.innerHTML = `
+          <span class="time-axis-col">${timeStr}</span>
+          <div class="timeline-node-pin timeline-node-pin--ai"></div>
+          <article class="schedule-card schedule-card--ai">
+            <div class="card-meta-header">
+              <span class="owner-badge owner-badge--ai">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+                <span>Liquid AI</span>
+              </span>
+              <span class="card-duration-tag">${timeStr} - 18:45 · Just updated</span>
+            </div>
+            <h2 class="card-event-title">${title}</h2>
+            <p class="card-event-desc">${desc}</p>
+          </article>
+        `;
+
+        timelineContainer.appendChild(row);
+      };
+
+      // ----------------------------------------------------
+      // 3. Add User Schedule Item (+)
+      // ----------------------------------------------------
+      if (btnAddSchedule) {
+        btnAddSchedule.addEventListener('click', () => {
+          const title = prompt("Enter new schedule item for today:", "Team Sync & Code Check-in");
+          if (!title || !title.trim()) return;
+
+          const now = new Date();
+          const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+          const row = document.createElement('div');
+          row.className = 'timeline-node-row';
+          row.innerHTML = `
+            <span class="time-axis-col">${timeStr}</span>
+            <div class="timeline-node-pin timeline-node-pin--user"></div>
+            <article class="schedule-card schedule-card--user">
+              <div class="card-meta-header">
+                <span class="owner-badge owner-badge--user">
+                  <svg viewBox="0 0 24 24" class="svg-icon" style="width: 12px; height: 12px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Me</span>
+                </span>
+                <span class="card-duration-tag">${timeStr} · User Created</span>
+              </div>
+              <h2 class="card-event-title">${title.trim()}</h2>
+              <p class="card-event-desc">Custom user schedule entry added to the daily timeline.</p>
+            </article>
+          `;
+
+          timelineContainer.appendChild(row);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
