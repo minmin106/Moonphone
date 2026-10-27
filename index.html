@@ -13,7 +13,7 @@
       --glass-bg-base: rgba(255, 255, 255, 0.16);
       --glass-bg-hover: rgba(255, 255, 255, 0.28);
       --glass-dock-bg: rgba(255, 255, 255, 0.2);
-      --glass-modal-bg: rgba(248, 250, 252, 0.45);
+      --glass-widget-bg: rgba(255, 255, 255, 0.22);
 
       /* Specular Edges & Borders */
       --glass-border: rgba(255, 255, 255, 0.42);
@@ -24,31 +24,31 @@
       /* Blur Engine */
       --blur-surface: blur(30px) saturate(180%);
       --blur-dock: blur(36px) saturate(200%);
-      --blur-modal: blur(48px) saturate(210%);
 
       /* Ambient Shadows */
       --shadow-tile: 0 8px 24px -4px rgba(20, 24, 38, 0.06),
                      0 2px 6px -1px rgba(20, 24, 38, 0.03);
+      --shadow-widget: 0 12px 28px -6px rgba(20, 24, 38, 0.1),
+                       0 3px 8px -2px rgba(20, 24, 38, 0.05);
       --shadow-dock: 0 18px 42px -6px rgba(20, 24, 38, 0.1),
                      0 2px 6px rgba(0, 0, 0, 0.03);
-      --shadow-modal: 0 32px 64px -12px rgba(10, 15, 30, 0.22);
 
       /* Typography & Strokes */
-      --text-primary: rgba(18, 22, 30, 0.86);
-      --text-secondary: rgba(18, 22, 30, 0.52);
+      --text-primary: rgba(18, 22, 30, 0.88);
+      --text-secondary: rgba(18, 22, 30, 0.55);
       --accent-color: #0071e3;
       --icon-stroke-color: rgba(22, 26, 35, 0.82);
 
       /* Geometry & Scaling */
       --icon-size: clamp(56px, 7vw, 66px);
       --icon-radius: clamp(16px, 2vw, 19px);
+      --widget-radius: clamp(20px, 3vw, 24px);
       --dock-radius: clamp(26px, 3.5vw, 36px);
-      --grid-gap: clamp(18px, 3vw, 36px);
+      --grid-gap: clamp(16px, 2.8vw, 24px);
 
       /* Transitions */
       --ease-liquid: cubic-bezier(0.16, 1, 0.3, 1);
       --transition-fast: 0.22s var(--ease-liquid);
-      --transition-smooth: 0.4s var(--ease-liquid);
     }
 
     /* Base Reset */
@@ -62,7 +62,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Remove default underscore and blue text color for anchor tags */
     a {
       text-decoration: none;
       color: inherit;
@@ -81,9 +80,7 @@
       justify-content: center;
     }
 
-    /* ==========================================================================
-       AMBIENT ATMOSPHERE
-       ========================================================================== */
+    /* Ambient Background Orbs */
     .ambient-background {
       position: fixed;
       inset: 0;
@@ -124,7 +121,7 @@
     }
 
     /* ==========================================================================
-       VIEWPORT & STATUS BAR (REDRAWN LINEAR ICONS)
+       VIEWPORT (WITH DYNAMIC ISLAND / NOTCH SAFE OFFSET)
        ========================================================================== */
     .desktop-viewport {
       position: relative;
@@ -135,79 +132,24 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 8px) env(safe-area-inset-left, 16px);
+      /* Safe padding at the top avoids collision with notch / dynamic island */
+      padding: max(calc(env(safe-area-inset-top) + 14px), 36px) 
+               env(safe-area-inset-right, 16px) 
+               env(safe-area-inset-bottom, 8px) 
+               env(safe-area-inset-left, 16px);
       max-width: 1280px;
       margin: 0 auto;
     }
 
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 44px;
-      padding: 0 20px;
-      font-size: 0.94rem;
-      letter-spacing: -0.01em;
-    }
-
-    .status-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .status-time {
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-
-    .status-right {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-
-    /* Minimalist Linear System SVGs */
-    .sys-icon {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      stroke-width: 1.35;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
-
-    /* Redesigned iOS Style Battery Wrapper */
-    .battery-group {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .battery-percent {
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-      line-height: 1;
-    }
-
-    .battery-svg {
-      width: 25px;
-      height: 12px;
-      overflow: visible;
-      display: block;
-    }
-
     /* ==========================================================================
-       APP GRID & LIQUID GLASS ICONS
+       APP GRID CONTAINER & WIDGET ARCHITECTURE
        ========================================================================== */
     .app-grid-container {
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 10px 0;
+      padding: 6px 0 16px 0;
       overflow-y: auto;
       scrollbar-width: none;
     }
@@ -219,27 +161,219 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: var(--grid-gap);
-      padding: 16px;
-      max-width: 480px;
+      padding: 8px 16px 20px 16px;
+      max-width: 460px;
       width: 100%;
-      margin: auto;
+      margin: 0 auto;
+      align-items: start;
     }
 
-    @media (min-width: 768px) {
-      .app-grid {
-        grid-template-columns: repeat(5, 1fr);
-        max-width: 720px;
-      }
+    /* ---------------- Liquid Glass Widgets (2x2 Spanning) ---------------- */
+    .widget-card {
+      grid-column: span 2;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--widget-radius);
+      background: var(--glass-widget-bg);
+      backdrop-filter: var(--blur-surface);
+      -webkit-backdrop-filter: var(--blur-surface);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-widget), var(--glass-inner-highlight);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      cursor: pointer;
     }
 
-    @media (min-width: 1024px) {
-      .app-grid {
-        grid-template-columns: repeat(5, 1fr);
-        max-width: 800px;
-      }
+    .widget-card:active {
+      transform: scale(0.96);
     }
 
-    /* App item anchor styling */
+    .widget-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 100%);
+      border-radius: var(--widget-radius) var(--widget-radius) 0 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* 1. Photo Widget */
+    .widget-photo {
+      background: linear-gradient(150deg, #d8b4e2 0%, #fbc2eb 40%, #a6c1ee 100%);
+      padding: 12px;
+      justify-content: space-between;
+    }
+
+    .photo-svg-art {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .widget-tag-pill {
+      position: relative;
+      z-index: 4;
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 99px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.95);
+      background: rgba(18, 22, 35, 0.28);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .widget-photo-caption {
+      position: relative;
+      z-index: 4;
+      color: #ffffff;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      line-height: 1.25;
+    }
+
+    .photo-caption-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .photo-caption-sub {
+      font-size: 0.68rem;
+      opacity: 0.88;
+    }
+
+    /* 2. Music Widget */
+    .widget-music {
+      background: var(--glass-widget-bg);
+      padding: 12px;
+      justify-content: space-between;
+    }
+
+    .music-widget-top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      position: relative;
+      z-index: 4;
+    }
+
+    .album-art-tile {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 50%, #7963e0 100%);
+      box-shadow: 0 4px 12px rgba(255, 117, 140, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .music-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .music-tag {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--accent-color);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .music-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .music-artist {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Music Progress Bar */
+    .music-progress-track {
+      height: 3px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 99px;
+      position: relative;
+      overflow: hidden;
+      margin: 6px 0;
+      z-index: 4;
+    }
+
+    .music-progress-fill {
+      width: 48%;
+      height: 100%;
+      background: var(--accent-color);
+      border-radius: 99px;
+    }
+
+    /* Minimalist Playback Controls */
+    .music-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 4;
+      padding: 0 4px;
+    }
+
+    .music-ctrl-btn {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--icon-stroke-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: transform var(--transition-fast);
+    }
+
+    .music-ctrl-btn:active {
+      transform: scale(0.85);
+    }
+
+    .btn-play-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      color: var(--text-primary);
+    }
+
+    /* ---------------- App Grid Items (15 Apps) ---------------- */
     .app-item {
       text-decoration: none;
       color: inherit;
@@ -249,7 +383,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       cursor: pointer;
       transition: transform var(--transition-fast);
     }
@@ -283,7 +417,7 @@
       left: 0;
       right: 0;
       height: 44%;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255) 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 100%);
       border-radius: var(--icon-radius) var(--icon-radius) 0 0;
       pointer-events: none;
     }
@@ -325,7 +459,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding-bottom: 6px;
     }
 
@@ -393,45 +527,113 @@
 
   <!-- Fullscreen Desktop Shell -->
   <main class="desktop-viewport">
-    
-    <!-- Top System Status Area -->
-    <header class="status-bar">
-      <div class="status-left">
-        <span class="status-time" id="status-time">09:41</span>
-      </div>
-      <div class="status-right">
-        <!-- Cellular Signal -->
-        <svg class="sys-icon" viewBox="0 0 24 24">
-          <line x1="4" y1="18" x2="4" y2="18.01"/>
-          <line x1="9" y1="18" x2="9" y2="14"/>
-          <line x1="14" y1="18" x2="14" y2="10"/>
-          <line x1="19" y1="18" x2="19" y2="6"/>
-        </svg>
 
-        <!-- Wi-Fi -->
-        <svg class="sys-icon" viewBox="0 0 24 24">
-          <circle cx="12" cy="18" r="0.8" fill="currentColor"/>
-          <path d="M8 14.5a5.8 5.8 0 0 1 8 0"/>
-          <path d="M4.8 11.2a10.2 10.2 0 0 1 14.4 0"/>
-          <path d="M2 8a14.2 14.2 0 0 1 20 0"/>
-        </svg>
-
-        <!-- Redrawn Minimalist iOS Battery -->
-        <div class="battery-group">
-          <span class="battery-percent" id="battery-percent">88%</span>
-          <svg class="battery-svg" viewBox="0 0 27 13" fill="none">
-            <rect x="0.7" y="0.7" width="22" height="11.6" rx="3.6" stroke="currentColor" stroke-width="1.35"/>
-            <rect x="2.6" y="2.6" width="13.2" height="7.8" rx="2" fill="currentColor"/>
-            <path d="M24.5 4.8C25.2 5.3 25.2 7.7 24.5 8.2" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
-          </svg>
-        </div>
-      </div>
-    </header>
-
-    <!-- Intermediate Application Icon Grid: Exactly 15 App Icons -->
+    <!-- Unified Application Grid: 2 Widgets (2x2) + 15 App Icons -->
     <section class="app-grid-container">
       <div class="app-grid">
 
+        <!-- ==================== WIDGET 1: PHOTO WIDGET (2x2) ==================== -->
+        <div class="widget-card widget-photo" title="Photo Memories">
+          <!-- Minimalist Vector Landscape SVG -->
+          <svg class="photo-svg-art" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" fill="none">
+            <!-- Sky Gradient Wash -->
+            <defs>
+              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fdcbf1" stop-opacity="0.7"/>
+                <stop offset="50%" stop-color="#e6c8ea" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#8ec5fc" stop-opacity="0.9"/>
+              </linearGradient>
+              <linearGradient id="mtnGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#9370db" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#5a428e" stop-opacity="0.9"/>
+              </linearGradient>
+              <linearGradient id="mtnGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e0c3fc" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#8ec5fc" stop-opacity="0.95"/>
+              </linearGradient>
+            </defs>
+            <rect width="200" height="200" fill="url(#skyGrad)"/>
+            <!-- Radiant Sun -->
+            <circle cx="140" cy="65" r="24" fill="#ffffff" fill-opacity="0.85"/>
+            <!-- Distant Mountain -->
+            <path d="M50 200 L110 95 L170 200 Z" fill="url(#mtnGrad1)"/>
+            <!-- Foreground Peak & Valleys -->
+            <path d="M-20 200 L45 120 L130 200 Z" fill="url(#mtnGrad2)"/>
+            <path d="M90 200 L155 130 L230 200 Z" fill="#7a88cf" fill-opacity="0.75"/>
+            <!-- Gentle Birds -->
+            <path d="M55 58 Q60 54 65 58 Q70 54 75 58" stroke="rgba(255,255,255,0.8)" stroke-width="1.3" fill="none"/>
+            <path d="M78 68 Q82 65 86 68 Q90 65 94 68" stroke="rgba(255,255,255,0.7)" stroke-width="1.1" fill="none"/>
+          </svg>
+
+          <!-- Top Badge -->
+          <div class="widget-tag-pill">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>Memories</span>
+          </div>
+
+          <!-- Bottom Caption -->
+          <div class="widget-photo-caption">
+            <div class="photo-caption-title">Lake Solitude</div>
+            <div class="photo-caption-sub">Updated today</div>
+          </div>
+        </div>
+
+        <!-- ==================== WIDGET 2: MUSIC WIDGET (2x2) ==================== -->
+        <div class="widget-card widget-music" title="Music Player">
+          <!-- Top Area: Cover + Title -->
+          <div class="music-widget-top">
+            <div class="album-art-tile">
+              <!-- Minimal Vinyl / Sound Wave SVG -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 3v3M12 18v3"/>
+              </svg>
+            </div>
+            <div class="music-meta">
+              <span class="music-tag">AI Recommended</span>
+              <div class="music-title" id="music-track-title">AI Recommended Song List</div>
+              <div class="music-artist">Neural Ambience • Flow</div>
+            </div>
+          </div>
+
+          <!-- Middle Progress Indicator -->
+          <div class="music-progress-track">
+            <div class="music-progress-fill"></div>
+          </div>
+
+          <!-- Bottom: Minimalist Linear Playback Controls -->
+          <div class="music-controls">
+            <!-- Previous -->
+            <button class="music-ctrl-btn" aria-label="Previous">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20"/>
+                <line x1="5" y1="19" x2="5" y2="5"/>
+              </svg>
+            </button>
+
+            <!-- Play / Pause Toggle Circle -->
+            <button class="music-ctrl-btn btn-play-circle" id="btn-toggle-play" aria-label="Play/Pause">
+              <svg id="play-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="7 4 19 12 7 20 7 4"/>
+              </svg>
+            </button>
+
+            <!-- Next -->
+            <button class="music-ctrl-btn" aria-label="Next">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4"/>
+                <line x1="19" y1="5" x2="19" y2="19"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== 15 APP ICONS (NEAT 4-COLUMN FLOW) ==================== -->
         <!-- 1. Weather -->
         <a class="app-item" href="weather.html" data-app-id="weather" data-title="Weather">
           <div class="icon-tile">
@@ -478,7 +680,7 @@
           <span class="app-label">Reminders</span>
         </a>
 
-        <!-- 4. Memo (Notes) -->
+        <!-- 4. Memo -->
         <a class="app-item" href="notes.html" data-app-id="notes" data-title="Memo">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -528,7 +730,7 @@
           <span class="app-label">Music</span>
         </a>
 
-        <!-- 8. Process Record (Workflow Log) -->
+        <!-- 8. Process Record -->
         <a class="app-item" href="workflow.html" data-app-id="workflow" data-title="Process record">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -543,7 +745,7 @@
           <span class="app-label">Process Record</span>
         </a>
 
-        <!-- 9. Academic Record (Academic Notes) -->
+        <!-- 9. Academic Record -->
         <a class="app-item" href="academic.html" data-app-id="academic" data-title="Academic record">
           <div class="icon-tile">
             <svg class="app-svg" viewBox="0 0 24 24">
@@ -686,19 +888,30 @@
 
   <script>
     /**
-     * iOS Liquid Glass Desktop Controller
+     * Minimal Music Widget Play/Pause Toggle
      */
     document.addEventListener("DOMContentLoaded", () => {
-      // Status Bar Clock Sync
-      const timeElement = document.getElementById("status-time");
-      const syncClock = () => {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, "0");
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-        timeElement.textContent = `${hours}:${minutes}`;
-      };
-      syncClock();
-      setInterval(syncClock, 1000 * 30);
+      const btnPlay = document.getElementById("btn-toggle-play");
+      const playIcon = document.getElementById("play-icon");
+      let isPlaying = false;
+
+      if (btnPlay && playIcon) {
+        btnPlay.addEventListener("click", (e) => {
+          e.preventDefault();
+          isPlaying = !isPlaying;
+
+          if (isPlaying) {
+            playIcon.innerHTML = `
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+            `;
+          } else {
+            playIcon.innerHTML = `
+              <polygon points="7 4 19 12 7 20 7 4"/>
+            `;
+          }
+        });
+      }
     });
   </script>
 </body>
