@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Photos</title>
+  <style>
+    /* ----------------------------------------------------
+       Apple iOS Photos Design Tokens (Dark Mode)
+       ---------------------------------------------------- */
+    :root {
+      --ios-bg: #000000;
+      --ios-surface: #1c1c1e;
+      --ios-surface-elevated: #2c2c2e;
+      --ios-border: #2c2c2e;
+      --ios-separator: rgba(84, 84, 88, 0.4);
+
+      --ios-blue: #0a84ff;
+      --ios-blue-dim: rgba(10, 132, 255, 0.15);
+      --ios-pink: #ff375f;
+      --ios-yellow: #ffd60a;
+
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+
+      --glass-bg: rgba(28, 28, 30, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-blur: blur(20px);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+
+      --ease-ios: cubic-bezier(0.25, 1, 0.5, 1);
+      --duration-fast: 160ms;
+      --duration-normal: 280ms;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--ios-bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ----------------------------------------------------
+       App Container Frame
+       ---------------------------------------------------- */
+    .photos-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--ios-bg);
+      border-left: 1px solid var(--ios-border);
+      border-right: 1px solid var(--ios-border);
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .photos-shell {
+        border: none;
+      }
+    }
+
+    /* ----------------------------------------------------
+       View Navigation System
+       ---------------------------------------------------- */
+    .view-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: inherit;
+      transition: transform var(--duration-normal) var(--ease-ios), opacity var(--duration-normal) var(--ease-ios);
+    }
+
+    .view-screen--active {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .view-screen--inactive-left {
+      transform: translateX(-25%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .view-screen--inactive-right {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* ----------------------------------------------------
+       Header Bar
+       ---------------------------------------------------- */
+    .app-header {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--ios-separator);
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .nav-btn:active {
+      opacity: 0.5;
+    }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    /* ----------------------------------------------------
+       VIEW 1: Main Gallery / Library
+       ---------------------------------------------------- */
+    .gallery-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ios-border) transparent;
+    }
+
+    .gallery-scroll-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .gallery-scroll-body::-webkit-scrollbar-thumb {
+      background-color: var(--ios-border);
+      border-radius: var(--radius-pill);
+    }
+
+    /* "Memories with AI" Featured Album Banner */
+    .memories-banner-section {
+      padding: 16px 16px 8px;
+    }
+
+    .memories-card-btn {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(10, 132, 255, 0.18), rgba(255, 55, 95, 0.18));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+      transition: transform var(--duration-fast) var(--ease-ios), background-color var(--duration-fast) var(--ease-ios);
+    }
+
+    .memories-card-btn:hover {
+      background: linear-gradient(135deg, rgba(10, 132, 255, 0.25), rgba(255, 55, 95, 0.25));
+      transform: translateY(-1px);
+    }
+
+    .memories-card-btn:active {
+      transform: scale(0.98);
+    }
+
+    .memories-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .memories-icon-stack {
+      width: 46px;
+      height: 46px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #0a84ff, #ff375f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4);
+      flex-shrink: 0;
+    }
+
+    .memories-meta-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .memories-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .memories-sub {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .memories-chevron {
+      color: var(--text-secondary);
+    }
+
+    /* Timeline Section Header */
+    .timeline-header {
+      padding: 18px 16px 10px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .timeline-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .timeline-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* 3-Column Native Photos Grid */
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 0 1px;
+    }
+
+    .photo-tile {
+      aspect-ratio: 1 / 1;
+      position: relative;
+      background-color: var(--ios-surface);
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      padding: 0;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .photo-tile:active {
+      opacity: 0.8;
+    }
+
+    .tile-art-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ----------------------------------------------------
+       VIEW 2: "Memories with AI" Album Folder View
+       ---------------------------------------------------- */
+    .memories-view-container {
+      background-color: var(--ios-bg);
+    }
+
+    .memories-intro-bar {
+      padding: 16px 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-bottom: 1px solid var(--ios-separator);
+    }
+
+    .memories-heading {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .memories-caption {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .ai-album-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 14px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ios-border) transparent;
+    }
+
+    .chat-photo-card {
+      background-color: var(--ios-surface);
+      border: 1px solid var(--ios-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform var(--duration-fast) var(--ease-ios);
+    }
+
+    .chat-photo-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card-preview-media {
+      height: 190px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .card-badge-pill {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-pill);
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-badge-pill--ai {
+      color: var(--ios-blue);
+    }
+
+    .card-meta-box {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background-color: var(--ios-surface);
+    }
+
+    .card-caption-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .card-source-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ----------------------------------------------------
+       Full-Screen Photo Inspector Modal
+       ---------------------------------------------------- */
+    .photo-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: #000000;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      animation: modalFadeIn var(--duration-normal) var(--ease-ios);
+    }
+
+    @keyframes modalFadeIn {
+      0% { opacity: 0; transform: scale(0.97); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .photo-modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-header-bar {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .modal-date-display {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .modal-viewport {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-photo-stage {
+      width: 100%;
+      max-width: 380px;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--ios-border);
+      position: relative;
+    }
+
+    .modal-caption-pill {
+      margin-top: 20px;
+      background-color: var(--ios-surface-elevated);
+      border: 1px solid var(--ios-border);
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      font-size: 13.5px;
+      color: var(--text-primary);
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .modal-bottom-dock {
+      height: 54px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--ios-separator);
+      flex-shrink: 0;
+    }
+
+    .btn-tool-modal {
+      background: transparent;
+      border: none;
+      color: var(--ios-blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      transition: opacity var(--duration-fast) var(--ease-ios);
+    }
+
+    .btn-tool-modal:active {
+      opacity: 0.5;
+    }
+
+    /* ----------------------------------------------------
+       Bottom Segment Bar (Years, Months, Days, All Photos)
+       ---------------------------------------------------- */
+    .bottom-segmented-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+      z-index: 25;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .seg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-ios), color var(--duration-fast) var(--ease-ios);
+    }
+
+    .seg-btn--active {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--text-primary);
+    }
+
+    /* Toast Alert */
+    .toast-alert {
+      position: absolute;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: var(--ios-surface-elevated);
+      color: #ffffff;
+      border: 1px solid var(--ios-border);
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .toast-alert.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--ios-blue);
+      outline-offset: 2px;
+    }
+
+    /* Minimalist line SVG standard */
+    .svg-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="photos-shell">
+
+    <!-- Toast Notification -->
+    <div class="toast-alert" id="toastAlert">Returning to Home Screen...</div>
+
+    <!-- ====================================================
+         VIEW 1: Main Photos Library Grid
+         ==================================================== -->
+    <section class="view-screen view-screen--active" id="viewLibrary" aria-label="Photos Library">
+      
+      <!-- Top Navigation Bar -->
+      <header class="app-header">
+        <!-- Return to Home Screen (< Home) -->
+        <button class="nav-btn" id="btnBackHome" aria-label="Return to home screen">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <span class="header-title">Photos</span>
+
+        <button class="nav-btn" id="btnSelectMode" aria-label="Select photos">Select</button>
+      </header>
+
+      <!-- Scrollable Gallery Body -->
+      <main class="gallery-scroll-body">
+
+        <!-- Core Feature: "Memories with AI" Album Folder -->
+        <div class="memories-banner-section">
+          <button class="memories-card-btn" id="btnOpenMemoriesAlbum" aria-label="Open Memories with AI folder">
+            <div class="memories-card-left">
+              <div class="memories-icon-stack">
+                <svg viewBox="0 0 24 24" class="svg-icon" style="width: 24px; height: 24px;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+              </div>
+              <div class="memories-meta-col">
+                <span class="memories-title">Memories with AI</span>
+                <span class="memories-sub">Shared pictures from chat · 4 items</span>
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" class="svg-icon memories-chevron" style="width: 16px; height: 16px;">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Section 1: Recent Days -->
+        <div class="timeline-header">
+          <h2 class="timeline-title">October 2026</h2>
+          <span class="timeline-subtitle">San Francisco</span>
+        </div>
+
+        <!-- 3-Column Native Nine-Palace Grid Layout -->
+        <div class="photos-grid">
+
+          <!-- Photo Tile 1: Sunrise Peak -->
+          <button class="photo-tile" data-title="Sunrise Horizon" data-date="October 26, 2026" data-bg="linear-gradient(135deg, #f97316, #ec4899)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad1)"/>
+              <defs>
+                <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f97316"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="50" r="18" fill="#ffffff" opacity="0.8"/>
+              <polygon points="10,120 60,65 110,120" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 2: Liquid Wave -->
+          <button class="photo-tile" data-title="Ocean Waves" data-date="October 25, 2026" data-bg="linear-gradient(135deg, #0ea5e9, #3b82f6)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad2)"/>
+              <defs>
+                <linearGradient id="grad2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#0284c7"/>
+                  <stop offset="100%" stop-color="#2563eb"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,75 C30,60 50,90 80,70 C100,55 110,75 120,70 L120,120 L0,120 Z" fill="rgba(255,255,255,0.2)"/>
+              <path d="M0,90 C35,75 60,100 90,85 C110,75 115,90 120,85 L120,120 L0,120 Z" fill="rgba(0,0,0,0.25)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 3: Neon Forest -->
+          <button class="photo-tile" data-title="Emerald Pines" data-date="October 24, 2026" data-bg="linear-gradient(135deg, #10b981, #047857)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad3)"/>
+              <defs>
+                <linearGradient id="grad3" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#10b981"/>
+                  <stop offset="100%" stop-color="#047857"/>
+                </linearGradient>
+              </defs>
+              <polygon points="60,25 35,70 85,70" fill="rgba(255,255,255,0.25)"/>
+              <polygon points="60,50 25,105 95,105" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 4: Twilight Architecture -->
+          <button class="photo-tile" data-title="Twilight Skyline" data-date="October 22, 2026" data-bg="linear-gradient(135deg, #8b5cf6, #4c1d95)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad4)"/>
+              <defs>
+                <linearGradient id="grad4" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#4c1d95"/>
+                </linearGradient>
+              </defs>
+              <rect x="25" y="45" width="25" height="75" fill="rgba(255,255,255,0.2)"/>
+              <rect x="60" y="30" width="35" height="90" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 5: Aurora Mist -->
+          <button class="photo-tile" data-title="Northern Aurora" data-date="October 20, 2026" data-bg="linear-gradient(135deg, #06b6d4, #10b981)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad5)"/>
+              <defs>
+                <linearGradient id="grad5" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#06b6d4"/>
+                  <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+              </defs>
+              <circle cx="85" cy="40" r="14" fill="rgba(255,255,255,0.3)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 6: Autumn Maple -->
+          <button class="photo-tile" data-title="Autumn Glow" data-date="October 18, 2026" data-bg="linear-gradient(135deg, #f59e0b, #b45309)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad6)"/>
+              <defs>
+                <linearGradient id="grad6" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#b45309"/>
+                </linearGradient>
+              </defs>
+              <polygon points="60,30 75,60 55,75 60,110 50,110 45,75 25,60" fill="rgba(255,255,255,0.2)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 7: Glass Sphere -->
+          <button class="photo-tile" data-title="Refraction Sphere" data-date="October 15, 2026" data-bg="linear-gradient(135deg, #e11d48, #4f46e5)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad7)"/>
+              <defs>
+                <linearGradient id="grad7" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#e11d48"/>
+                  <stop offset="100%" stop-color="#4f46e5"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="32" fill="rgba(255,255,255,0.25)"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 8: Moon Crater -->
+          <button class="photo-tile" data-title="Lunar Phase" data-date="October 12, 2026" data-bg="linear-gradient(135deg, #475569, #0f172a)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad8)"/>
+              <defs>
+                <linearGradient id="grad8" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#475569"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="30" fill="#ffffff" opacity="0.6"/>
+              <circle cx="72" cy="52" r="26" fill="#0f172a"/>
+            </svg>
+          </button>
+
+          <!-- Photo Tile 9: Desert Dunes -->
+          <button class="photo-tile" data-title="Desert Sunset" data-date="October 10, 2026" data-bg="linear-gradient(135deg, #d97706, #78350f)">
+            <svg class="tile-art-svg" viewBox="0 0 120 120">
+              <rect width="120" height="120" fill="url(#grad9)"/>
+              <defs>
+                <linearGradient id="grad9" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#d97706"/>
+                  <stop offset="100%" stop-color="#78350f"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,80 Q40,50 80,85 T120,75 L120,120 L0,120 Z" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </button>
+
+        </div>
+
+      </main>
+
+      <!-- Bottom Floating Segmented Filter Bar -->
+      <nav class="bottom-segmented-bar" aria-label="Library view scale">
+        <button class="seg-btn" id="btnYears">Years</button>
+        <button class="seg-btn" id="btnMonths">Months</button>
+        <button class="seg-btn" id="btnDays">Days</button>
+        <button class="seg-btn seg-btn--active" id="btnAllPhotos">All Photos</button>
+      </nav>
+
+    </section>
+
+    <!-- ====================================================
+         VIEW 2: "Memories with AI" Album Folder View
+         ==================================================== -->
+    <section class="view-screen view-screen--inactive-right memories-view-container" id="viewMemories" aria-label="Memories with AI Album">
+      
+      <header class="app-header">
+        <!-- Return to Main Photos Library -->
+        <button class="nav-btn" id="btnBackToLibrary" aria-label="Back to Photos">
+          <svg viewBox="0 0 24 24" class="svg-icon" style="width: 21px; height: 21px;">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Photos</span>
+        </button>
+
+        <span class="header-title">Memories with AI</span>
+
+        <button class="nav-btn" aria-label="Share folder">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Header Intro -->
+      <div class="memories-intro-bar">
+        <h1 class="memories-heading">Shared in Chat</h1>
+        <p class="memories-caption">Pictures and visual briefings automatically stored from your iMessage and KakaoTalk conversations.</p>
+      </div>
+
+      <!-- Feed of Chat Photos -->
+      <main class="ai-album-feed">
+
+        <!-- Chat Photo Card 1: Sunset Briefing sent by AI -->
+        <article class="chat-photo-card" data-title="Morning Ambient Horizon" data-date="Sent by AI · Today 9:42 AM" data-bg="linear-gradient(135deg, #3b82f6, #ec4899)">
+          <div class="card-preview-media">
+            <div class="card-badge-pill card-badge-pill--ai">
+              <span>Sent by AI</span>
+              <span>· iMessage</span>
+            </div>
+            <svg viewBox="0 0 240 160" style="width: 100%; height: 100%;">
+              <rect width="240" height="160" fill="url(#aiGrad1)"/>
+              <defs>
+                <linearGradient id="aiGrad1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#3b82f6"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <circle cx="120" cy="70" r="28" fill="#ffffff" opacity="0.8"/>
+              <path d="M0,130 C60,90 140,150 240,110 L240,160 L0,160 Z" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </div>
+          <div class="card-meta-box">
+            <span class="card-caption-title">"Good morning! Atmospheric pressure is optimal today."</span>
+            <div class="card-source-row">
+              <span>Liquid Companion</span>
+              <span>9:42 AM</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Chat Photo Card 2: User Shared Sketch -->
+        <article class="chat-photo-card" data-title="Project Liquid Architecture" data-date="Sent by You · Yesterday 18:20" data-bg="linear-gradient(135deg, #10b981, #06b6d4)">
+          <div class="card-preview-media">
+            <div class="card-badge-pill">
+              <span>Sent by You</span>
+              <span>· KakaoTalk</span>
+            </div>
+            <svg viewBox="0 0 240 160" style="width: 100%; height: 100%;">
+              <rect width="240" height="160" fill="url(#aiGrad2)"/>
+              <defs>
+                <linearGradient id="aiGrad2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#10b981"/>
+                  <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+              </defs>
+              <rect x="40" y="40" width="70" height="80" rx="8" fill="rgba(255,255,255,0.2)"/>
+              <rect x="130" y="55" width="70" height="65" rx="8" fill="rgba(0,0,0,0.3)"/>
+            </svg>
+          </div>
+          <div class="card-meta-box">
+            <span class="card-caption-title">"Here is the module breakdown for Phase 1 testing."</span>
+            <div class="card-source-row">
+              <span>You</span>
+              <span>Yesterday</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Chat Photo Card 3: Latte Art Sent by AI -->
+        <article class="chat-photo-card" data-title="Afternoon Coffee Reminder" data-date="Sent by AI · Sunday 15:10" data-bg="linear-gradient(135deg, #f59e0b, #78350f)">
+          <div class="card-preview-media">
+            <div class="card-badge-pill card-badge-pill--ai">
+              <span>Sent by AI</span>
+              <span>· iMessage</span>
+            </div>
+            <svg viewBox="0 0 240 160" style="width: 100%; height: 100%;">
+              <rect width="240" height="160" fill="url(#aiGrad3)"/>
+              <defs>
+                <linearGradient id="aiGrad3" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#78350f"/>
+                </linearGradient>
+              </defs>
+              <circle cx="120" cy="80" r="45" fill="rgba(255,255,255,0.3)"/>
+              <path d="M120,60 C125,75 140,80 120,105 C100,80 115,75 120,60 Z" fill="#ffffff" opacity="0.8"/>
+            </svg>
+          </div>
+          <div class="card-meta-box">
+            <span class="card-caption-title">"Tea break reminder! Don't forget to stretch."</span>
+            <div class="card-source-row">
+              <span>Liquid Companion</span>
+              <span>Sunday</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Chat Photo Card 4: Autumn Leaf Sent by User -->
+        <article class="chat-photo-card" data-title="Han River Autumn Walk" data-date="Sent by You · Oct 24" data-bg="linear-gradient(135deg, #ef4444, #f97316)">
+          <div class="card-preview-media">
+            <div class="card-badge-pill">
+              <span>Sent by You</span>
+              <span>· KakaoTalk</span>
+            </div>
+            <svg viewBox="0 0 240 160" style="width: 100%; height: 100%;">
+              <rect width="240" height="160" fill="url(#aiGrad4)"/>
+              <defs>
+                <linearGradient id="aiGrad4" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ef4444"/>
+                  <stop offset="100%" stop-color="#f97316"/>
+                </linearGradient>
+              </defs>
+              <polygon points="120,30 140,70 180,85 145,110 150,140 120,120 90,140 95,110 60,85 100,70" fill="rgba(255,255,255,0.3)"/>
+            </svg>
+          </div>
+          <div class="card-meta-box">
+            <span class="card-caption-title">"Leaves are completely golden this afternoon!"</span>
+            <div class="card-source-row">
+              <span>You</span>
+              <span>Oct 24</span>
+            </div>
+          </div>
+        </article>
+
+      </main>
+
+    </section>
+
+    <!-- ====================================================
+         Full-Screen Photo Inspector Modal
+         ==================================================== -->
+    <div class="photo-modal-overlay" id="photoModal" aria-label="Photo Inspector">
+      
+      <!-- Top Modal Bar -->
+      <header class="modal-header-bar">
+        <button class="nav-btn" id="btnCloseModal" aria-label="Close photo">Done</button>
+        <span class="modal-date-display" id="modalDateDisplay">October 26, 2026</span>
+        <button class="nav-btn" aria-label="More options">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <circle cx="12" cy="12" r="1.5"></circle>
+            <circle cx="5" cy="12" r="1.5"></circle>
+            <circle cx="19" cy="12" r="1.5"></circle>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Photo Stage Viewport -->
+      <div class="modal-viewport">
+        <div class="modal-photo-stage" id="modalPhotoStage">
+          <!-- Cloned SVG art placed dynamically via JS -->
+        </div>
+        <div class="modal-caption-pill" id="modalCaptionPill">
+          Photo Title
+        </div>
+      </div>
+
+      <!-- Bottom Actions Toolbar -->
+      <footer class="modal-bottom-dock">
+        <!-- Share -->
+        <button class="btn-tool-modal" aria-label="Share">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Favorite Heart -->
+        <button class="btn-tool-modal" id="btnToggleFavorite" aria-label="Favorite">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+
+        <!-- Info -->
+        <button class="btn-tool-modal" aria-label="Details">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+
+        <!-- Trash -->
+        <button class="btn-tool-modal" aria-label="Delete">
+          <svg viewBox="0 0 24 24" class="svg-icon">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </footer>
+
+    </div>
+
+  </div>
+
+  <!-- Native Modular Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Views
+      const viewLibrary = document.getElementById('viewLibrary');
+      const viewMemories = document.getElementById('viewMemories');
+      const btnOpenMemoriesAlbum = document.getElementById('btnOpenMemoriesAlbum');
+      const btnBackToLibrary = document.getElementById('btnBackToLibrary');
+      const btnBackHome = document.getElementById('btnBackHome');
+      const toastAlert = document.getElementById('toastAlert');
+
+      // Modal Elements
+      const photoModal = document.getElementById('photoModal');
+      const btnCloseModal = document.getElementById('btnCloseModal');
+      const modalPhotoStage = document.getElementById('modalPhotoStage');
+      const modalDateDisplay = document.getElementById('modalDateDisplay');
+      const modalCaptionPill = document.getElementById('modalCaptionPill');
+      const btnToggleFavorite = document.getElementById('btnToggleFavorite');
+
+      // ----------------------------------------------------
+      // 1. Navigation Between Library & "Memories with AI"
+      // ----------------------------------------------------
+      if (btnOpenMemoriesAlbum) {
+        btnOpenMemoriesAlbum.addEventListener('click', () => {
+          viewLibrary.className = 'view-screen view-screen--inactive-left';
+          viewMemories.className = 'view-screen view-screen--active';
+        });
+      }
+
+      if (btnBackToLibrary) {
+        btnBackToLibrary.addEventListener('click', () => {
+          viewLibrary.className = 'view-screen view-screen--active';
+          viewMemories.className = 'view-screen view-screen--inactive-right';
+        });
+      }
+
+      // Return to Home Screen (< Home)
+      if (btnBackHome) {
+        btnBackHome.addEventListener('click', () => {
+          if (toastAlert) {
+            toastAlert.classList.add('show');
+            setTimeout(() => toastAlert.classList.remove('show'), 1800);
+          }
+          console.log('[Photos App] Return to home clicked.');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'NAVIGATE_HOME' }, '*');
+          } else if (window.history.length > 1) {
+            setTimeout(() => window.history.back(), 300);
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 2. Photo Inspector Modal (Full-Screen View)
+      // ----------------------------------------------------
+      const openPhotoModal = (title, date, svgElement) => {
+        modalCaptionPill.textContent = title || 'Photo';
+        modalDateDisplay.textContent = date || 'October 2026';
+        modalPhotoStage.innerHTML = '';
+
+        if (svgElement) {
+          const clone = svgElement.cloneNode(true);
+          clone.style.width = '100%';
+          clone.style.height = '100%';
+          clone.style.objectFit = 'cover';
+          modalPhotoStage.appendChild(clone);
+        }
+
+        photoModal.classList.add('active');
+      };
+
+      if (btnCloseModal) {
+        btnCloseModal.addEventListener('click', () => {
+          photoModal.classList.remove('active');
+        });
+      }
+
+      // Bind Clicks on 3-Column Grid Photo Tiles
+      const photoTiles = document.querySelectorAll('.photo-tile');
+      photoTiles.forEach((tile) => {
+        tile.addEventListener('click', () => {
+          const title = tile.getAttribute('data-title');
+          const date = tile.getAttribute('data-date');
+          const svg = tile.querySelector('svg');
+          openPhotoModal(title, date, svg);
+        });
+      });
+
+      // Bind Clicks on "Memories with AI" Chat Photo Cards
+      const chatPhotoCards = document.querySelectorAll('.chat-photo-card');
+      chatPhotoCards.forEach((card) => {
+        card.addEventListener('click', () => {
+          const title = card.getAttribute('data-title');
+          const date = card.getAttribute('data-date');
+          const svg = card.querySelector('svg');
+          openPhotoModal(title, date, svg);
+        });
+      });
+
+      // Favorite Heart Toggle in Modal
+      if (btnToggleFavorite) {
+        btnToggleFavorite.addEventListener('click', () => {
+          const heartSvg = btnToggleFavorite.querySelector('svg');
+          const isFilled = heartSvg.getAttribute('fill') === 'currentColor';
+          if (isFilled) {
+            heartSvg.setAttribute('fill', 'none');
+            btnToggleFavorite.style.color = 'var(--ios-blue)';
+          } else {
+            heartSvg.setAttribute('fill', 'currentColor');
+            btnToggleFavorite.style.color = 'var(--ios-pink)';
+          }
+        });
+      }
+
+      // ----------------------------------------------------
+      // 3. Segmented Filter Bar Active State
+      // ----------------------------------------------------
+      const segButtons = document.querySelectorAll('.seg-btn');
+      segButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          segButtons.forEach((b) => b.classList.remove('seg-btn--active'));
+          btn.classList.add('seg-btn--active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
