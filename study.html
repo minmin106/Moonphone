@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Academic Notes - Academic Record</title>
+  <style>
+    /* ---------------- CSS Variables ---------------- */
+    :root {
+      --bg-body: #0b0f19;
+      --bg-card: rgba(20, 27, 45, 0.65);
+      --bg-card-hover: rgba(28, 38, 62, 0.8);
+      --glass-nav: rgba(11, 15, 25, 0.75);
+      --glass-modal: rgba(18, 24, 40, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-light: rgba(255, 255, 255, 0.16);
+      --glass-blur: blur(18px);
+
+      --text-main: #f1f5f9;
+      --text-sub: #94a3b8;
+      --text-dim: #64748b;
+
+      /* Tag Status Colors */
+      --tag-unresolved-bg: rgba(244, 63, 94, 0.14);
+      --tag-unresolved-color: #fb7185;
+      --tag-unresolved-border: rgba(244, 63, 94, 0.28);
+
+      --tag-solved-bg: rgba(16, 185, 129, 0.14);
+      --tag-solved-color: #34d399;
+      --tag-solved-border: rgba(16, 185, 129, 0.28);
+
+      /* Accent & Radiuses */
+      --accent-primary: #38bdf8;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      --transition-smooth: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ---------------- Global Reset ---------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(129, 140, 248, 0.06) 0%, transparent 40%);
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 680px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 96px;
+    }
+
+    /* ---------------- Top Glass Navigation ---------------- */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 62px;
+      padding: 0 20px;
+      background: var(--glass-nav);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .nav-btn {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-main);
+      transition: var(--transition-smooth);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--glass-border);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    .nav-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--text-main);
+    }
+
+    /* ---------------- Knowledge Base Container ---------------- */
+    .content-container {
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Discipline Section */
+    .discipline-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .discipline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .discipline-title {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .discipline-icon {
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+    }
+
+    .discipline-badge {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* Question Cards List */
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      transition: var(--transition-smooth);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      border-color: var(--glass-border-light);
+      background: var(--bg-card-hover);
+      transform: translateY(-1px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .card-question {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--text-main);
+      flex: 1;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      border: 1px solid transparent;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+      transition: var(--transition-smooth);
+    }
+
+    .status-badge.unresolved {
+      background: var(--tag-unresolved-bg);
+      color: var(--tag-unresolved-color);
+      border-color: var(--tag-unresolved-border);
+    }
+
+    .status-badge.solved {
+      background: var(--tag-solved-bg);
+      color: var(--tag-solved-color);
+      border-color: var(--tag-solved-border);
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: var(--radius-full);
+      background: currentColor;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    /* ---------------- Floating Bulb Button (💡) ---------------- */
+    .fab-bulb {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-full);
+      background: rgba(24, 32, 54, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border-light);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fbbf24;
+      transition: var(--transition-smooth);
+      z-index: 90;
+    }
+
+    .fab-bulb:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 12px 30px rgba(251, 191, 36, 0.25);
+      border-color: rgba(251, 191, 36, 0.45);
+    }
+
+    .fab-bulb:active {
+      transform: scale(0.93);
+    }
+
+    /* ---------------- Liquid Frosted Dialog / Modal ---------------- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+      z-index: 200;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--glass-modal);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border-light);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+      transform: scale(0.93);
+      transition: var(--transition-smooth);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .modal-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-title {
+      font-size: 16.5px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .modal-body-text {
+      font-size: 14.5px;
+      color: var(--text-sub);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    /* Modal Form Elements */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-main);
+      font-size: 13.5px;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .form-textarea {
+      resize: none;
+      height: 75px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--transition-smooth);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-sub);
+      border-color: var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    <!-- Top Glass Navigation Bar -->
+    <header class="top-nav">
+      <!-- Back Button (<) -->
+      <button class="nav-btn" onclick="alert('Returning to Home Screen...')" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <span class="nav-title">Academic Record</span>
+
+      <!-- Add Button (+) -->
+      <button class="nav-btn" id="openAddModalBtn" aria-label="Add Question">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main Academic Notes Body -->
+    <main class="content-container" id="disciplinesContainer">
+      <!-- Philosophy Section -->
+      <section class="discipline-group" data-discipline="philosophy">
+        <div class="discipline-header">
+          <h2 class="discipline-title">
+            <span class="discipline-icon">
+              <!-- Minimal Linear Book/Scroll SVG -->
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+            </span>
+            Philosophy
+          </h2>
+          <span class="discipline-badge">2 questions</span>
+        </div>
+        <div class="cards-list">
+          <div class="card" onclick="toggleStatus(this)">
+            <div class="card-top">
+              <h3 class="card-question">The Chinese Room Argument & Intentionality</h3>
+              <span class="status-badge unresolved"><span class="status-dot"></span>Unresolved</span>
+            </div>
+            <p class="card-meta">Can syntactic symbol manipulation alone produce genuine semantic understanding, or is biological naturalism required?</p>
+          </div>
+          <div class="card" onclick="toggleStatus(this)">
+            <div class="card-top">
+              <h3 class="card-question">Epistemic Foundationalism vs. Coherentism</h3>
+              <span class="status-badge solved"><span class="status-dot"></span>Solved</span>
+            </div>
+            <p class="card-meta">Resolved the regress problem of justification by adopting Sosa's virtue epistemology model.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Computer Science Section -->
+      <section class="discipline-group" data-discipline="cs">
+        <div class="discipline-header">
+          <h2 class="discipline-title">
+            <span class="discipline-icon">
+              <!-- Minimal Linear Terminal/Code SVG -->
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 17 10 11 4 5"/>
+                <line x1="12" y1="19" x2="20" y2="19"/>
+              </svg>
+            </span>
+            Computer Science
+          </h2>
+          <span class="discipline-badge">2 questions</span>
+        </div>
+        <div class="cards-list">
+          <div class="card" onclick="toggleStatus(this)">
+            <div class="card-top">
+              <h3 class="card-question">Byzantine Fault Tolerance under Partial Synchrony</h3>
+              <span class="status-badge unresolved"><span class="status-dot"></span>Unresolved</span>
+            </div>
+            <p class="card-meta">Formulating the upper bound of message latency delay to guarantee liveness during view-change phases.</p>
+          </div>
+          <div class="card" onclick="toggleStatus(this)">
+            <div class="card-top">
+              <h3 class="card-question">Cache Invalidation in Distributed Key-Value Stores</h3>
+              <span class="status-badge solved"><span class="status-dot"></span>Solved</span>
+            </div>
+            <p class="card-meta">Implemented leases and version vectors to eliminate phantom reads without severe throughput loss.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Psychology Section -->
+      <section class="discipline-group" data-discipline="psychology">
+        <div class="discipline-header">
+          <h2 class="discipline-title">
+            <span class="discipline-icon">
+              <!-- Minimal Linear Brain/Activity SVG -->
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04"/>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04"/>
+              </svg>
+            </span>
+            Psychology
+          </h2>
+          <span class="discipline-badge">1 question</span>
+        </div>
+        <div class="cards-list">
+          <div class="card" onclick="toggleStatus(this)">
+            <div class="card-top">
+              <h3 class="card-question">Neural Correlates of Cognitive Dissonance</h3>
+              <span class="status-badge unresolved"><span class="status-dot"></span>Unresolved</span>
+            </div>
+            <p class="card-meta">Investigating whether dorsal anterior cingulate cortex (dACC) activation reflects negative affect or conflict detection.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Floating AI Prompt Button (💡 Light Bulb) -->
+    <button class="fab-bulb" id="aiBulbBtn" title="AI Reminder">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6M10 22h4"/>
+        <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/>
+        <line x1="12" y1="6" x2="12" y2="10"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- AI Reminder Pop-up Prompt Modal -->
+  <div class="modal-overlay" id="aiReminderModal">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div class="modal-title-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.5 1.5 4.5 3 6h8c1.5-1.5 3-3.5 3-6a7 7 0 0 0-7-7z"/>
+          </svg>
+          <span class="modal-title">AI Academic Assistant</span>
+        </div>
+        <button class="nav-btn" onclick="closeAiModal()" style="width: 28px; height: 28px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="modal-body-text" id="aiPromptMessage">
+        AI reminder: You still have 3 unsolved academic problems. Do you need me to help you check the information?
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeAiModal()">Not now</button>
+        <button class="btn btn-primary" onclick="confirmAiSearch()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Help me check
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Add Question Modal -->
+  <div class="modal-overlay" id="addQuestionModal">
+    <div class="modal-card">
+      <div class="modal-top">
+        <span class="modal-title">New Academic Problem</span>
+        <button class="nav-btn" id="closeAddModalBtn" style="width: 28px; height: 28px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Discipline</label>
+        <select class="form-select" id="newDiscipline">
+          <option value="philosophy">Philosophy</option>
+          <option value="cs">Computer Science</option>
+          <option value="psychology">Psychology</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Academic Question</label>
+        <input type="text" class="form-input" id="newQuestion" placeholder="e.g. Gödel's Incompleteness Theorems...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes / Details</label>
+        <textarea class="form-textarea" id="newNotes" placeholder="Key arguments, hypotheses, or open questions..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Initial Status</label>
+        <select class="form-select" id="newStatus">
+          <option value="unresolved">Unresolved</option>
+          <option value="solved">Solved</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveQuestionBtn">Add Problem</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------------- Status Calculation & Toggle ---------------- */
+    function getUnresolvedCount() {
+      return document.querySelectorAll('.status-badge.unresolved').length;
+    }
+
+    function updateDisciplineBadges() {
+      document.querySelectorAll('.discipline-group').forEach(group => {
+        const count = group.querySelectorAll('.card').length;
+        const badge = group.querySelector('.discipline-badge');
+        if (badge) {
+          badge.textContent = `${count} question${count !== 1 ? 's' : ''}`;
+        }
+      });
+    }
+
+    // Toggle card between Unresolved and Solved upon clicking
+    function toggleStatus(cardEl) {
+      const badge = cardEl.querySelector('.status-badge');
+      if (badge.classList.contains('unresolved')) {
+        badge.classList.remove('unresolved');
+        badge.classList.add('solved');
+        badge.innerHTML = '<span class="status-dot"></span>Solved';
+      } else {
+        badge.classList.remove('solved');
+        badge.classList.add('unresolved');
+        badge.innerHTML = '<span class="status-dot"></span>Unresolved';
+      }
+    }
+
+    /* ---------------- AI Reminder Modal (💡) ---------------- */
+    const aiBulbBtn = document.getElementById('aiBulbBtn');
+    const aiReminderModal = document.getElementById('aiReminderModal');
+    const aiPromptMessage = document.getElementById('aiPromptMessage');
+
+    aiBulbBtn.addEventListener('click', () => {
+      const count = getUnresolvedCount();
+      aiPromptMessage.textContent = `AI reminder: You still have ${count} unsolved academic problems. Do you need me to help you check the information?`;
+      aiReminderModal.classList.add('active');
+    });
+
+    function closeAiModal() {
+      aiReminderModal.classList.remove('active');
+    }
+
+    function confirmAiSearch() {
+      closeAiModal();
+      alert('AI Assistant is querying literature and synthesizing research summaries...');
+    }
+
+    aiReminderModal.addEventListener('click', (e) => {
+      if (e.target === aiReminderModal) closeAiModal();
+    });
+
+    /* ---------------- Add Question Modal ---------------- */
+    const addQuestionModal = document.getElementById('addQuestionModal');
+    const openAddModalBtn = document.getElementById('openAddModalBtn');
+    const closeAddModalBtn = document.getElementById('closeAddModalBtn');
+    const cancelAddBtn = document.getElementById('cancelAddBtn');
+    const saveQuestionBtn = document.getElementById('saveQuestionBtn');
+
+    const newDiscipline = document.getElementById('newDiscipline');
+    const newQuestion = document.getElementById('newQuestion');
+    const newNotes = document.getElementById('newNotes');
+    const newStatus = document.getElementById('newStatus');
+
+    function openAddModal() {
+      newQuestion.value = '';
+      newNotes.value = '';
+      addQuestionModal.classList.add('active');
+      setTimeout(() => newQuestion.focus(), 150);
+    }
+
+    function closeAddModal() {
+      addQuestionModal.classList.remove('active');
+    }
+
+    openAddModalBtn.addEventListener('click', openAddModal);
+    closeAddModalBtn.addEventListener('click', closeAddModal);
+    cancelAddBtn.addEventListener('click', closeAddModal);
+
+    addQuestionModal.addEventListener('click', (e) => {
+      if (e.target === addQuestionModal) closeAddModal();
+    });
+
+    saveQuestionBtn.addEventListener('click', () => {
+      const qText = newQuestion.value.trim();
+      if (!qText) {
+        newQuestion.focus();
+        return;
+      }
+
+      const discVal = newDiscipline.value;
+      const isResolved = newStatus.value === 'solved';
+      const notesVal = newNotes.value.trim() || 'No additional research notes provided.';
+
+      const targetGroup = document.querySelector(`.discipline-group[data-discipline="${discVal}"]`);
+      if (targetGroup) {
+        const cardsList = targetGroup.querySelector('.cards-list');
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card';
+        cardDiv.onclick = function() { toggleStatus(this); };
+
+        const statusClass = isResolved ? 'solved' : 'unresolved';
+        const statusText = isResolved ? 'Solved' : 'Unresolved';
+
+        cardDiv.innerHTML = `
+          <div class="card-top">
+            <h3 class="card-question">${escapeHtml(qText)}</h3>
+            <span class="status-badge ${statusClass}"><span class="status-dot"></span>${statusText}</span>
+          </div>
+          <p class="card-meta">${escapeHtml(notesVal)}</p>
+        `;
+
+        cardsList.prepend(cardDiv);
+        updateDisciplineBadges();
+      }
+
+      closeAddModal();
+    });
+
+    function escapeHtml(string) {
+      const div = document.createElement('div');
+      div.textContent = string;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
