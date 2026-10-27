@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mail - iOS Liquid Glass</title>
+  <style>
+    /* ==========================================================================
+       1. CSS Variables (:root) - Theming & Rounded Corners
+       ========================================================================== */
+    :root {
+      /* Backgrounds & Ambient Canvas */
+      --bg-gradient: linear-gradient(150deg, #0b111e 0%, #161c2e 50%, #0d1527 100%);
+      --ambient-blue: rgba(56, 189, 248, 0.25);
+      --ambient-indigo: rgba(99, 102, 241, 0.3);
+      --ambient-teal: rgba(45, 212, 191, 0.2);
+
+      /* Liquid Glass Layering */
+      --glass-nav-bg: rgba(255, 255, 255, 0.08);
+      --glass-surface: rgba(255, 255, 255, 0.06);
+      --glass-surface-hover: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.16);
+      --glass-border-light: rgba(255, 255, 255, 0.28);
+      --glass-blur: blur(28px) saturate(190%);
+      --glass-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+
+      /* Exquisite Stationery Details Page */
+      --stationery-bg: linear-gradient(175deg, rgba(255, 252, 245, 0.12) 0%, rgba(248, 245, 235, 0.06) 100%);
+      --stationery-border: rgba(255, 248, 235, 0.22);
+      --stationery-ink: #f8fafc;
+      --stationery-ink-sub: rgba(248, 250, 252, 0.7);
+
+      /* Typography & Accents */
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.68);
+      --text-tertiary: rgba(255, 255, 255, 0.42);
+      --accent-blue: #0a84ff;
+      --accent-gold: #ffd043;
+      --badge-unread: #0a84ff;
+
+      /* Radius System */
+      --radius-xs: 6px;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 36px;
+      --radius-pill: 9999px;
+
+      /* Animation Curve */
+      --transition-spring: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ==========================================================================
+       2. Global Resets & App Shell
+       ========================================================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Ambient Dynamic Lights for glass refraction */
+    .ambient-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: 0.8;
+      animation: ambientFloat 16s infinite alternate ease-in-out;
+    }
+    .orb-1 { width: 380px; height: 380px; background: var(--ambient-blue); top: -10%; left: 5%; }
+    .orb-2 { width: 420px; height: 420px; background: var(--ambient-indigo); bottom: -5%; right: -5%; animation-duration: 20s; }
+    .orb-3 { width: 320px; height: 320px; background: var(--ambient-teal); top: 35%; right: 20%; animation-duration: 13s; }
+
+    @keyframes ambientFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(45px, 35px) scale(1.12); }
+    }
+
+    /* iOS Phone Frame Container */
+    .app-frame {
+      width: 100%;
+      max-width: 420px;
+      height: 90vh;
+      max-height: 860px;
+      border-radius: var(--radius-xl);
+      background: rgba(14, 20, 32, 0.45);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Minimalist Linear SVGs default parameters */
+    svg.icon {
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ==========================================================================
+       3. Liquid Glass Top Navigation & Controls
+       ========================================================================== */
+    .glass-nav {
+      position: relative;
+      z-index: 30;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--glass-nav-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .nav-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: var(--transition-spring);
+    }
+
+    .nav-btn:hover {
+      background: var(--glass-surface-hover);
+      border-color: var(--glass-border-light);
+      transform: scale(1.06);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    .nav-btn.btn-gold {
+      background: rgba(255, 208, 67, 0.12);
+      border-color: rgba(255, 208, 67, 0.35);
+      color: var(--accent-gold);
+    }
+    .nav-btn.btn-gold:hover {
+      box-shadow: 0 0 18px rgba(255, 208, 67, 0.35);
+    }
+
+    /* ==========================================================================
+       4. Liquid Glass Top Prompt Banner (AI Notification)
+       ========================================================================== */
+    .liquid-prompt-banner {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 60;
+      padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(28, 38, 60, 0.75);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid rgba(255, 208, 67, 0.45);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 208, 67, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(-130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-spring);
+    }
+
+    .liquid-prompt-banner.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .prompt-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 208, 67, 0.18);
+      border: 1px solid rgba(255, 208, 67, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-gold);
+      flex-shrink: 0;
+    }
+
+    .prompt-content {
+      flex: 1;
+      font-size: 0.86rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #fff;
+    }
+
+    .prompt-close {
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: color 0.2s;
+    }
+    .prompt-close:hover {
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       5. View 1: Inbox List Page
+       ========================================================================== */
+    .view-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .view-inbox {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 14px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: var(--transition-spring);
+      scrollbar-width: none;
+    }
+    .view-inbox::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mail-item {
+      padding: 15px 16px;
+      border-radius: var(--radius-md);
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: var(--transition-spring);
+      position: relative;
+    }
+
+    .mail-item:hover {
+      background: var(--glass-surface-hover);
+      border-color: var(--glass-border-light);
+      transform: translateY(-2px);
+    }
+
+    .mail-item.new-arrived {
+      animation: mailDropIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      border-color: rgba(255, 208, 67, 0.5);
+    }
+
+    @keyframes mailDropIn {
+      0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .mail-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mail-sender-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .unread-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: var(--radius-pill);
+      background: var(--badge-unread);
+      box-shadow: 0 0 8px var(--badge-unread);
+      display: none;
+    }
+
+    .mail-item.unread .unread-dot {
+      display: inline-block;
+    }
+
+    .mail-sender {
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .mail-date {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .mail-subject {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: -0.1px;
+    }
+
+    .mail-snippet {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ==========================================================================
+       6. View 2: Exquisite Stationery Reading / Details Page
+       ========================================================================== */
+    .view-details {
+      position: absolute;
+      inset: 0;
+      background: rgba(14, 20, 32, 0.6);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      z-index: 40;
+      transform: translateX(100%);
+      transition: var(--transition-spring);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .view-details.active {
+      transform: translateX(0);
+    }
+
+    .details-scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 18px 24px;
+      scrollbar-width: none;
+    }
+    .details-scroll-body::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Exquisite Stationery Canvas */
+    .stationery-card {
+      background: var(--stationery-bg);
+      border: 1px solid var(--stationery-border);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Subtle Paper Header Stamp / Seal */
+    .stationery-stamp {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 42px;
+      height: 42px;
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .stationery-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 16px;
+    }
+
+    .meta-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--stationery-ink);
+      line-height: 1.28;
+      padding-right: 48px;
+    }
+
+    .meta-author-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .author-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+      border: 1px solid var(--glass-border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+
+    .author-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .author-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--stationery-ink);
+    }
+
+    .author-sub {
+      font-size: 0.74rem;
+      color: var(--stationery-ink-sub);
+    }
+
+    /* Minimalist Scenery / Abstract Illustration (Linear SVG) */
+    .stationery-art {
+      width: 100%;
+      height: 160px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    .stationery-art svg {
+      width: 100%;
+      height: 100%;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* Stationery Body Typography */
+    .stationery-body {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--stationery-ink);
+      font-weight: 400;
+      letter-spacing: 0.1px;
+      white-space: pre-line;
+    }
+
+    /* Bottom Liquid Reply Bar */
+    .details-bottom-bar {
+      padding: 12px 18px 18px;
+      background: var(--glass-nav-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reply-btn {
+      flex: 1;
+      height: 44px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+      border: 1px solid var(--glass-border-light);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      transition: var(--transition-spring);
+    }
+
+    .reply-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .reply-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Reply Toast Modal Simulation */
+    .toast-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 70;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-spring);
+    }
+    .toast-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toast-card {
+      width: 100%;
+      background: rgba(28, 38, 58, 0.85);
+      border: 1px solid var(--glass-border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--glass-shadow);
+      transform: scale(0.92);
+      transition: var(--transition-spring);
+    }
+    .toast-overlay.show .toast-card {
+      transform: scale(1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Reflection Canvas -->
+  <div class="ambient-canvas">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- Main Mail App Shell Frame -->
+  <div class="app-frame" id="appFrame">
+
+    <!-- Liquid Glass Floating Prompt Banner (AI feedback) -->
+    <div class="liquid-prompt-banner" id="aiPromptBanner">
+      <div class="prompt-icon-wrap">
+        <!-- Minimalist Linear SVG Sparkle / AI Light -->
+        <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.3 4.7 3.3 6 .7.5 1.7 1.3 1.7 2.5v.5h4v-.5c0-1.2 1-2 1.7-2.5 2-1.3 3.3-3.5 3.3-6a7 7 0 0 0-7-7z"></path>
+          <line x1="9" y1="18" x2="15" y2="18"></line>
+          <line x1="10" y1="21" x2="14" y2="21"></line>
+        </svg>
+      </div>
+      <div class="prompt-content">
+        AI has just written a new monthly mood summary letter for you
+      </div>
+      <div class="prompt-close" id="btnPromptClose">
+        <svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         VIEW 1: INBOX LIST PAGE
+         ======================================================================== -->
+    <header class="glass-nav" id="inboxNav">
+      <!-- Upper Left: Return to Home Screen button -->
+      <button class="nav-btn" id="btnHome" title="Return to Home Screen" aria-label="Home Screen">
+        <!-- Minimalist Linear SVG Home Icon -->
+        <svg class="icon" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </button>
+
+      <span class="nav-title">Mailbox</span>
+
+      <div class="nav-actions">
+        <!-- AI Lightbulb Button 💡 -->
+        <button class="nav-btn btn-gold" id="btnAI" title="AI Mood Summary Letter" aria-label="AI Summary">
+          <svg class="icon" viewBox="0 0 24 24" width="19" height="19">
+            <path d="M9 18h6"></path>
+            <path d="M10 21h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.3 4.7 3.3 6 .7.5 1.7 1.3 1.7 2.5v.5h4v-.5c0-1.2 1-2 1.7-2.5 2-1.3 3.3-3.5 3.3-6a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+
+        <!-- Compose Button ✏️ -->
+        <button class="nav-btn" id="btnCompose" title="Write New Letter" aria-label="Compose">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="view-container">
+      <div class="view-inbox" id="inboxList">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         VIEW 2: LETTER DETAILS & EXQUISITE STATIONERY PAGE
+         ======================================================================== -->
+    <div class="view-details" id="detailsView">
+      <!-- Details Glass Navigation -->
+      <header class="glass-nav">
+        <!-- Return < button back to inbox list -->
+        <button class="nav-btn" id="btnBackToInbox" title="Back to Inbox" aria-label="Back">
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span class="nav-title" style="font-size: 1.05rem;">Letter Details</span>
+        <div class="nav-actions">
+          <button class="nav-btn" id="btnShareLetter" title="Share" aria-label="Share">
+            <svg class="icon" viewBox="0 0 24 24" width="17" height="17">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Stationery Reading Body -->
+      <div class="details-scroll-body">
+        <article class="stationery-card">
+          <!-- Postal Seal / Stamp -->
+          <div class="stationery-stamp">
+            <svg class="icon" viewBox="0 0 24 24" width="22" height="22">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+
+          <!-- Metadata -->
+          <div class="stationery-meta">
+            <h1 class="meta-title" id="detailSubject">This Month's Memory Summary</h1>
+            <div class="meta-author-row">
+              <div class="author-avatar" id="detailAvatar">AI</div>
+              <div class="author-text">
+                <span class="author-name" id="detailSender">AI Partner</span>
+                <span class="author-sub" id="detailSubInfo">To: Me &bull; Today 09:42 AM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Minimalist Scenery Illustration (Linear SVG) -->
+          <div class="stationery-art">
+            <svg class="icon" viewBox="0 0 400 160" preserveAspectRatio="none">
+              <!-- Distant Sun / Glow Circle -->
+              <circle cx="200" cy="55" r="28" stroke-width="1.2" stroke-dasharray="3,3"></circle>
+              <circle cx="200" cy="55" r="16" stroke-width="1.4"></circle>
+              
+              <!-- Subtle Birds / Clouds -->
+              <path d="M70,40 Q77,33 84,40 Q91,33 98,40" stroke-width="1.2"></path>
+              <path d="M310,35 Q316,30 322,35 Q328,30 334,35" stroke-width="1.2"></path>
+
+              <!-- Layered Linear Mountains -->
+              <polyline points="0,135 60,85 130,125 210,65 310,130 400,90" stroke-width="1.6"></polyline>
+              <polyline points="0,150 90,110 170,140 260,95 340,145 400,120" stroke-width="1.4"></polyline>
+
+              <!-- Gentle Lake Horizon Ripple Lines -->
+              <line x1="20" y1="145" x2="160" y2="145" stroke-width="1.2" stroke-dasharray="8,4"></line>
+              <line x1="240" y1="145" x2="380" y2="145" stroke-width="1.2" stroke-dasharray="8,4"></line>
+              <line x1="60" y1="153" x2="340" y2="153" stroke-width="1" stroke-dasharray="14,6"></line>
+            </svg>
+          </div>
+
+          <!-- Letter Body -->
+          <div class="stationery-body" id="detailBody">
+            Dearest friend,
+
+            Looking back over these past thirty days, your journey has been filled with quiet moments of beauty and resilience.
+
+            From the gentle early mornings to the late hours spent creating, you maintained clarity and an open heart. Even on days overshadowed by unexpected rain, you found calm inside the rhythm of your favorite music.
+
+            May this summary bring warmth to your evening. Keep walking gently forward.
+          </div>
+        </article>
+      </div>
+
+      <!-- Bottom Reply Bar -->
+      <footer class="details-bottom-bar">
+        <button class="reply-btn" id="btnReply">
+          <!-- Minimalist Linear SVG Reply Icon -->
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18">
+            <polyline points="9 17 4 12 9 7"></polyline>
+            <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+          </svg>
+          <span>Reply</span>
+        </button>
+      </footer>
+    </div>
+
+    <!-- Liquid Toast Modal (Feedback) -->
+    <div class="toast-overlay" id="toastOverlay">
+      <div class="toast-card">
+        <h3 style="font-size: 1.1rem; margin-bottom: 6px; color: #fff;">Reply Sent</h3>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+          Your reply has been sealed and delivered to your AI partner.
+        </p>
+        <button class="reply-btn" style="height: 38px; width: 100%;" id="btnToastClose">Done</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       7. Logic & State Management
+       ========================================================================== -->
+  <script>
+    // Initial Mail Dataset
+    const initialEmails = [
+      {
+        id: 1,
+        sender: "AI Partner",
+        avatar: "AI",
+        date: "09:42 AM",
+        subject: "This month's memory summary",
+        snippet: "Looking back at the moments you captured this month, there's a gentle rhythm of gratitude...",
+        body: `Dearest friend,\n\nLooking back over these past thirty days, your journey has been filled with quiet moments of beauty and resilience.\n\nFrom the calm early mornings to the late hours spent creating, you maintained clarity and an open heart. Even on days overshadowed by unexpected rain, you found calm inside the rhythm of your favorite music.\n\nMay this summary bring warmth to your evening. Keep walking gently forward.\n\nAlways with you,\nYour AI Companion`,
+        unread: true
+      },
+      {
+        id: 2,
+        sender: "Flora Atelier",
+        avatar: "FA",
+        date: "Yesterday",
+        subject: "Autumn Botanical Note",
+        snippet: "The golden ginkgo leaves have begun to settle upon the courtyard stones...",
+        body: `Hello,\n\nThe golden ginkgo leaves have begun to settle upon the courtyard stones. We wanted to share the season's first batch of pressed wildflower paper with you.\n\nWe hope this small token reminds you of morning mist and damp wood scent.\n\nWarm wishes,\nFlora Atelier`,
+        unread: false
+      },
+      {
+        id: 3,
+        sender: "Studio Acoustic",
+        avatar: "SA",
+        date: "Oct 24",
+        subject: "Soundscapes for Quiet Evenings",
+        snippet: "Here is your curated list of ambient frequencies and peaceful rainfall recordings...",
+        body: `Greetings,\n\nAs the night draws in earlier, our team has prepared three hours of seamless tape-loop frequencies combined with gentle Pacific rainfall.\n\nTune in whenever you need space to breathe and unwind.\n\nBest,\nStudio Acoustic`,
+        unread: false
+      }
+    ];
+
+    let emails = [...initialEmails];
+
+    // DOM References
+    const inboxListEl = document.getElementById('inboxList');
+    const detailsView = document.getElementById('detailsView');
+    const btnBackToInbox = document.getElementById('btnBackToInbox');
+    const btnHome = document.getElementById('btnHome');
+    const btnAI = document.getElementById('btnAI');
+    const btnCompose = document.getElementById('btnCompose');
+    const aiPromptBanner = document.getElementById('aiPromptBanner');
+    const btnPromptClose = document.getElementById('btnPromptClose');
+    const btnReply = document.getElementById('btnReply');
+    const toastOverlay = document.getElementById('toastOverlay');
+    const btnToastClose = document.getElementById('btnToastClose');
+
+    // Details elements
+    const detailSubject = document.getElementById('detailSubject');
+    const detailSender = document.getElementById('detailSender');
+    const detailSubInfo = document.getElementById('detailSubInfo');
+    const detailAvatar = document.getElementById('detailAvatar');
+    const detailBody = document.getElementById('detailBody');
+
+    // Render Inbox List
+    function renderInbox(newAddedId = null) {
+      inboxListEl.innerHTML = '';
+      emails.forEach(mail => {
+        const item = document.createElement('div');
+        item.className = `mail-item ${mail.unread ? 'unread' : ''} ${mail.id === newAddedId ? 'new-arrived' : ''}`;
+        item.innerHTML = `
+          <div class="mail-header-row">
+            <div class="mail-sender-group">
+              <span class="unread-dot"></span>
+              <span class="mail-sender">${mail.sender}</span>
+            </div>
+            <span class="mail-date">${mail.date}</span>
+          </div>
+          <div class="mail-subject">${mail.subject}</div>
+          <div class="mail-snippet">${mail.snippet}</div>
+        `;
+        item.addEventListener('click', () => openLetter(mail));
+        inboxListEl.appendChild(item);
+      });
+    }
+
+    // Open Letter Details
+    function openLetter(mail) {
+      mail.unread = false;
+      detailSubject.textContent = mail.subject;
+      detailSender.textContent = mail.sender;
+      detailSubInfo.textContent = `To: Me • ${mail.date}`;
+      detailAvatar.textContent = mail.avatar;
+      detailBody.textContent = mail.body;
+
+      detailsView.classList.add('active');
+      renderInbox();
+    }
+
+    // Close Details View
+    btnBackToInbox.addEventListener('click', () => {
+      detailsView.classList.remove('active');
+    });
+
+    // Home Button Interaction
+    btnHome.addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        alert("Returning to iOS Liquid Glass Home Screen...");
+      }
+    });
+
+    // Compose Button Interaction
+    btnCompose.addEventListener('click', () => {
+      alert("Opening New Stationery Draft...");
+    });
+
+    // 4. AI Interaction: Lightbulb Click
+    let promptTimeout = null;
+    btnAI.addEventListener('click', () => {
+      // 1. Show Liquid Glass Banner
+      aiPromptBanner.classList.add('active');
+
+      if (promptTimeout) clearTimeout(promptTimeout);
+      promptTimeout = setTimeout(() => {
+        aiPromptBanner.classList.remove('active');
+      }, 5000);
+
+      // 2. Prepend a new mood summary letter to the top
+      const newMailId = Date.now();
+      const newAIMail = {
+        id: newMailId,
+        sender: "AI Partner",
+        avatar: "AI",
+        date: "Just now",
+        subject: "This month's memory summary ✨",
+        snippet: "AI has just crafted a brand new reflection on your recent peace, creativity, and milestones...",
+        body: `Dearest friend,\n\nI have just gathered the subtle threads of your recent days into this new reflection.\n\nYour creative focus has blossomed noticeably, and even amid hectic deadlines, you carved out tranquil hours to recharge. These small moments of self-kindness are your true milestones this month.\n\nSit back, sip something warm, and enjoy this peaceful afternoon.\n\nWarmly,\nYour AI Companion`,
+        unread: true
+      };
+
+      emails.unshift(newAIMail);
+      renderInbox(newMailId);
+    });
+
+    // Close AI Prompt Banner manually
+    btnPromptClose.addEventListener('click', () => {
+      aiPromptBanner.classList.remove('active');
+      if (promptTimeout) clearTimeout(promptTimeout);
+    });
+
+    // Reply Button Interaction
+    btnReply.addEventListener('click', () => {
+      toastOverlay.classList.add('show');
+    });
+
+    btnToastClose.addEventListener('click', () => {
+      toastOverlay.classList.remove('show');
+    });
+
+    // Initial render
+    renderInbox();
+  </script>
+</body>
+</html>
